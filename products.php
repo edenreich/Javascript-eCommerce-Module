@@ -1,6 +1,6 @@
 <?php
 
-// for demonstration perpouses i create simple 3 pages. In real case senario you would fetch those records from the database.
+// for demonstrate purposes I created simple 3 pages. In real case senario you would fetch those records from the database.
 
 $products = [];
 
