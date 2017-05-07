@@ -1,5 +1,5 @@
 /**
- * A module to handle the registration proccess
+ * A module to handle common eCommerce tasks
  */
 var eCommerce = function(devSettings) {
 	
