@@ -11,8 +11,8 @@ and make sure you include it in your
 ### Configuration
 
 #### Configure the eCommerce:
-##### - cartSessionId - if you want to give each cart a specific id.
-##### - require - property to define what kind of modules you will need.
+- cartSessionId - if you want to give each cart a specific id.
+- require - property to define what kind of modules you will need.
 ```javascript
 	eCommerce.Settings({
 		require: ['Products', 'Services', 'Filter'],
@@ -20,14 +20,15 @@ and make sure you include it in your
 ```
 
 #### Configure the Products:
-##### - bindTo - what DOM element should serve as the products container.
-##### - itemClass - the class name for each product element.
-##### - width - the fixed width of each product item.
-##### - height - the fixed height of each product item.
-##### - only - to be explicit, only property names you specify will be showen inside of a product item.
+- bindTo - what DOM element should serve as the products container.
+- itemClass - the class name for each product element.
+- width - the fixed width of each product item.
+- height - the fixed height of each product item.
+- only - to be explicit, only property names you specify will be showen inside of a product item.
 ```javascript
 eCommerce.Products.Settings({
-	bindTo: '.products',
+	bindProductsTo: '.products',
+	bindLinksTo: '.pagination-links',
 	itemClass: 'col-xs-3',
 	width: '200px',
 	height: '250px',
@@ -35,4 +36,13 @@ eCommerce.Products.Settings({
 	fetchFrom: 'products.php',
 });
 ```
+if you are using an MVC you might want just to pass the items like so:
+```javascript
+// the products you passed to the view
+var productItems = [
+	{name: 'Example Product', price: '10.00', deliveryTime: '3 days'},
+	{name: 'Example Product 2', price: '10.00', deliveryTime: '3 days'}
+];
 
+eCommerce.Products.Items(productItems);
+```

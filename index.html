@@ -3,10 +3,16 @@
 <head>
 	<title>eCommerce Module</title>
 	<script type="text/javascript" src="eCommerce.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<h1 class="col-xs-offset-1">eCommerce</h1>
+<hr>
+
 <div class="filter"></div>
-<div class="products"></div>
+<div class="products" height="70px"></div>
+<nav class="pagination-links"></nav>
 
 <script type="text/javascript">
 	(function(eCommerce){
@@ -17,22 +23,29 @@
 			require: ['Products', 'Services', 'Filter'],
 		});
 
+
 		eCommerce.Products.Settings({
-			bindTo: '.products',
-			width: '200px',
-			height: '250px',
+			bindProductsTo: '.products',
+			bindLinksTo: '.pagination-links',
+			containerClass: 'col-xs-9',
 			itemClass: 'col-xs-3',
+			paginationClass: 'col-xs-offset-4 col-xs-10',
+			width: '200px',
+			height: '280px',
 			only: ['name', 'price', 'deliveryTime'],
 			fetchFrom: 'products.php',
 		});
 
-		eCommerce.Products.Items([
-			{name: 'Example Product', price: '10.00', deliveryTime: '3 days'},
-			{name: 'Example Product 2', price: '10.00', deliveryTime: '3 days'}
-		]);
+		eCommerce.Products.AfterLoaded = function() {
+			// run something after the products has been loaded.
+		};
+		
 
 		eCommerce.Filter.Settings({
-
+			bindTo: '.filter',
+			class: 'col-xs-3',
+			width: '',
+			height: '',
 		});
 
 	})(eCommerce);

@@ -36,10 +36,12 @@ var eCommerce = function(devSettings) {
 
 		var filterSettings = {
 			bindTo: '.filter',
-			class: 'col-xs-4',
+			class: '',
 			width: '',
 			height: '',
 		};
+
+		var filterContainer = {};
 
 		function init(devSettings) {
 			if(typeof devSettings != 'object') {
@@ -47,6 +49,9 @@ var eCommerce = function(devSettings) {
 			}
 
 			filterSettings = extend(filterSettings, devSettings);
+			
+			filterContainer = document.querySelector(filterSettings.bindTo);
+			filterContainer.className = filterContainer.className + ' ' + filterSettings.class;
 		}
 
 		return {
@@ -71,11 +76,13 @@ var eCommerce = function(devSettings) {
 		 * The default settings of each product.
 		 */
 		var productSettings = {
-			bindTo: '.products',
-			class: 'col-xs-8',
-			width: '',
-			height: '',
-			itemClass: 'col-xs-3',
+			bindProductsTo: '.products',
+			containerClass: '',
+			bindLinksTo: '',
+			itemClass: '',
+			paginationClass: '',
+			width: '200px',
+			height: '250px',
 			only: ['name', 'price', 'deliveryTime'],
 			fetchFrom: '',
 		};
@@ -83,12 +90,22 @@ var eCommerce = function(devSettings) {
 		/**
 		 * The DOM element to display the products.
 		 */
-		var container = {};
+		var productsContainer = {};
+
+		/**
+		 * The DOM element to display the product-links.
+		 */
+		var paginationLinks = {};
 
 		/**
 		 * The products items.
 		 */
 		var currentItems = [];
+
+		/**
+		 * The current instance
+		 */
+		var _currentInstance = {};
 
 		/**
 		 * The constructor for the developer products settings.
@@ -97,50 +114,196 @@ var eCommerce = function(devSettings) {
 			if(typeof devSettings != 'object') {
 				throw new InvalidArgumentException;
 			}
-
+			_currentInstance = this;
 			productSettings = extend(productSettings, devSettings);
+			
+			productsContainer = document.querySelector(productSettings.bindProductsTo);
+			
+			if(productSettings.bindLinksTo != '')  {
+				paginationLinks = document.querySelector(productSettings.bindLinksTo) || null;
 
-			container = document.querySelector(productSettings.bindTo);
-			container.className = container.className + ' ' + productSettings.class;
+				if(! paginationLinks) {
+					throw new NodeElementDoesNotExistException;
+				}
+
+				var links = createLinks();
+				paginationLinks.className = paginationLinks.className + ' ' + productSettings.paginationClass;
+				paginationLinks.appendChild(links);
+			}
+
+			productsContainer.className = productsContainer.className + ' ' + productSettings.containerClass;
+
+			eCommerceStyleTagsAdd();
+
+			replaceItems.call(this, 1);
+		}
+
+		/**
+		 * Creates the pagination links.
+		 */
+		function createLinks() {	
+			
+			var ul = document.createElement('ul');
+			var previous = createPreviousButton();
+			var pages = createPageLinks();
+			var next = createNextButton();
+
+			ul.className = 'pagination';
+			ul.appendChild(previous);
+
+			pages.forEach(function(page) {
+				ul.appendChild(page);
+			});
+
+			ul.appendChild(next);
+
+			return ul;
+		}
+
+		/**
+		 * Creates the pages item links.
+		 */
+		function createPageLinks() {
+			var pages = [];
+			
+			for(var i = 1; i <= 3; i++) {
+				var pageItem = document.createElement('li');
+				var link = document.createElement('a');
+				pageItem.className = 'page-item';
+				link.className = 'page-link';
+				link.setAttribute('href', '?page='+ i);
+				link.setAttribute('data-page-nr', i);
+				link.innerHTML = i;
+				pageItem.appendChild(link);
+				pages.push(pageItem);
+
+				link.onclick = function(e) {
+					e.preventDefault();
+
+					replaceItems(this.getAttribute('data-page-nr'));
+				};
+			}
+
+			return pages;
+		}
+
+		/**
+		 * Creates the previous button link.
+		 */
+		function createPreviousButton() {
+			var li = document.createElement('li');
+			var a = document.createElement('a');
+			var span1 = document.createElement('span');
+			var span2 = document.createElement('span');
+			
+			
+			li.className = 'page-item';
+			a.className = 'page-link';
+			span2.className = 'sr-only';
+
+			a.setAttribute('href', '#');
+			a.setAttribute('aria-label', 'Previous');
+			span1.setAttribute('aria-hidden', 'true');
+
+			span1.innerHTML = '&laquo;';
+			span2.innerHTML = 'Previous';
+
+			a.appendChild(span1);
+			a.appendChild(span2);
+			li.appendChild(a);
+
+			a.onclick = function(e) {
+				e.preventDefault();
+			} 
+
+			return li;
+		}
+
+		/**
+		 * Creates the next button link.
+		 */
+		function createNextButton() {
+			var li = document.createElement('li');
+			var a = document.createElement('a');
+			var span1 = document.createElement('span');
+			var span2 = document.createElement('span');
+			
+			li.className = 'page-item';
+			a.className = 'page-link';
+			span2.className = 'sr-only';
+
+			a.setAttribute('href', '#');
+			a.setAttribute('aria-label', 'Next');
+			span1.setAttribute('aria-hidden', 'true');
+
+			span1.innerHTML = '&raquo;';
+			span2.innerHTML = 'Next';
+
+			a.appendChild(span1);
+			a.appendChild(span2);
+			li.appendChild(a);
+
+			a.onclick = function(e) {
+				e.preventDefault();
+			} 
+
+			return li;
 		}
 
 		/**
 		 * Clear the container and add new items.
 		 */
-		function replaceItems(items) {
-			if(! Array.isArray(items) || typeof items[0] == 'string') {
+		function replaceItems(pageNumber) {
+			pageNumber =  pageNumber || GET_Vars()['page'];
+			window.history.replaceState('', '', updateURLParameter(window.location.href, "page", pageNumber));
+			var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+
+			xhr.open('GET', productSettings.fetchFrom + '?page='+ pageNumber, false); 
+
+			xhr.onreadystatechange = function() {
+				if(this.status == 200 && this.readyState == 4) {
+					currentItems = JSON.parse(this.responseText);
+				}
+			};
+
+			xhr.send(null);
+			
+			if(! Array.isArray(currentItems) || typeof currentItems[0] == 'string') {
 				throw new InvalidArgumentException;
 			}
 			
-			currentItems = items;
-			
 			var displayItems = wrapAllWithHTML(currentItems, productSettings.itemClass, 'div');
 			
-			container.innerHTML = displayItems;
+			productsContainer.innerHTML = displayItems;
+			
+			_currentInstance.AfterLoaded.call(this);
 		}
 
-		function wrapAllWithHTML(items, className, type) {
+		/**
+		 * Wrap all the items with specifc tag and classname.
+		 */
+		function wrapAllWithHTML(items, className, tagType) {
 			className = className || '';
 
 			var allItems = '';
 
 			items.forEach(function(product) {
-				var item = document.createElement(type);
+				var item = document.createElement(tagType);
 
-				if(className != '') item.className = className;
+				if(className != '') item.className = 'product ' + className;
 
 				for(var prop in product) {
 					if(productSettings.only.indexOf(prop) == -1) {
 						continue;
 					}
 
-					var tag = document.createElement(type);
+					var tag = document.createElement(tagType);
 					tag.innerHTML = product[prop] || '';
 					tag.className = 'product-' + kebabCase(prop);
 					item.appendChild(tag);
 				}
 
-				var temp = document.createElement(type);
+				var temp = document.createElement(tagType);
 
 				temp.appendChild(item);
 				
@@ -148,6 +311,28 @@ var eCommerce = function(devSettings) {
 			});
 
 			return allItems;
+		}
+
+		function eCommerceStyleTagsAdd() {
+			var head = document.head || document.getElementsByTagName('head')[0];
+			var styleTag = document.createElement('style');
+			var CSS = `
+				.product {
+					margin: 15px 3px;
+					border: 1px solid #e4e4e4;
+					width: ${productSettings.width};
+					height: ${productSettings.height};
+				}
+			`;
+		    
+		    // pipe it through the minfier
+		    CSS = minify_css(CSS);
+		    // adding it to the styletag
+		    styleTag.innerHTML= CSS;
+		    // give an id to recognize the style tag
+			styleTag.setAttribute('id', 'eCommerce');
+			// appending that style tag to the DOM head tag
+			head.appendChild(styleTag);
 		}
 
 		/**
@@ -158,19 +343,43 @@ var eCommerce = function(devSettings) {
 		}
 
 		/**
-		 * When the products are fully loaded in the DOM.
+		 * Get the get variables from the url.
 		 */
-		function removeLoader() {
-			// remove loader
-			
-			// let the developer do whatever he needs to do.
-			this.call(this, AfterLoaded);
+		function GET_Vars() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+				vars[key] = value;
+			});
+
+			return vars;
+		}
+
+		/**
+		 * Modifies the get parameter in the url.
+		 */
+		function updateURLParameter(url, param, paramVal) {
+		    var newAdditionalURL = "";
+		    var tempArray = url.split("?");
+		    var baseURL = tempArray[0];
+		    var additionalURL = tempArray[1];
+		    var temp = "";
+		    if (additionalURL) {
+		        tempArray = additionalURL.split("&");
+		        for (var i=0; i<tempArray.length; i++){
+		            if(tempArray[i].split('=')[0] != param){
+		                newAdditionalURL += temp + tempArray[i];
+		                temp = "&";
+		            }
+		        }
+		    }
+
+		    var rows_txt = temp + "" + param + "=" + paramVal;
+		    return baseURL + "?" + newAdditionalURL + rows_txt;
 		}
 
 		return {
-			AfterLoaded: function() {},
 			Settings: init,
-			Items: replaceItems,
+			AfterLoaded: function() {},
 		};
 	};
 
@@ -184,7 +393,7 @@ var eCommerce = function(devSettings) {
 	function init(devSettings) {
 		// Make sure the developer passed an object, if not give feedback.
 		if(typeof devSettings != 'object') {
-			throw new InvalidArgumentException('Please pass an object for the settings');
+			throw new InvalidArgumentException;
 		}
 
 		globalSettings = extend(globalSettings, devSettings);
@@ -265,6 +474,9 @@ var eCommerce = function(devSettings) {
 			} else if(error instanceof NoneWasRequiredException) {
 				console.error(`NoneWasRequiredException in ${source} on line ${lineno}, 
 								please add at least one requirement(Products, Services or/and Filter)`);
+			} else if(error instanceof NodeElementDoesNotExistException) {
+				console.error(`NodeElementDoesNotExistException in ${source} on line ${lineno}, 
+								please select an existing node element.`);
 			} else {
 				return false;
 			}
@@ -290,6 +502,7 @@ var eCommerce = function(devSettings) {
 	function InvalidArgumentException() {};
 	function BadEventCallException() {};
 	function NoneWasRequiredException() {};
+	function NodeElementDoesNotExistException() {};
 
 	triggerEvent('eCommerceModuleIsFullyLoaded');
 
