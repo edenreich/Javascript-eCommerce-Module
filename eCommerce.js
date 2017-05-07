@@ -1,5 +1,5 @@
 /**
- * A module to handle the common eCommerce tasks
+ * A module to handle common eCommerce tasks
  */
 var eCommerce = function(devSettings) {
 	
