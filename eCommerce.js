@@ -5,11 +5,18 @@ var eCommerce = function(devSettings) {
 	
 	'use strict';
 
+	/**
+	 * Make the settings optional.
+	 */
 	devSettings = devSettings || null;
 
+	/**
+	 * The default global settings.
+	 */
 	var globalSettings = {
-		'cartSessionId': null,
-		'require': ['Products', 'Services', 'Filter'],
+		cartSessionId: [],
+		importBootstrap: false,
+		require: ['Products', 'Services', 'Filter'],
 	};
 
 	/**
@@ -27,7 +34,24 @@ var eCommerce = function(devSettings) {
 	 */
 	var Filter = function() {
 
-		return {};
+		var filterSettings = {
+			bindTo: '.filter',
+			class: 'col-xs-4',
+			width: '',
+			height: '',
+		};
+
+		function init(devSettings) {
+			if(typeof devSettings != 'object') {
+				throw new InvalidArgumentException;
+			}
+
+			filterSettings = extend(filterSettings, devSettings);
+		}
+
+		return {
+			Settings: init,
+		};
 	};
 	
 	/**
@@ -43,23 +67,110 @@ var eCommerce = function(devSettings) {
 	 */
 	var Products = function() {
 
+		/**
+		 * The default settings of each product.
+		 */
 		var productSettings = {
-			'width': '200px',
-			'height': '250px',
-			'class': 'col-xs-3',
+			bindTo: '.products',
+			class: 'col-xs-8',
+			width: '',
+			height: '',
+			itemClass: 'col-xs-3',
+			only: ['name', 'price', 'deliveryTime'],
+			fetchFrom: '',
 		};
 
-		function settings(devSettings) {
+		/**
+		 * The DOM element to display the products.
+		 */
+		var container = {};
+
+		/**
+		 * The products items.
+		 */
+		var currentItems = [];
+
+		/**
+		 * The constructor for the developer products settings.
+		 */
+		function init(devSettings) {
 			if(typeof devSettings != 'object') {
-				throw new InvalidArgumentException('Please pass an object for the settings');
+				throw new InvalidArgumentException;
 			}
 
 			productSettings = extend(productSettings, devSettings);
+
+			container = document.querySelector(productSettings.bindTo);
+			container.className = container.className + ' ' + productSettings.class;
+		}
+
+		/**
+		 * Clear the container and add new items.
+		 */
+		function replaceItems(items) {
+			if(! Array.isArray(items) || typeof items[0] == 'string') {
+				throw new InvalidArgumentException;
+			}
+			
+			currentItems = items;
+			
+			var displayItems = wrapAllWithHTML(currentItems, productSettings.itemClass, 'div');
+			
+			container.innerHTML = displayItems;
+		}
+
+		function wrapAllWithHTML(items, className, type) {
+			className = className || '';
+
+			var allItems = '';
+
+			items.forEach(function(product) {
+				var item = document.createElement(type);
+
+				if(className != '') item.className = className;
+
+				for(var prop in product) {
+					if(productSettings.only.indexOf(prop) == -1) {
+						continue;
+					}
+
+					var tag = document.createElement(type);
+					tag.innerHTML = product[prop] || '';
+					tag.className = 'product-' + kebabCase(prop);
+					item.appendChild(tag);
+				}
+
+				var temp = document.createElement(type);
+
+				temp.appendChild(item);
+				
+				allItems += temp.innerHTML + "\n";
+			});
+
+			return allItems;
+		}
+
+		/**
+		 * Convert camelCase to kebab-case.
+		 */
+		function kebabCase(string) {
+			return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+		}
+
+		/**
+		 * When the products are fully loaded in the DOM.
+		 */
+		function removeLoader() {
+			// remove loader
+			
+			// let the developer do whatever he needs to do.
+			this.call(this, AfterLoaded);
 		}
 
 		return {
-			afterLoaded: function() {},
-			Settings: settings
+			AfterLoaded: function() {},
+			Settings: init,
+			Items: replaceItems,
 		};
 	};
 
@@ -183,9 +294,9 @@ var eCommerce = function(devSettings) {
 	triggerEvent('eCommerceModuleIsFullyLoaded');
 
 	return {
-		Filter: Filter,
-		Services: Services,
-		Products: Products,
+		Filter: Filter || undefined,
+		Services: Services || undefined,
+		Products: Products || undefined,
 		Settings: init,
 	}
 };

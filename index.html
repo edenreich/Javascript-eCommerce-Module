@@ -5,14 +5,37 @@
 	<script type="text/javascript" src="eCommerce.js"></script>
 </head>
 <body>
+<div class="filter"></div>
+<div class="products"></div>
 
 <script type="text/javascript">
-	var eCommerce = new eCommerce;
-	eCommerce.Settings({
-
-	});
+	(function(eCommerce){
 	
-	eCommerce.Products.Settings({});
+		var eCommerce = new eCommerce;
+		
+		eCommerce.Settings({
+			require: ['Products', 'Services', 'Filter'],
+		});
+
+		eCommerce.Products.Settings({
+			bindTo: '.products',
+			width: '200px',
+			height: '250px',
+			itemClass: 'col-xs-3',
+			only: ['name', 'price', 'deliveryTime'],
+			fetchFrom: 'products.php',
+		});
+
+		eCommerce.Products.Items([
+			{name: 'Example Product', price: '10.00', deliveryTime: '3 days'},
+			{name: 'Example Product 2', price: '10.00', deliveryTime: '3 days'},
+		]);
+
+		eCommerce.Filter.Settings({
+
+		});
+
+	})(eCommerce);
 </script>
 </body>
 </html>
