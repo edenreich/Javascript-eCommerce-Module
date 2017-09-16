@@ -14,8 +14,7 @@ if($_GET['page'] == 1) {
 	];
 
 	echo json_encode($products);
-	return;
-} else if($_GET['page'] == 2) {
+} elseif($_GET['page'] == 2) {
 	$products = [
 		['name' => 'Example Product 6', 'price' => 100.00, 'deliveryTime' => '6 days'],
 		['name' => 'Example Product 7', 'price' => 120.00, 'deliveryTime' => '6 days'],
@@ -25,8 +24,7 @@ if($_GET['page'] == 1) {
 	];
 
 	echo json_encode($products);
-	return;
-} else if($_GET['page'] == 3) {
+} elseif($_GET['page'] == 3) {
 	$products = [
 		['name' => 'Example Product 11', 'price' => 100.00, 'deliveryTime' => '6 days'],
 		['name' => 'Example Product 12', 'price' => 120.00, 'deliveryTime' => '6 days'],

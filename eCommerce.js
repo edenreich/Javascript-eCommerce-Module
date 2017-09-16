@@ -36,7 +36,8 @@ var eCommerce = function(devSettings) {
 
 		var filterSettings = {
 			bindTo: '.filter',
-			class: '',
+			data: {},
+			class: 'col-xs-2',
 			width: '',
 			height: '',
 		};
@@ -49,9 +50,9 @@ var eCommerce = function(devSettings) {
 			}
 
 			filterSettings = extend(filterSettings, devSettings);
-			
-			filterContainer = document.querySelector(filterSettings.bindTo);
-			filterContainer.className = filterContainer.className + ' ' + filterSettings.class;
+
+			filterContainer = queryElement(filterSettings.bindTo);
+			filterContainer = addClass(filterContainer, filterSettings.class);
 		}
 
 		return {
@@ -78,13 +79,16 @@ var eCommerce = function(devSettings) {
 		var productSettings = {
 			bindProductsTo: '.products',
 			containerClass: '',
+			perPage: 5,
+			totalPages: 3,
 			bindLinksTo: '',
 			itemClass: '',
 			paginationClass: '',
 			width: '200px',
 			height: '250px',
-			only: ['name', 'price', 'deliveryTime'],
-			fetchFrom: '',
+			attributes: ['name', 'price', 'deliveryTime', 'image'],
+			url: '',
+			initStaticData: {},
 		};
 
 		/**
@@ -103,6 +107,16 @@ var eCommerce = function(devSettings) {
 		var currentItems = [];
 
 		/**
+		 * Stores the current page.
+		 */
+		var currentPage = 1;
+
+		/**
+		 * Stores the total pages.
+		 */
+		var totalPages = 3;
+
+		/**
 		 * The current instance
 		 */
 		var _currentInstance = {};
@@ -117,25 +131,26 @@ var eCommerce = function(devSettings) {
 			_currentInstance = this;
 			productSettings = extend(productSettings, devSettings);
 			
-			productsContainer = document.querySelector(productSettings.bindProductsTo);
-			
-			if(productSettings.bindLinksTo != '')  {
-				paginationLinks = document.querySelector(productSettings.bindLinksTo) || null;
+			totalPages = productSettings.totalPages;
 
-				if(! paginationLinks) {
-					throw new NodeElementDoesNotExistException;
-				}
+			productsContainer = queryElement(productSettings.bindProductsTo);
+			productsContainer = addClass(productsContainer, productSettings.containerClass);
+
+			if(productSettings.bindLinksTo != '')  {
+				paginationLinks = queryElement(productSettings.bindLinksTo);
 
 				var links = createLinks();
-				paginationLinks.className = paginationLinks.className + ' ' + productSettings.paginationClass;
+				paginationLinks = addClass(paginationLinks, productSettings.paginationClass);
 				paginationLinks.appendChild(links);
 			}
 
-			productsContainer.className = productsContainer.className + ' ' + productSettings.containerClass;
-
 			eCommerceStyleTagsAdd();
 
-			replaceItems.call(this, 1);
+			if(emptyObject(productSettings.initStaticData)) {
+				replaceItemsViaAjax(1);
+			} else {
+				replaceItems(productSettings.initStaticData);
+			}
 		}
 
 		/**
@@ -180,7 +195,7 @@ var eCommerce = function(devSettings) {
 				link.onclick = function(e) {
 					e.preventDefault();
 
-					replaceItems(this.getAttribute('data-page-nr'));
+					replaceItemsViaAjax(this.getAttribute('data-page-nr'));
 				};
 			}
 
@@ -192,28 +207,29 @@ var eCommerce = function(devSettings) {
 		 */
 		function createPreviousButton() {
 			var li = document.createElement('li');
-			var a = document.createElement('a');
+			var link = document.createElement('a');
 			var span1 = document.createElement('span');
 			var span2 = document.createElement('span');
 			
 			
 			li.className = 'page-item';
-			a.className = 'page-link';
+			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			a.setAttribute('href', '#');
-			a.setAttribute('aria-label', 'Previous');
+			link.setAttribute('href', '#');
+			link.setAttribute('aria-label', 'Previous');
 			span1.setAttribute('aria-hidden', 'true');
 
 			span1.innerHTML = '&laquo;';
 			span2.innerHTML = 'Previous';
 
-			a.appendChild(span1);
-			a.appendChild(span2);
-			li.appendChild(a);
+			link.appendChild(span1);
+			link.appendChild(span2);
+			li.appendChild(link);
 
-			a.onclick = function(e) {
-				e.preventDefault();
+			link.onclick = function(event) {
+				event.preventDefault();
+				replaceItemsViaAjax(currentPage-1);
 			} 
 
 			return li;
@@ -224,27 +240,28 @@ var eCommerce = function(devSettings) {
 		 */
 		function createNextButton() {
 			var li = document.createElement('li');
-			var a = document.createElement('a');
+			var link = document.createElement('a');
 			var span1 = document.createElement('span');
 			var span2 = document.createElement('span');
 			
 			li.className = 'page-item';
-			a.className = 'page-link';
+			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			a.setAttribute('href', '#');
-			a.setAttribute('aria-label', 'Next');
+			link.setAttribute('href', '#');
+			link.setAttribute('aria-label', 'Next');
 			span1.setAttribute('aria-hidden', 'true');
 
 			span1.innerHTML = '&raquo;';
 			span2.innerHTML = 'Next';
 
-			a.appendChild(span1);
-			a.appendChild(span2);
-			li.appendChild(a);
+			link.appendChild(span1);
+			link.appendChild(span2);
+			li.appendChild(link);
 
-			a.onclick = function(e) {
-				e.preventDefault();
+			link.onclick = function(event) {
+				event.preventDefault();
+				replaceItemsViaAjax(currentPage+1);
 			} 
 
 			return li;
@@ -253,47 +270,87 @@ var eCommerce = function(devSettings) {
 		/**
 		 * Clear the container and add new items.
 		 */
-		function replaceItems(pageNumber) {
-			pageNumber =  pageNumber || GET_Vars()['page'];
-			window.history.replaceState('', '', updateURLParameter(window.location.href, "page", pageNumber));
-			var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+		function replaceItemsViaAjax(pageNumber) {
+			if(notInPageRange(pageNumber) || currentPage == pageNumber) return;
 
-			xhr.open('GET', productSettings.fetchFrom + '?page='+ pageNumber, false); 
+			changeUrl(pageNumber);
 
-			xhr.onreadystatechange = function() {
-				if(this.status == 200 && this.readyState == 4) {
-					currentItems = JSON.parse(this.responseText);
-				}
-			};
+			var request = getItems(pageNumber);
 
-			xhr.send(null);
-			
-			if(! Array.isArray(currentItems) || typeof currentItems[0] == 'string') {
+			request.then(function(items) {
+				replaceItems(items);
+			}).catch(function(error) {
+
+			});
+		}
+
+		function notInPageRange(pageNumber) {
+			return pageNumber > totalPages || pageNumber <= 0;
+		}
+
+		/**
+		 * Replace items in the container.
+		 */
+		function replaceItems(items) {
+			if(! Array.isArray(items) || typeof items[0] == 'string') {
 				throw new InvalidArgumentException;
 			}
+
+			var items = wrapAllWithHTML(items, productSettings.itemClass, 'div');
+			productsContainer.innerHTML = items.text;
 			
-			var displayItems = wrapAllWithHTML(currentItems, productSettings.itemClass, 'div');
-			
-			productsContainer.innerHTML = displayItems;
-			
-			_currentInstance.AfterLoaded.call(this);
+			for(var i = 0; i < items.data.length; i++) {
+				var product = items.data[i];
+				_currentInstance.AfterLoaded.call(this, product);
+			}
+		}
+
+		/**
+		 * Changes the url to a given page number.
+		 */
+		function changeUrl(pageNumber) {
+			pageNumber =  pageNumber || GET_Vars()['page'];
+			currentPage = pageNumber;
+			window.history.replaceState('', '', updateURLParameter(window.location.href, "page", pageNumber));
+		}
+
+		/**
+		 * Makes an Ajax call to the server.
+		 */
+		function getItems(pageNumber) {
+			return new Promise(function(resolve, reject) {
+				var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+
+				xhr.open('GET', productSettings.url + '?page='+ pageNumber, true); 
+
+				xhr.onreadystatechange = function() {
+					if(this.status == 200 && this.readyState == 4) {
+						currentItems = JSON.parse(this.responseText);
+						resolve(currentItems);
+					}
+				};
+
+				xhr.onerror = reject;
+
+				xhr.send(null);
+			});
 		}
 
 		/**
 		 * Wrap all the items with specifc tag and classname.
 		 */
 		function wrapAllWithHTML(items, className, tagType) {
-			className = className || '';
+			className = className || null;
+			className = (className) ? 'product ' + className : 'product';
+			
+			var text = '';
 
-			var allItems = '';
-
-			items.forEach(function(product) {
+			items = items.map(function(product, index) {
 				var item = document.createElement(tagType);
-
-				if(className != '') item.className = 'product ' + className;
+				item = addClass(item, className);
 
 				for(var prop in product) {
-					if(productSettings.only.indexOf(prop) == -1) {
+					if(productSettings.attributes.indexOf(prop) == -1) {
 						continue;
 					}
 
@@ -304,13 +361,17 @@ var eCommerce = function(devSettings) {
 				}
 
 				var temp = document.createElement(tagType);
-
 				temp.appendChild(item);
 				
-				allItems += temp.innerHTML + "\n";
+				text += temp.innerHTML + "\n";
+
+				return product;
 			});
 
-			return allItems;
+			return {
+				"data": items,
+				"text": text
+			};
 		}
 
 		function eCommerceStyleTagsAdd() {
@@ -460,6 +521,55 @@ var eCommerce = function(devSettings) {
 	    }
 
 	    return extended;
+	}
+
+	/**
+	 * Queries an element from the DOM.
+	 */
+	function queryElement(selector) {
+		var element = document.querySelector(selector) || null;
+
+		if(! element) {
+			throw new NodeElementDoesNotExistException;
+		}
+
+		return element;
+	}
+
+	/**
+	 * Adds class to a given element.
+	 */
+	function addClass(element, className) {
+		if(className == '') return element;
+
+		className = className.trim();
+		className = className.split(' ');
+
+		for(var i = 0; i < className.length; i++) {
+			element.classList.add(className[i]);
+		}
+
+		return element;
+	}
+
+	/**
+	 * Removes class from a given element.
+	 */
+	function removeClass(element, className) {
+		element.classList.remove(className);
+		
+		return element;
+	}
+
+	/**
+	 * Checks if an object is empty.
+	 */
+	function emptyObject(object) {
+		for(var prop in object) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
