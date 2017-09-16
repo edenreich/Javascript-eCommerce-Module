@@ -30,6 +30,11 @@ var eCommerce = function(devSettings) {
 	var events = [];
 
 	/**
+	 * Stores the current ecommerce instance.
+	 */
+	var eCommerceInstance = {};
+
+	/**
 	 * The Filter Object, handles the filter of the products/services.
 	 */
 	var Filter = function() {
@@ -67,6 +72,21 @@ var eCommerce = function(devSettings) {
 
 		return {};
 	};
+
+	var Pagination = function() {
+
+		/**
+		 * The default settings of each product.
+		 */
+		var productSettings = {
+			element: '.products',
+			containe: '',
+			perPage: 5,
+			totalPages: 3,
+		};
+
+		return {};
+	}
 	
 	/**
 	 * The Products Object, handles the products.
@@ -438,8 +458,19 @@ var eCommerce = function(devSettings) {
 		    return baseURL + "?" + newAdditionalURL + rows_txt;
 		}
 
+		console.log(instances);
+		
+		if(typeof Pagination == 'function') {
+			return {
+				Settings: init,
+				AfterLoaded: function() {},
+			}
+		}
+
+
 		return {
 			Settings: init,
+			Pagination: Pagination,
 			AfterLoaded: function() {},
 		};
 	};
@@ -449,7 +480,6 @@ var eCommerce = function(devSettings) {
 		// Set the errors handler.
 		errorHandler();
 	});
-
 
 	function init(devSettings) {
 		// Make sure the developer passed an object, if not give feedback.
@@ -463,11 +493,33 @@ var eCommerce = function(devSettings) {
 			throw new NoneWasRequiredException;
 		}
 
-		var currentInstance = this;
+		eCommerceInstance = this;
 
-		globalSettings.require.forEach(function(_object) {
-			currentInstance[_object] = new currentInstance[_object];
+		globalSettings.require.forEach(function(object) {
+			eCommerceInstance[object] = factory(object);
+			setInstance(object, eCommerceInstance[object]);
 		});
+	}
+
+	/**
+	 * Creates an instance.
+	 */
+	function factory(object) {
+		return new eCommerceInstance[object]; 
+	}
+
+	/**
+	 * Sets an instance.
+	 */
+	function setInstance(key, instance) {
+		instances[key] = instance;
+	}
+
+	/**
+	 * Gets an instance.
+	 */
+	function getInstance(key) {
+		return instances[key];
 	}
 
 	/**
@@ -570,6 +622,13 @@ var eCommerce = function(devSettings) {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks if a given parameter is an object.
+	 */
+	function isObject(object) {
+		return typeof object == 'object';
 	}
 
 	/**

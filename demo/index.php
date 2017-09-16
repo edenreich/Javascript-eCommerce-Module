@@ -2,10 +2,9 @@
 <html>
 <head>
 	<title>eCommerce Module</title>
-	<script type="text/javascript" src="eCommerce.js"></script>
+	<script type="text/javascript" src="../src/eCommerce.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
 </head>
 <body>
 <h1 class="col-xs-offset-1">eCommerce</h1>
@@ -51,7 +50,6 @@
 		eCommerce.Products.AfterLoaded = function (product) {
 			// run something after the products has been loaded.
 		};
-		
 
 		eCommerce.Filter.Settings({
 			bindTo: '.filter',
