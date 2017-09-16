@@ -6,7 +6,6 @@ A javascript module to handle the products, services and filter that appears on 
 
 ### Install
 import the script eCommerce.js to your files project.
-and make sure you include it in your 
 
 ### Configuration
 
@@ -38,7 +37,7 @@ eCommerce.Products.Settings({
 ```
 If you want to run something after the products are loaded into the container you may use AfterLoaded callback:
 ```javascript
-eCommerce.Products.AfterLoaded = function() {
+eCommerce.Products.AfterLoaded = function(product) {
 	// run something after the products has been loaded.
 };
 ```
