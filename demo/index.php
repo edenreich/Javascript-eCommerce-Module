@@ -26,7 +26,7 @@
 
 ?>
 <script type="text/javascript">
-	(function(eCommerce){
+	(function(eCommerce) {
 
 		var eCommerce = new eCommerce;
 		

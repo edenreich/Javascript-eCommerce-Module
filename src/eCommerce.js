@@ -332,7 +332,7 @@ var eCommerce = function(devSettings) {
 			productsContainer = queryElement(productSettings.element);
 			productsContainer = addClass(productsContainer, productSettings.class);
 
-			if (Container.instance('Pagination'))  {
+			if (Container.instanceExist('Pagination'))  {
 				paginator = pagination;
 			}
 
@@ -480,7 +480,7 @@ var eCommerce = function(devSettings) {
 			head.appendChild(styleTag);
 		}
 
-		return (Container.instance('Pagination')) ? {
+		return (Container.instanceExist('Pagination')) ? {
 			Settings: init,
 			AfterLoaded: function() {},
 			Pagination: Container.getInstance('Pagination'),
@@ -501,21 +501,31 @@ var eCommerce = function(devSettings) {
 		 * Sets an instance.
 		 */
 		function setInstance(key, instance) {
-			instances[key] = instance;
+			var object = [];
+			object[key] = instance;
+			instances.push(object);
 		}
 
 		/**
 		 * Gets an instance.
 		 */
 		function getInstance(key) {
-			return instances[key] || null;
+			for (var i = 0; i < instances.length; i++) {
+				if(instances[i].hasOwnProperty(key)) return instances[i][key];
+			}
+		
+			return null;
 		}
 
 		/**
 		 * Checks if an instance exist.
 		 */
-		function instance(key) {
-			return (instances[key]) ? true : false;
+		function instanceExist(key) {
+			for (var i = 0; i < instances.length; i++) {
+				if(instances[i].hasOwnProperty(key)) return true;
+			}
+
+			return false;
 		}
 
 		/**
@@ -525,14 +535,16 @@ var eCommerce = function(devSettings) {
 			if(! in_array(object, globalSettings.components)) {
 				throw new ComponentNotRegisteredException;
 			}
-
+			
 			var args = Array.prototype.slice.call(arguments, 1);
 			
 			var instance = {};
 
-			if (typeof eCommerceInstance[object] == 'object') {
+			if (instanceExist(object)) {
+				instance = getInstance(object);
+			} else if (typeof eCommerceInstance[object] == 'object') {
 				instance = eCommerceInstance[object];
-			} else if(typeof eCommerceInstance[object] == 'function') {
+			} else if (typeof eCommerceInstance[object] == 'function') {
 				instance = new eCommerceInstance[object](...args);
 			} else {
 				instance = new eCommerceInstance[object];
@@ -546,7 +558,7 @@ var eCommerce = function(devSettings) {
 		return {
 			setInstance: setInstance,
 			getInstance: getInstance,
-			instance: instance,
+			instanceExist: instanceExist,
 			instances: instances,
 			make: make,
 		};
