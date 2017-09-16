@@ -16,13 +16,8 @@ var eCommerce = function(devSettings) {
 	var globalSettings = {
 		cartSessionId: [],
 		importBootstrap: false,
-		require: ['Products', 'Services', 'Filter'],
+		components: ['Products', 'Services', 'Filter', 'Pagination'],
 	};
-
-	/**
-	 * Stores all instances.
-	 */
-	var instances = [];
 
 	/**
 	 * Stores all the events.
@@ -30,14 +25,19 @@ var eCommerce = function(devSettings) {
 	var events = [];
 
 	/**
+	 * Checks if the eCommerce has been loaded.
+	 */
+	var initialized = false;
+
+	/**
 	 * Stores the current ecommerce instance.
 	 */
-	var eCommerceInstance = {};
+	var eCommerceInstance = this;
 
 	/**
 	 * The Filter Object, handles the filter of the products/services.
 	 */
-	var Filter = function() {
+	this.Filter = function() {
 
 		var filterSettings = {
 			bindTo: '.filter',
@@ -68,68 +68,12 @@ var eCommerce = function(devSettings) {
 	/**
 	 * The Services Object, handles the services.
 	 */
-	var Services = function() {
+	this.Services = function() {
 
 		return {};
 	};
 
-	var Pagination = function() {
-
-		/**
-		 * The default settings of each product.
-		 */
-		var productSettings = {
-			element: '.products',
-			containe: '',
-			perPage: 5,
-			totalPages: 3,
-		};
-
-		return {};
-	}
-	
-	/**
-	 * The Products Object, handles the products.
-	 */
-	var Products = function() {
-
-		/**
-		 * The default settings of each product.
-		 */
-		var productSettings = {
-			bindProductsTo: '.products',
-			containerClass: '',
-			perPage: 5,
-			totalPages: 3,
-			bindLinksTo: '',
-			itemClass: '',
-			paginationClass: '',
-			width: '200px',
-			height: '250px',
-			attributes: ['name', 'price', 'deliveryTime', 'image'],
-			url: '',
-			initStaticData: {},
-		};
-
-		/**
-		 * The DOM element to display the products.
-		 */
-		var productsContainer = {};
-
-		/**
-		 * The DOM element to display the product-links.
-		 */
-		var paginationLinks = {};
-
-		/**
-		 * The products items.
-		 */
-		var currentItems = [];
-
-		/**
-		 * Stores the current page.
-		 */
-		var currentPage = 1;
+	this.Pagination = function() {
 
 		/**
 		 * Stores the total pages.
@@ -137,40 +81,48 @@ var eCommerce = function(devSettings) {
 		var totalPages = 3;
 
 		/**
-		 * The current instance
+		 * Stores the current page.
 		 */
-		var _currentInstance = {};
+		var current = 1;
 
 		/**
-		 * The constructor for the developer products settings.
+		 * Stores the pagination links.
 		 */
+		var paginationLinks = {};
+
+		/**
+		 * Stores the current pagination instance.
+		 */
+		var paginationInstance = {};
+
+		/**
+		 * The default settings of each product.
+		 */
+		var paginationSettings = {
+			element: '.pagination-links',
+			class: 'col-xs-offset-4 col-xs-8',
+			perPage: 5,
+			totalPages: 3,
+		};
+
 		function init(devSettings) {
-			if(typeof devSettings != 'object') {
+			if (typeof devSettings != 'object') {
 				throw new InvalidArgumentException;
 			}
-			_currentInstance = this;
-			productSettings = extend(productSettings, devSettings);
 			
-			totalPages = productSettings.totalPages;
+			paginationInstance = this;
+			paginationLinks = queryElement(paginationSettings.element);
+			paginationLinks = addClass(paginationLinks, paginationSettings.class);
 
-			productsContainer = queryElement(productSettings.bindProductsTo);
-			productsContainer = addClass(productsContainer, productSettings.containerClass);
+			var links = createLinks();
+			paginationLinks.appendChild(links);
+		}
 
-			if(productSettings.bindLinksTo != '')  {
-				paginationLinks = queryElement(productSettings.bindLinksTo);
-
-				var links = createLinks();
-				paginationLinks = addClass(paginationLinks, productSettings.paginationClass);
-				paginationLinks.appendChild(links);
-			}
-
-			eCommerceStyleTagsAdd();
-
-			if(emptyObject(productSettings.initStaticData)) {
-				replaceItemsViaAjax(1);
-			} else {
-				replaceItems(productSettings.initStaticData);
-			}
+		/**
+		 * Sets the current page.
+		 */
+		function setCurrent(pageNumber) {
+			this.current = pageNumber;
 		}
 
 		/**
@@ -249,7 +201,7 @@ var eCommerce = function(devSettings) {
 
 			link.onclick = function(event) {
 				event.preventDefault();
-				replaceItemsViaAjax(currentPage-1);
+				replaceItemsViaAjax(this.current-1);
 			} 
 
 			return li;
@@ -281,17 +233,123 @@ var eCommerce = function(devSettings) {
 
 			link.onclick = function(event) {
 				event.preventDefault();
-				replaceItemsViaAjax(currentPage+1);
+				replaceItemsViaAjax(this.current+1);
 			} 
 
 			return li;
 		}
 
 		/**
+		 * Get the get variables from the url.
+		 */
+		function GET_Vars() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+				vars[key] = value;
+			});
+
+			return vars;
+		}
+
+		/**
+		 * Modifies the get parameter in the url.
+		 */
+		function updateURLParameter(url, param, paramVal) {
+		    var newAdditionalURL = "";
+		    var tempArray = url.split("?");
+		    var baseURL = tempArray[0];
+		    var additionalURL = tempArray[1];
+		    var temp = "";
+		    if (additionalURL) {
+		        tempArray = additionalURL.split("&");
+		        for (var i=0; i<tempArray.length; i++){
+		            if(tempArray[i].split('=')[0] != param){
+		                newAdditionalURL += temp + tempArray[i];
+		                temp = "&";
+		            }
+		        }
+		    }
+
+		    var rows_txt = temp + "" + param + "=" + paramVal;
+		    return baseURL + "?" + newAdditionalURL + rows_txt;
+		}
+
+		return {
+			Settings: init,
+		};
+	}
+	
+	/**
+	 * The Products Object, handles the products.
+	 */
+	this.Products = function(pagination) {
+
+		/**
+		 * The default settings of each product.
+		 */
+		var productSettings = {
+			element: '.products',
+			class: '',
+			itemClass: '',
+			width: '200px',
+			height: '250px',
+			attributes: ['name', 'price', 'deliveryTime', 'image'],
+			url: '',
+			initStaticData: {},
+		};
+
+		/**
+		 * The DOM element to display the products.
+		 */
+		var productsContainer = {};
+
+		/**
+		 * The products items.
+		 */
+		var currentItems = [];
+
+		/**
+		 * The current instance
+		 */
+		var productInstance = {};
+
+		/**
+		 * Stores the pagination object.
+		 */
+		var paginator = {};
+
+		/**
+		 * The constructor for the developer products settings.
+		 */
+		function init(devSettings) {
+			if (typeof devSettings != 'object') {
+				throw new InvalidArgumentException;
+			}
+
+			productInstance = this;
+			productSettings = extend(productSettings, devSettings);
+
+			productsContainer = queryElement(productSettings.element);
+			productsContainer = addClass(productsContainer, productSettings.class);
+
+			if (Container.instance('Pagination'))  {
+				paginator = pagination;
+			}
+
+			eCommerceStyleTagsAdd();
+
+			if (emptyObject(productSettings.initStaticData)) {
+				replaceItemsViaAjax(1);
+			} else {
+				replaceItems(productSettings.initStaticData);
+			}
+		}
+
+		/**
 		 * Clear the container and add new items.
 		 */
 		function replaceItemsViaAjax(pageNumber) {
-			if(notInPageRange(pageNumber) || currentPage == pageNumber) return;
+			if (notInPageRange(pageNumber) || currentPage == pageNumber) return;
 
 			changeUrl(pageNumber);
 
@@ -304,6 +362,9 @@ var eCommerce = function(devSettings) {
 			});
 		}
 
+		/**
+		 * Checks if the given page is in range.
+		 */
 		function notInPageRange(pageNumber) {
 			return pageNumber > totalPages || pageNumber <= 0;
 		}
@@ -312,16 +373,16 @@ var eCommerce = function(devSettings) {
 		 * Replace items in the container.
 		 */
 		function replaceItems(items) {
-			if(! Array.isArray(items) || typeof items[0] == 'string') {
+			if (! Array.isArray(items) || typeof items[0] == 'string') {
 				throw new InvalidArgumentException;
 			}
 
 			var items = wrapAllWithHTML(items, productSettings.itemClass, 'div');
 			productsContainer.innerHTML = items.text;
 			
-			for(var i = 0; i < items.data.length; i++) {
+			for (var i = 0; i < items.data.length; i++) {
 				var product = items.data[i];
-				_currentInstance.AfterLoaded.call(this, product);
+				productInstance.AfterLoaded.call(this, product);
 			}
 		}
 
@@ -394,6 +455,9 @@ var eCommerce = function(devSettings) {
 			};
 		}
 
+		/**
+		 * Add the eCommerce style tags to the DOM.
+		 */
 		function eCommerceStyleTagsAdd() {
 			var head = document.head || document.getElementsByTagName('head')[0];
 			var styleTag = document.createElement('style');
@@ -416,64 +480,77 @@ var eCommerce = function(devSettings) {
 			head.appendChild(styleTag);
 		}
 
-		/**
-		 * Convert camelCase to kebab-case.
-		 */
-		function kebabCase(string) {
-			return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-		}
-
-		/**
-		 * Get the get variables from the url.
-		 */
-		function GET_Vars() {
-			var vars = {};
-			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-				vars[key] = value;
-			});
-
-			return vars;
-		}
-
-		/**
-		 * Modifies the get parameter in the url.
-		 */
-		function updateURLParameter(url, param, paramVal) {
-		    var newAdditionalURL = "";
-		    var tempArray = url.split("?");
-		    var baseURL = tempArray[0];
-		    var additionalURL = tempArray[1];
-		    var temp = "";
-		    if (additionalURL) {
-		        tempArray = additionalURL.split("&");
-		        for (var i=0; i<tempArray.length; i++){
-		            if(tempArray[i].split('=')[0] != param){
-		                newAdditionalURL += temp + tempArray[i];
-		                temp = "&";
-		            }
-		        }
-		    }
-
-		    var rows_txt = temp + "" + param + "=" + paramVal;
-		    return baseURL + "?" + newAdditionalURL + rows_txt;
-		}
-
-		console.log(instances);
-		
-		if(typeof Pagination == 'function') {
-			return {
-				Settings: init,
-				AfterLoaded: function() {},
-			}
-		}
-
-
-		return {
+		return (Container.instance('Pagination')) ? {
 			Settings: init,
-			Pagination: Pagination,
+			AfterLoaded: function() {},
+			Pagination: Container.getInstance('Pagination'),
+		} : {
+			Settings: init,
 			AfterLoaded: function() {},
 		};
 	};
+
+	var Container = (function () {
+
+		/**
+		 * Stores all instances.
+		 */
+		var instances = [];
+
+		/**
+		 * Sets an instance.
+		 */
+		function setInstance(key, instance) {
+			instances[key] = instance;
+		}
+
+		/**
+		 * Gets an instance.
+		 */
+		function getInstance(key) {
+			return instances[key] || null;
+		}
+
+		/**
+		 * Checks if an instance exist.
+		 */
+		function instance(key) {
+			return (instances[key]) ? true : false;
+		}
+
+		/**
+		 * Creates an instance.
+		 */
+		function make(object) {
+			if(! in_array(object, globalSettings.components)) {
+				throw new ComponentNotRegisteredException;
+			}
+
+			var args = Array.prototype.slice.call(arguments, 1);
+			
+			var instance = {};
+
+			if (typeof eCommerceInstance[object] == 'object') {
+				instance = eCommerceInstance[object];
+			} else if(typeof eCommerceInstance[object] == 'function') {
+				instance = new eCommerceInstance[object](...args);
+			} else {
+				instance = new eCommerceInstance[object];
+			}
+
+			Container.setInstance(object, instance);
+
+			return instance; 
+		}
+
+		return {
+			setInstance: setInstance,
+			getInstance: getInstance,
+			instance: instance,
+			instances: instances,
+			make: make,
+		};
+	})();
 
 	// Event for when the module is fully loaded.
 	listen('eCommerceModuleIsFullyLoaded', function() {
@@ -483,50 +560,28 @@ var eCommerce = function(devSettings) {
 
 	function init(devSettings) {
 		// Make sure the developer passed an object, if not give feedback.
-		if(typeof devSettings != 'object') {
+		if (typeof devSettings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
 		globalSettings = extend(globalSettings, devSettings);
-	
-		if (globalSettings.require[0] == null) {
-			throw new NoneWasRequiredException;
+
+		if (globalSettings.components[0] == null) {
+			throw new ComponentsException;
 		}
 
-		eCommerceInstance = this;
-
-		globalSettings.require.forEach(function(object) {
-			eCommerceInstance[object] = factory(object);
-			setInstance(object, eCommerceInstance[object]);
+		globalSettings.components.map(function(component) {
+			Container.make(component);
 		});
-	}
 
-	/**
-	 * Creates an instance.
-	 */
-	function factory(object) {
-		return new eCommerceInstance[object]; 
-	}
-
-	/**
-	 * Sets an instance.
-	 */
-	function setInstance(key, instance) {
-		instances[key] = instance;
-	}
-
-	/**
-	 * Gets an instance.
-	 */
-	function getInstance(key) {
-		return instances[key];
+		initialized = true;
 	}
 
 	/**
 	 * Listen to an event.
 	 */
 	function listen(name, callback) {
-		if(typeof callback !== 'function') {
+		if (typeof callback !== 'function') {
 			throw new InvalidArgumentException;
 		}
 
@@ -544,10 +599,8 @@ var eCommerce = function(devSettings) {
 		}
 
 		if(data != null && data instanceof Array) {
-			var one = data[0] || undefined;
-			var two = data[1] || undefined;
-			var three = data[2] || undefined;
-			return events[name](one, two, three);
+	
+			return events[name](...data);
 		}
 
 		events[name]();
@@ -573,6 +626,19 @@ var eCommerce = function(devSettings) {
 	    }
 
 	    return extended;
+	}
+
+	/**
+	 * Checks for a needle in hystack.
+	 */
+	function in_array(needle, hystack) {
+		if(hystack.constructor !== Array) return;
+
+		for(var i = 0; i <= hystack.length; i++) {
+			if(needle == hystack[i]) return true;	
+		}
+	
+		return false;
 	}
 
 	/**
@@ -625,6 +691,13 @@ var eCommerce = function(devSettings) {
 	}
 
 	/**
+	 * Convert camelCase to kebab-case.
+	 */
+	function kebabCase(string) {
+		return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+	}
+
+	/**
 	 * Checks if a given parameter is an object.
 	 */
 	function isObject(object) {
@@ -640,9 +713,11 @@ var eCommerce = function(devSettings) {
 				console.error(`InvalidArgumentException in ${source} on line ${lineno}`);
 			} else if(error instanceof BadEventCallException) {
 				console.error(`BadEventCallException in ${source} on line ${lineno}`);
-			} else if(error instanceof NoneWasRequiredException) {
-				console.error(`NoneWasRequiredException in ${source} on line ${lineno}, 
+			} else if(error instanceof ComponentsException) {
+				console.error(`ComponentsException, expecting for at least one components, but none was given in ${source} on line ${lineno}, 
 								please add at least one requirement(Products, Services or/and Filter)`);
+			} else if(error instanceof ComponentNotRegisteredException) {
+				console.error(`ComponentNotRegisteredException, components must be registered in order to use them, in ${source} on line ${lineno}`);
 			} else if(error instanceof NodeElementDoesNotExistException) {
 				console.error(`NodeElementDoesNotExistException in ${source} on line ${lineno}, 
 								please select an existing node element.`);
@@ -655,7 +730,7 @@ var eCommerce = function(devSettings) {
 	}
 
 	/**
-	 * minifies the css text.
+	 * Minifies the css text.
 	 */
 	function minify_css(string) {
 	    string = string.replace(/\/\*(?:(?!\*\/)[\s\S])*\*\/|[\r\n\t]+/g, '');
@@ -667,18 +742,20 @@ var eCommerce = function(devSettings) {
 	    return string;
 	}
 
-	// decalre some custom exceptions
+	// Decalring some custom exceptions
 	function InvalidArgumentException() {};
 	function BadEventCallException() {};
-	function NoneWasRequiredException() {};
+	function ComponentsException() {};
+	function ComponentNotRegisteredException() {};
 	function NodeElementDoesNotExistException() {};
 
 	triggerEvent('eCommerceModuleIsFullyLoaded');
 
 	return {
-		Filter: Filter || undefined,
-		Services: Services || undefined,
-		Products: Products || undefined,
+		Filter: Container.make.bind(Container, 'Filter'), 
+		Pagination: Container.make.bind(Container, 'Pagination'),
+		Services: Container.make.bind(Container, 'Services'),
+		Products: Container.make.bind(Container, 'Products'),
 		Settings: init,
 	}
 };
