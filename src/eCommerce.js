@@ -16,13 +16,43 @@ var eCommerce = function(devSettings) {
 	var globalSettings = {
 		cartSessionId: [],
 		importBootstrap: false,
-		require: ['Products', 'Services', 'Filter'],
+		components: ['Products', 'Services', 'Filter', 'Pagination'],
 	};
 
 	/**
-	 * Stores all instances.
+	 * The default settings of each product.
 	 */
-	var instances = [];
+	var productSettings = {
+		element: '.products',
+		class: '',
+		itemClass: '',
+		width: '200px',
+		height: '250px',
+		attributes: ['name', 'price', 'deliveryTime', 'image'],
+		url: '',
+		initStaticData: {},
+	};
+
+	/**
+	 * The default settings of the pagination.
+	 */
+	var paginationSettings = {
+		element: '.pagination-links',
+		class: 'col-xs-offset-4 col-xs-8',
+		perPage: 5,
+		totalPages: 3,
+	};
+
+	/**
+	 * The default settings of the filter.
+	 */
+	var filterSettings = {
+		element: '.filter',
+		data: {},
+		class: 'col-xs-2',
+		width: '',
+		height: '',
+	};
 
 	/**
 	 * Stores all the events.
@@ -30,22 +60,19 @@ var eCommerce = function(devSettings) {
 	var events = [];
 
 	/**
+	 * Checks if the eCommerce has been loaded.
+	 */
+	var initialized = false;
+
+	/**
 	 * Stores the current ecommerce instance.
 	 */
-	var eCommerceInstance = {};
+	var eCommerceInstance = this;
 
 	/**
 	 * The Filter Object, handles the filter of the products/services.
 	 */
-	var Filter = function() {
-
-		var filterSettings = {
-			bindTo: '.filter',
-			data: {},
-			class: 'col-xs-2',
-			width: '',
-			height: '',
-		};
+	this.Filter = function() {
 
 		var filterContainer = {};
 
@@ -56,7 +83,7 @@ var eCommerce = function(devSettings) {
 
 			filterSettings = extend(filterSettings, devSettings);
 
-			filterContainer = queryElement(filterSettings.bindTo);
+			filterContainer = queryElement(filterSettings.element);
 			filterContainer = addClass(filterContainer, filterSettings.class);
 		}
 
@@ -68,68 +95,12 @@ var eCommerce = function(devSettings) {
 	/**
 	 * The Services Object, handles the services.
 	 */
-	var Services = function() {
+	this.Services = function() {
 
 		return {};
 	};
 
-	var Pagination = function() {
-
-		/**
-		 * The default settings of each product.
-		 */
-		var productSettings = {
-			element: '.products',
-			containe: '',
-			perPage: 5,
-			totalPages: 3,
-		};
-
-		return {};
-	}
-	
-	/**
-	 * The Products Object, handles the products.
-	 */
-	var Products = function() {
-
-		/**
-		 * The default settings of each product.
-		 */
-		var productSettings = {
-			bindProductsTo: '.products',
-			containerClass: '',
-			perPage: 5,
-			totalPages: 3,
-			bindLinksTo: '',
-			itemClass: '',
-			paginationClass: '',
-			width: '200px',
-			height: '250px',
-			attributes: ['name', 'price', 'deliveryTime', 'image'],
-			url: '',
-			initStaticData: {},
-		};
-
-		/**
-		 * The DOM element to display the products.
-		 */
-		var productsContainer = {};
-
-		/**
-		 * The DOM element to display the product-links.
-		 */
-		var paginationLinks = {};
-
-		/**
-		 * The products items.
-		 */
-		var currentItems = [];
-
-		/**
-		 * Stores the current page.
-		 */
-		var currentPage = 1;
+	this.Pagination = function() {
 
 		/**
 		 * Stores the total pages.
@@ -137,51 +108,97 @@ var eCommerce = function(devSettings) {
 		var totalPages = 3;
 
 		/**
-		 * The current instance
+		 * Stores the current page.
 		 */
-		var _currentInstance = {};
+		var current = 1;
 
 		/**
-		 * The constructor for the developer products settings.
+		 * Stores the pagination links.
 		 */
+		var paginationLinks = {};
+
+		/**
+		 * Stores the current pagination instance.
+		 */
+		var paginationInstance = {};
+
+		/**
+		 * Stores the next button DOM element.
+		 */
+		var next = {};
+
+		/**
+		 * Stores the previous button DOM element.
+		 */
+		var previous = {};
+
+		/**
+		 * Stores the pages buttons DOM elements.
+		 */
+		var pages = {};
+
 		function init(devSettings) {
-			if(typeof devSettings != 'object') {
+			if (typeof devSettings != 'object') {
 				throw new InvalidArgumentException;
 			}
-			_currentInstance = this;
-			productSettings = extend(productSettings, devSettings);
 			
-			totalPages = productSettings.totalPages;
+			paginationInstance = this;
+			paginationLinks = queryElement(paginationSettings.element);
+			paginationLinks = addClass(paginationLinks, paginationSettings.class);
 
-			productsContainer = queryElement(productSettings.bindProductsTo);
-			productsContainer = addClass(productsContainer, productSettings.containerClass);
+			var links = createLinks();
+			bindEventListeners(links);
+			paginationLinks.appendChild(links);
+		}
 
-			if(productSettings.bindLinksTo != '')  {
-				paginationLinks = queryElement(productSettings.bindLinksTo);
-
-				var links = createLinks();
-				paginationLinks = addClass(paginationLinks, productSettings.paginationClass);
-				paginationLinks.appendChild(links);
+		function bindEventListeners(links) {
+			next.childNodes[0].onclick = function(event) {
+				event.preventDefault();
+				Container.getInstance('Products').replaceItems(current+1);
+				setCurrent(current+1);
 			}
 
-			eCommerceStyleTagsAdd();
-
-			if(emptyObject(productSettings.initStaticData)) {
-				replaceItemsViaAjax(1);
-			} else {
-				replaceItems(productSettings.initStaticData);
+			previous.childNodes[0].onclick = function(event) {
+				event.preventDefault();
+				Container.getInstance('Products').replaceItems(current-1);
+				setCurrent(current-1);
 			}
+
+			for(var i = 0; i < pages.length; i++) {
+				pages[i].childNodes[0].onclick = function(event) {
+					event.preventDefault();
+					var pageNumber = this.getAttribute('data-page-nr');
+					Container.getInstance('Products').replaceItems(pageNumber);
+					setCurrent(pageNumber);
+				}
+			}
+		}
+
+		/**
+		 * Sets the current page.
+		 */
+		function setCurrent(pageNumber) {
+			if(notInPageRange(pageNumber)) return;
+			current = pageNumber;
+			changeUrl(pageNumber);
+		}
+
+		/**
+		 * Gets the current page.
+		 */
+		function getCurrent() {
+			return current;
 		}
 
 		/**
 		 * Creates the pagination links.
 		 */
 		function createLinks() {	
-			
 			var ul = document.createElement('ul');
-			var previous = createPreviousButton();
-			var pages = createPageLinks();
-			var next = createNextButton();
+			
+			pages = createPageLinks();
+			previous = createPreviousButton();
+			next = createNextButton();
 
 			ul.className = 'pagination';
 			ul.appendChild(previous);
@@ -211,12 +228,6 @@ var eCommerce = function(devSettings) {
 				link.innerHTML = i;
 				pageItem.appendChild(link);
 				pages.push(pageItem);
-
-				link.onclick = function(e) {
-					e.preventDefault();
-
-					replaceItemsViaAjax(this.getAttribute('data-page-nr'));
-				};
 			}
 
 			return pages;
@@ -236,7 +247,7 @@ var eCommerce = function(devSettings) {
 			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			link.setAttribute('href', '#');
+			link.setAttribute('href', '');
 			link.setAttribute('aria-label', 'Previous');
 			span1.setAttribute('aria-hidden', 'true');
 
@@ -246,11 +257,6 @@ var eCommerce = function(devSettings) {
 			link.appendChild(span1);
 			link.appendChild(span2);
 			li.appendChild(link);
-
-			link.onclick = function(event) {
-				event.preventDefault();
-				replaceItemsViaAjax(currentPage-1);
-			} 
 
 			return li;
 		}
@@ -268,7 +274,7 @@ var eCommerce = function(devSettings) {
 			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			link.setAttribute('href', '#');
+			link.setAttribute('href', '');
 			link.setAttribute('aria-label', 'Next');
 			span1.setAttribute('aria-hidden', 'true');
 
@@ -279,50 +285,16 @@ var eCommerce = function(devSettings) {
 			link.appendChild(span2);
 			li.appendChild(link);
 
-			link.onclick = function(event) {
-				event.preventDefault();
-				replaceItemsViaAjax(currentPage+1);
-			} 
+			next = link; 
 
 			return li;
 		}
 
 		/**
-		 * Clear the container and add new items.
+		 * Checks if the given page is in range.
 		 */
-		function replaceItemsViaAjax(pageNumber) {
-			if(notInPageRange(pageNumber) || currentPage == pageNumber) return;
-
-			changeUrl(pageNumber);
-
-			var request = getItems(pageNumber);
-
-			request.then(function(items) {
-				replaceItems(items);
-			}).catch(function(error) {
-
-			});
-		}
-
 		function notInPageRange(pageNumber) {
 			return pageNumber > totalPages || pageNumber <= 0;
-		}
-
-		/**
-		 * Replace items in the container.
-		 */
-		function replaceItems(items) {
-			if(! Array.isArray(items) || typeof items[0] == 'string') {
-				throw new InvalidArgumentException;
-			}
-
-			var items = wrapAllWithHTML(items, productSettings.itemClass, 'div');
-			productsContainer.innerHTML = items.text;
-			
-			for(var i = 0; i < items.data.length; i++) {
-				var product = items.data[i];
-				_currentInstance.AfterLoaded.call(this, product);
-			}
 		}
 
 		/**
@@ -330,97 +302,7 @@ var eCommerce = function(devSettings) {
 		 */
 		function changeUrl(pageNumber) {
 			pageNumber =  pageNumber || GET_Vars()['page'];
-			currentPage = pageNumber;
-			window.history.replaceState('', '', updateURLParameter(window.location.href, "page", pageNumber));
-		}
-
-		/**
-		 * Makes an Ajax call to the server.
-		 */
-		function getItems(pageNumber) {
-			return new Promise(function(resolve, reject) {
-				var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
-
-				xhr.open('GET', productSettings.url + '?page='+ pageNumber, true); 
-
-				xhr.onreadystatechange = function() {
-					if(this.status == 200 && this.readyState == 4) {
-						currentItems = JSON.parse(this.responseText);
-						resolve(currentItems);
-					}
-				};
-
-				xhr.onerror = reject;
-
-				xhr.send(null);
-			});
-		}
-
-		/**
-		 * Wrap all the items with specifc tag and classname.
-		 */
-		function wrapAllWithHTML(items, className, tagType) {
-			className = className || null;
-			className = (className) ? 'product ' + className : 'product';
-			
-			var text = '';
-
-			items = items.map(function(product, index) {
-				var item = document.createElement(tagType);
-				item = addClass(item, className);
-
-				for(var prop in product) {
-					if(productSettings.attributes.indexOf(prop) == -1) {
-						continue;
-					}
-
-					var tag = document.createElement(tagType);
-					tag.innerHTML = product[prop] || '';
-					tag.className = 'product-' + kebabCase(prop);
-					item.appendChild(tag);
-				}
-
-				var temp = document.createElement(tagType);
-				temp.appendChild(item);
-				
-				text += temp.innerHTML + "\n";
-
-				return product;
-			});
-
-			return {
-				"data": items,
-				"text": text
-			};
-		}
-
-		function eCommerceStyleTagsAdd() {
-			var head = document.head || document.getElementsByTagName('head')[0];
-			var styleTag = document.createElement('style');
-			var CSS = `
-				.product {
-					margin: 15px 3px;
-					border: 1px solid #e4e4e4;
-					width: ${productSettings.width};
-					height: ${productSettings.height};
-				}
-			`;
-		    
-		    // pipe it through the minfier
-		    CSS = minify_css(CSS);
-		    // adding it to the styletag
-		    styleTag.innerHTML= CSS;
-		    // give an id to recognize the style tag
-			styleTag.setAttribute('id', 'eCommerce');
-			// appending that style tag to the DOM head tag
-			head.appendChild(styleTag);
-		}
-
-		/**
-		 * Convert camelCase to kebab-case.
-		 */
-		function kebabCase(string) {
-			return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+			window.history.replaceState('', '', updateURLParameter(window.location.href, 'page', pageNumber));
 		}
 
 		/**
@@ -444,36 +326,345 @@ var eCommerce = function(devSettings) {
 		    var baseURL = tempArray[0];
 		    var additionalURL = tempArray[1];
 		    var temp = "";
+
 		    if (additionalURL) {
 		        tempArray = additionalURL.split("&");
-		        for (var i=0; i<tempArray.length; i++){
-		            if(tempArray[i].split('=')[0] != param){
+		        for (var i = 0; i < tempArray.length; i++){
+		            if (tempArray[i].split('=')[0] != param){
 		                newAdditionalURL += temp + tempArray[i];
 		                temp = "&";
 		            }
 		        }
 		    }
 
-		    var rows_txt = temp + "" + param + "=" + paramVal;
-		    return baseURL + "?" + newAdditionalURL + rows_txt;
+		    var rowsText = temp + "" + param + "=" + paramVal;
+		    return baseURL + "?" + newAdditionalURL + rowsText;
 		}
 
-		console.log(instances);
-		
-		if(typeof Pagination == 'function') {
-			return {
-				Settings: init,
-				AfterLoaded: function() {},
-			}
+		function reset() {
+			setCurrent(1);
+			changeUrl(1);
 		}
-
 
 		return {
 			Settings: init,
-			Pagination: Pagination,
+			setCurrent: setCurrent,
+			getCurrent: getCurrent,
+			notInPageRange: notInPageRange,
+			next: next,
+			previous: previous,
+			pages: pages,
+			reset: reset,
+		};
+	}
+	
+	/**
+	 * The Products Object, handles the products.
+	 */
+	this.Products = function() {
+
+		/**
+		 * The DOM element to display the products.
+		 */
+		var productsContainer = {};
+
+		/**
+		 * The products items.
+		 */
+		var currentItems = [];
+
+		/**
+		 * The current instance
+		 */
+		var productInstance = {};
+
+		/**
+		 * Stores the pagination object.
+		 */
+		var paginator = {};
+
+		/**
+		 * The constructor for the developer products settings.
+		 */
+		function init(devSettings) {
+			if (typeof devSettings != 'object') {
+				throw new InvalidArgumentException;
+			}
+
+			productInstance = this;
+			productSettings = extend(productSettings, devSettings);
+
+			productsContainer = queryElement(productSettings.element);
+			productsContainer = addClass(productsContainer, productSettings.class);
+
+			if (Container.instanceExist('Pagination'))  {
+				paginator = Container.getInstance('Pagination');
+				paginator.reset(productSettings.initStaticData);
+
+				var request = getProducts(paginator.getCurrent());
+
+				request.then(function(products) {
+					
+					for (var i = 0; i < products.length; i++) {
+						var product = products[i];
+						productInstance.AfterLoaded.call(this, product);
+					}
+				}).catch(function(e) {
+					console.log(e);
+				});
+			}
+			
+			eCommerceStyleTagsAdd();
+		}
+
+		/**
+		 * Replace items in the container.
+		 */
+		function replaceItems(items) {
+			if (! Array.isArray(items) || typeof items[0] == 'string') {
+				throw new InvalidArgumentException;
+			}
+
+			var items = wrapAllWithHTML(items, productSettings.itemClass, 'div');
+
+			productsContainer.innerHTML = items.text;
+
+			return items;
+		}
+
+		/**
+		 * Makes an Ajax call to the server.
+		 */
+		function getProducts(pageNumber) {
+			return new Promise(function(resolve, reject) {
+				if (paginator.notInPageRange(pageNumber)) {
+					return reject('Not in pagination range');
+				}
+
+				var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+
+				xhr.open('GET', productSettings.url + '?page='+ pageNumber, true); 
+
+				xhr.onreadystatechange = function() {
+					if(this.status == 200 && this.readyState == 4) {
+						currentItems = JSON.parse(this.responseText);
+						replaceItems(currentItems);
+						resolve(currentItems);
+					}
+				};
+
+				xhr.onerror = function(error) {
+					reject(error);
+				};
+
+				xhr.send(null);
+			});
+		}
+
+		/**
+		 * Wrap all the items with specifc tag and classname.
+		 */
+		function wrapAllWithHTML(items, className, tagType) {
+			className = className || null;
+			className = (className) ? 'product ' + className : 'product';
+			
+			var text = '';
+
+			items = items.map(function(product, index) {
+				var item = document.createElement(tagType);
+				item = addClass(item, className);
+
+				var overlay = document.createElement('div');
+				overlay.className = 'product-overlay';
+				item.appendChild(overlay);
+
+				for(var prop in product) {
+					if(productSettings.attributes.indexOf(prop) == -1) {
+						continue;
+					}
+
+					var tag = document.createElement(tagType);
+
+					if(prop == 'image') {
+						var image = document.createElement('img');
+						image.setAttribute('src', product[prop]);
+						item.appendChild(image);
+					} else {
+						tag.innerHTML = product[prop] || '';
+					}
+
+					tag.className = 'product-' + kebabCase(prop);
+					overlay.appendChild(tag);
+				}
+
+				var temp = document.createElement(tagType);
+				temp.appendChild(item);
+				
+				text += temp.innerHTML + "\n";
+
+				return product;
+			});
+
+			return {
+				"data": items,
+				"text": text
+			};
+		}
+
+		/**
+		 * Add the eCommerce style tags to the DOM.
+		 */
+		function eCommerceStyleTagsAdd() {
+			var head = document.head || document.getElementsByTagName('head')[0];
+			var styleTag = document.createElement('style');
+			var CSS = `
+				.product {
+					position: relative;
+					margin: 5px 5px;
+					border: 1px solid #e4e4e4;
+					width: ${productSettings.width};
+					height: ${productSettings.height};
+					cursor: pointer;
+					color: #ffffff;
+					overflow: hidden;
+				}
+
+				.product > .product-overlay {
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					opacity: 0.5;
+					z-index: 5;
+					transition: 1s all;
+					transform: translateX(-250px);
+				}
+
+				.product:hover > .product-overlay {
+					background: rgba(0, 0, 0, 0.45);
+					transform: translateX(0px);
+					opacity: 1;
+					transition: 1s all;
+				}
+
+				.product > img {
+					position: absolute;
+					left: 0;
+					top: 0;
+					width: 100%;
+					height: 100%;
+				}
+
+				.product > .product-image {
+					z-index: 0;
+					position: absolute;
+					top: 0;
+					left: 0;
+				}
+
+				.product > .product-overlay > .product-name, 
+				.product > .product-overlay > .product-price,
+				.product > .product-overlay > .product-delivery-time {
+					z-index: 1;
+					position: relative;
+					text-align: center;
+					margin-top: 25px;
+				}
+			`;
+		    
+		    // pipe it through the minfier
+		    CSS = minify_css(CSS);
+		    // adding it to the styletag
+		    styleTag.innerHTML= CSS;
+		    // give an id to recognize the style tag
+			styleTag.setAttribute('id', 'eCommerce');
+			// appending that style tag to the DOM head tag
+			head.appendChild(styleTag);
+		}
+
+		return {
+			Settings: init,
 			AfterLoaded: function() {},
+			replaceItems: getProducts,
+			Pagination: Container.make('Pagination'),
 		};
 	};
+
+	var Container = (function () {
+
+		/**
+		 * Stores all instances.
+		 */
+		var instances = [];
+
+		/**
+		 * Sets an instance.
+		 */
+		function setInstance(key, instance) {
+			var object = [];
+			object[key] = instance;
+			instances.push(object);
+		}
+
+		/**
+		 * Gets an instance.
+		 */
+		function getInstance(key) {
+			for (var i = 0; i < instances.length; i++) {
+				if(instances[i].hasOwnProperty(key)) return instances[i][key];
+			}
+		
+			return null;
+		}
+
+		/**
+		 * Checks if an instance exist.
+		 */
+		function instanceExist(key) {
+			for (var i = 0; i < instances.length; i++) {
+				if(instances[i].hasOwnProperty(key)) return true;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Creates an instance.
+		 */
+		function make(object) {
+			if(! in_array(object, globalSettings.components)) {
+				throw new ComponentNotRegisteredException;
+			}
+			
+			var args = Array.prototype.slice.call(arguments, 1);
+			
+			var instance = {};
+
+			if (instanceExist(object)) {
+				instance = getInstance(object);
+			} else if (typeof eCommerceInstance[object] == 'object') {
+				instance = eCommerceInstance[object];
+				Container.setInstance(object, instance);
+			} else if (typeof eCommerceInstance[object] == 'function') {
+				instance = new eCommerceInstance[object](...args);
+				Container.setInstance(object, instance);
+			} else {
+				instance = new eCommerceInstance[object];
+				Container.setInstance(object, instance);
+			}
+
+			return instance; 
+		}
+
+		return {
+			setInstance: setInstance,
+			getInstance: getInstance,
+			instanceExist: instanceExist,
+			instances: instances,
+			make: make,
+		};
+	})();
 
 	// Event for when the module is fully loaded.
 	listen('eCommerceModuleIsFullyLoaded', function() {
@@ -483,50 +674,28 @@ var eCommerce = function(devSettings) {
 
 	function init(devSettings) {
 		// Make sure the developer passed an object, if not give feedback.
-		if(typeof devSettings != 'object') {
+		if (typeof devSettings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
 		globalSettings = extend(globalSettings, devSettings);
-	
-		if (globalSettings.require[0] == null) {
-			throw new NoneWasRequiredException;
+
+		if (globalSettings.components[0] == null) {
+			throw new ComponentsException;
 		}
 
-		eCommerceInstance = this;
-
-		globalSettings.require.forEach(function(object) {
-			eCommerceInstance[object] = factory(object);
-			setInstance(object, eCommerceInstance[object]);
+		globalSettings.components.map(function(component) {
+			Container.make(component);
 		});
-	}
 
-	/**
-	 * Creates an instance.
-	 */
-	function factory(object) {
-		return new eCommerceInstance[object]; 
-	}
-
-	/**
-	 * Sets an instance.
-	 */
-	function setInstance(key, instance) {
-		instances[key] = instance;
-	}
-
-	/**
-	 * Gets an instance.
-	 */
-	function getInstance(key) {
-		return instances[key];
+		initialized = true;
 	}
 
 	/**
 	 * Listen to an event.
 	 */
 	function listen(name, callback) {
-		if(typeof callback !== 'function') {
+		if (typeof callback !== 'function') {
 			throw new InvalidArgumentException;
 		}
 
@@ -544,10 +713,8 @@ var eCommerce = function(devSettings) {
 		}
 
 		if(data != null && data instanceof Array) {
-			var one = data[0] || undefined;
-			var two = data[1] || undefined;
-			var three = data[2] || undefined;
-			return events[name](one, two, three);
+	
+			return events[name](...data);
 		}
 
 		events[name]();
@@ -573,6 +740,19 @@ var eCommerce = function(devSettings) {
 	    }
 
 	    return extended;
+	}
+
+	/**
+	 * Checks for a needle in hystack.
+	 */
+	function in_array(needle, hystack) {
+		if(hystack.constructor !== Array) return;
+
+		for(var i = 0; i <= hystack.length; i++) {
+			if(needle == hystack[i]) return true;	
+		}
+	
+		return false;
 	}
 
 	/**
@@ -625,6 +805,13 @@ var eCommerce = function(devSettings) {
 	}
 
 	/**
+	 * Convert camelCase to kebab-case.
+	 */
+	function kebabCase(string) {
+		return string.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+	}
+
+	/**
 	 * Checks if a given parameter is an object.
 	 */
 	function isObject(object) {
@@ -640,9 +827,11 @@ var eCommerce = function(devSettings) {
 				console.error(`InvalidArgumentException in ${source} on line ${lineno}`);
 			} else if(error instanceof BadEventCallException) {
 				console.error(`BadEventCallException in ${source} on line ${lineno}`);
-			} else if(error instanceof NoneWasRequiredException) {
-				console.error(`NoneWasRequiredException in ${source} on line ${lineno}, 
+			} else if(error instanceof ComponentsException) {
+				console.error(`ComponentsException, expecting for at least one components, but none was given in ${source} on line ${lineno}, 
 								please add at least one requirement(Products, Services or/and Filter)`);
+			} else if(error instanceof ComponentNotRegisteredException) {
+				console.error(`ComponentNotRegisteredException, components must be registered in order to use them, in ${source} on line ${lineno}`);
 			} else if(error instanceof NodeElementDoesNotExistException) {
 				console.error(`NodeElementDoesNotExistException in ${source} on line ${lineno}, 
 								please select an existing node element.`);
@@ -655,7 +844,7 @@ var eCommerce = function(devSettings) {
 	}
 
 	/**
-	 * minifies the css text.
+	 * Minifies the css text.
 	 */
 	function minify_css(string) {
 	    string = string.replace(/\/\*(?:(?!\*\/)[\s\S])*\*\/|[\r\n\t]+/g, '');
@@ -667,18 +856,20 @@ var eCommerce = function(devSettings) {
 	    return string;
 	}
 
-	// decalre some custom exceptions
+	// Decalring some custom exceptions
 	function InvalidArgumentException() {};
 	function BadEventCallException() {};
-	function NoneWasRequiredException() {};
+	function ComponentsException() {};
+	function ComponentNotRegisteredException() {};
 	function NodeElementDoesNotExistException() {};
 
 	triggerEvent('eCommerceModuleIsFullyLoaded');
 
 	return {
-		Filter: Filter || undefined,
-		Services: Services || undefined,
-		Products: Products || undefined,
+		Filter: Container.make.bind(Container, 'Filter'), 
+		Pagination: Container.make.bind(Container, 'Pagination'),
+		Services: Container.make.bind(Container, 'Services'),
+		Products: Container.make.bind(Container, 'Products'),
 		Settings: init,
 	}
 };

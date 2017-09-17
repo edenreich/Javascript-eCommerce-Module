@@ -10,31 +10,39 @@ import the script eCommerce.js to your files project.
 ### Configuration
 
 #### Configure the eCommerce:
-- cartSessionId - if you want to give each cart a specific id.
-- require - property to define what kind of modules you will need.
+- components - define the components you will need.
 ```javascript
 	eCommerce.Settings({
-		require: ['Products', 'Services', 'Filter'],
+		components: ['Products', 'Services', 'Filter', 'Pagination'],
 	});
 ```
 
 #### Configure the Products:
-- bindTo - what DOM element should serve as the products container.
-- itemClass - the class name for each product element.
+- element - what DOM element should it be bound to.
+- class - the class name for each product element.
 - width - the fixed width of each product item.
 - height - the fixed height of each product item.
-- only - to be explicit, only property names you specify will be showen inside of a product item.
+- attributes - to be explicit, only attributes names you specify will be showen inside of a product item.
 ```javascript
 eCommerce.Products.Settings({
-	bindProductsTo: '.products',
-	bindLinksTo: '.pagination-links',
-	itemClass: 'col-xs-3',
+	element: '.products',
+	class: 'col-xs-3',
 	width: '200px',
-	height: '250px',
-	only: ['name', 'price', 'deliveryTime'],
-	fetchFrom: 'products.php',
+	height: '280px',
+	attributes: ['name', 'price', 'deliveryTime', 'image'],
+	url: 'products.php',
 });
 ```
+#### Configure the Pagination:
+- element - what DOM element should it be bound to.
+- class - the class name for each product element.
+```javascript
+eCommerce.Pagination.Settings({
+	element: '.pagination-links',
+	class: 'col-xs-offset-4 col-xs-10',
+});
+```
+
 If you want to run something after the products are loaded into the container you may use AfterLoaded callback:
 ```javascript
 eCommerce.Products.AfterLoaded = function(product) {
