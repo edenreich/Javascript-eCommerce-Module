@@ -17,11 +17,36 @@
 <?php 
 	
 	$products = json_encode([
-		['name' => 'Example Product 1', 'price' => 100.00, 'deliveryTime' => '6 days'],
-		['name' => 'Example Product 2', 'price' => 120.00, 'deliveryTime' => '6 days'],
-		['name' => 'Example Product 3', 'price' => 105.00, 'deliveryTime' => '6 days'],
-		['name' => 'Example Product 4', 'price' => 105.00, 'deliveryTime' => '6 days'],
-		['name' => 'Example Product 5', 'price' => 105.00, 'deliveryTime' => '6 days'],
+		[
+			'name' => 'Example Product 1', 
+			'price' => 100.00, 
+			'deliveryTime' => '6 days', 
+			'image' => 'http://lorempixel.com/200/280/sports/'
+		],
+		[
+			'name' => 'Example Product 2', 
+			'price' => 120.00, 
+			'deliveryTime' => '6 days', 
+			'image' => 'http://lorempixel.com/200/280/sports/'
+		],
+		[
+			'name' => 'Example Product 3', 
+			'price' => 105.00, 
+			'deliveryTime' => '6 days',
+			'image' => 'http://lorempixel.com/200/280/sports/'
+		],
+		[
+			'name' => 'Example Product 4', 
+			'price' => 105.00, 
+			'deliveryTime' => '6 days',
+			'image' => 'http://lorempixel.com/200/280/sports/'
+		],
+		[
+			'name' => 'Example Product 5', 
+			'price' => 105.00, 
+			'deliveryTime' => '6 days',
+			'image' => 'http://lorempixel.com/200/280/sports/'
+		],
 	]); 
 
 ?>

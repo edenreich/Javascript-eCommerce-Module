@@ -471,15 +471,27 @@ var eCommerce = function(devSettings) {
 				var item = document.createElement(tagType);
 				item = addClass(item, className);
 
+				var overlay = document.createElement('div');
+				overlay.className = 'product-overlay';
+				item.appendChild(overlay);
+
 				for(var prop in product) {
 					if(productSettings.attributes.indexOf(prop) == -1) {
 						continue;
 					}
 
 					var tag = document.createElement(tagType);
-					tag.innerHTML = product[prop] || '';
+
+					if(prop == 'image') {
+						var image = document.createElement('img');
+						image.setAttribute('src', product[prop]);
+						item.appendChild(image);
+					} else {
+						tag.innerHTML = product[prop] || '';
+					}
+
 					tag.className = 'product-' + kebabCase(prop);
-					item.appendChild(tag);
+					overlay.appendChild(tag);
 				}
 
 				var temp = document.createElement(tagType);
@@ -504,10 +516,56 @@ var eCommerce = function(devSettings) {
 			var styleTag = document.createElement('style');
 			var CSS = `
 				.product {
-					margin: 15px 3px;
+					position: relative;
+					margin: 5px 5px;
 					border: 1px solid #e4e4e4;
 					width: ${productSettings.width};
 					height: ${productSettings.height};
+					cursor: pointer;
+					color: #ffffff;
+					overflow: hidden;
+				}
+
+				.product > .product-overlay {
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					opacity: 0.5;
+					z-index: 5;
+					transform: translateX(-250px);
+				}
+
+				.product:hover > .product-overlay {
+					background: rgba(0, 0, 0, 0.45);
+					transform: translateX(0px);
+					opacity: 1;
+					transition: 1s all;
+				}
+
+				.product > img {
+					position: absolute;
+					left: 0;
+					top: 0;
+					width: 100%;
+					height: 100%;
+				}
+
+				.product > .product-image {
+					z-index: 0;
+					position: absolute;
+					top: 0;
+					left: 0;
+				}
+
+				.product > .product-overlay > .product-name, 
+				.product > .product-overlay > .product-price,
+				.product > .product-overlay > .product-delivery-time {
+					z-index: 1;
+					position: relative;
+					text-align: center;
+					margin-top: 25px;
 				}
 			`;
 		    
