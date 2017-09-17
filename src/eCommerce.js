@@ -401,17 +401,7 @@ var eCommerce = function(devSettings) {
 				paginator = Container.getInstance('Pagination');
 				paginator.reset(productSettings.initStaticData);
 
-				var request = getProducts(paginator.getCurrent());
-
-				request.then(function(products) {
-					
-					for (var i = 0; i < products.length; i++) {
-						var product = products[i];
-						productInstance.AfterLoaded.call(this, product);
-					}
-				}).catch(function(e) {
-					console.log(e);
-				});
+				getProducts(paginator.getCurrent());
 			}
 			
 			eCommerceStyleTagsAdd();
@@ -448,6 +438,12 @@ var eCommerce = function(devSettings) {
 				xhr.onreadystatechange = function() {
 					if(this.status == 200 && this.readyState == 4) {
 						currentItems = JSON.parse(this.responseText);
+						
+						for (var i = 0; i < currentItems.length; i++) {
+							var product = currentItems[i];
+							productInstance.AfterLoaded.call(this, product);
+						}
+
 						replaceItems(currentItems);
 						resolve(currentItems);
 					}
