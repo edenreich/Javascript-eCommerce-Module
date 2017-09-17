@@ -20,6 +20,20 @@ var eCommerce = function(devSettings) {
 	};
 
 	/**
+	 * The default settings of each product.
+	 */
+	var productSettings = {
+		element: '.products',
+		class: '',
+		itemClass: '',
+		width: '200px',
+		height: '250px',
+		attributes: ['name', 'price', 'deliveryTime', 'image'],
+		url: '',
+		initStaticData: {},
+	};
+
+	/**
 	 * Stores all the events.
 	 */
 	var events = [];
@@ -96,6 +110,21 @@ var eCommerce = function(devSettings) {
 		var paginationInstance = {};
 
 		/**
+		 * Stores the next button DOM element.
+		 */
+		var next = {};
+
+		/**
+		 * Stores the previous button DOM element.
+		 */
+		var previous = {};
+
+		/**
+		 * Stores the pages buttons DOM elements.
+		 */
+		var pages = {};
+
+		/**
 		 * The default settings of each product.
 		 */
 		var paginationSettings = {
@@ -115,25 +144,58 @@ var eCommerce = function(devSettings) {
 			paginationLinks = addClass(paginationLinks, paginationSettings.class);
 
 			var links = createLinks();
+			bindEventListeners(links);
 			paginationLinks.appendChild(links);
+		}
+
+		function bindEventListeners(links) {
+			next.childNodes[0].onclick = function(event) {
+				event.preventDefault();
+				Container.getInstance('Products').replaceItems(current+1);
+				setCurrent(current+1);
+			}
+
+			previous.childNodes[0].onclick = function(event) {
+				event.preventDefault();
+				Container.getInstance('Products').replaceItems(current-1);
+				setCurrent(current-1);
+			}
+
+			for(var i = 0; i < pages.length; i++) {
+				pages[i].childNodes[0].onclick = function(event) {
+					event.preventDefault();
+					var pageNumber = this.getAttribute('data-page-nr');
+					Container.getInstance('Products').replaceItems(pageNumber);
+					setCurrent(pageNumber);
+				}
+			}
 		}
 
 		/**
 		 * Sets the current page.
 		 */
 		function setCurrent(pageNumber) {
-			this.current = pageNumber;
+			if(notInPageRange(pageNumber)) return;
+			current = pageNumber;
+			changeUrl(pageNumber);
+		}
+
+		/**
+		 * Gets the current page.
+		 */
+		function getCurrent() {
+			return current;
 		}
 
 		/**
 		 * Creates the pagination links.
 		 */
 		function createLinks() {	
-			
 			var ul = document.createElement('ul');
-			var previous = createPreviousButton();
-			var pages = createPageLinks();
-			var next = createNextButton();
+			
+			pages = createPageLinks();
+			previous = createPreviousButton();
+			next = createNextButton();
 
 			ul.className = 'pagination';
 			ul.appendChild(previous);
@@ -163,12 +225,6 @@ var eCommerce = function(devSettings) {
 				link.innerHTML = i;
 				pageItem.appendChild(link);
 				pages.push(pageItem);
-
-				link.onclick = function(e) {
-					e.preventDefault();
-
-					replaceItemsViaAjax(this.getAttribute('data-page-nr'));
-				};
 			}
 
 			return pages;
@@ -199,11 +255,6 @@ var eCommerce = function(devSettings) {
 			link.appendChild(span2);
 			li.appendChild(link);
 
-			link.onclick = function(event) {
-				event.preventDefault();
-				replaceItemsViaAjax(this.current-1);
-			} 
-
 			return li;
 		}
 
@@ -231,12 +282,24 @@ var eCommerce = function(devSettings) {
 			link.appendChild(span2);
 			li.appendChild(link);
 
-			link.onclick = function(event) {
-				event.preventDefault();
-				replaceItemsViaAjax(this.current+1);
-			} 
+			next = link; 
 
 			return li;
+		}
+
+		/**
+		 * Checks if the given page is in range.
+		 */
+		function notInPageRange(pageNumber) {
+			return pageNumber > totalPages || pageNumber <= 0;
+		}
+
+		/**
+		 * Changes the url to a given page number.
+		 */
+		function changeUrl(pageNumber) {
+			pageNumber =  pageNumber || GET_Vars()['page'];
+			window.history.replaceState('', '', updateURLParameter(window.location.href, 'page', pageNumber));
 		}
 
 		/**
@@ -260,6 +323,7 @@ var eCommerce = function(devSettings) {
 		    var baseURL = tempArray[0];
 		    var additionalURL = tempArray[1];
 		    var temp = "";
+
 		    if (additionalURL) {
 		        tempArray = additionalURL.split("&");
 		        for (var i=0; i<tempArray.length; i++){
@@ -270,33 +334,31 @@ var eCommerce = function(devSettings) {
 		        }
 		    }
 
-		    var rows_txt = temp + "" + param + "=" + paramVal;
-		    return baseURL + "?" + newAdditionalURL + rows_txt;
+		    var rowsText = temp + "" + param + "=" + paramVal;
+		    return baseURL + "?" + newAdditionalURL + rowsText;
+		}
+
+		function reset() {
+			setCurrent(1);
+			changeUrl(1);
 		}
 
 		return {
 			Settings: init,
+			setCurrent: setCurrent,
+			getCurrent: getCurrent,
+			notInPageRange: notInPageRange,
+			next: next,
+			previous: previous,
+			pages: pages,
+			reset: reset,
 		};
 	}
 	
 	/**
 	 * The Products Object, handles the products.
 	 */
-	this.Products = function(pagination) {
-
-		/**
-		 * The default settings of each product.
-		 */
-		var productSettings = {
-			element: '.products',
-			class: '',
-			itemClass: '',
-			width: '200px',
-			height: '250px',
-			attributes: ['name', 'price', 'deliveryTime', 'image'],
-			url: '',
-			initStaticData: {},
-		};
+	this.Products = function() {
 
 		/**
 		 * The DOM element to display the products.
@@ -333,40 +395,23 @@ var eCommerce = function(devSettings) {
 			productsContainer = addClass(productsContainer, productSettings.class);
 
 			if (Container.instanceExist('Pagination'))  {
-				paginator = pagination;
-			}
+				paginator = Container.getInstance('Pagination');
+				paginator.reset(productSettings.initStaticData);
 
+				var request = getProducts(paginator.getCurrent());
+
+				request.then(function(products) {
+					
+					for (var i = 0; i < products.length; i++) {
+						var product = products[i];
+						productInstance.AfterLoaded.call(this, product);
+					}
+				}).catch(function(e) {
+					console.log(e);
+				});
+			}
+			
 			eCommerceStyleTagsAdd();
-
-			if (emptyObject(productSettings.initStaticData)) {
-				replaceItemsViaAjax(1);
-			} else {
-				replaceItems(productSettings.initStaticData);
-			}
-		}
-
-		/**
-		 * Clear the container and add new items.
-		 */
-		function replaceItemsViaAjax(pageNumber) {
-			if (notInPageRange(pageNumber) || currentPage == pageNumber) return;
-
-			changeUrl(pageNumber);
-
-			var request = getItems(pageNumber);
-
-			request.then(function(items) {
-				replaceItems(items);
-			}).catch(function(error) {
-
-			});
-		}
-
-		/**
-		 * Checks if the given page is in range.
-		 */
-		function notInPageRange(pageNumber) {
-			return pageNumber > totalPages || pageNumber <= 0;
 		}
 
 		/**
@@ -378,28 +423,21 @@ var eCommerce = function(devSettings) {
 			}
 
 			var items = wrapAllWithHTML(items, productSettings.itemClass, 'div');
-			productsContainer.innerHTML = items.text;
-			
-			for (var i = 0; i < items.data.length; i++) {
-				var product = items.data[i];
-				productInstance.AfterLoaded.call(this, product);
-			}
-		}
 
-		/**
-		 * Changes the url to a given page number.
-		 */
-		function changeUrl(pageNumber) {
-			pageNumber =  pageNumber || GET_Vars()['page'];
-			currentPage = pageNumber;
-			window.history.replaceState('', '', updateURLParameter(window.location.href, "page", pageNumber));
+			productsContainer.innerHTML = items.text;
+
+			return items;
 		}
 
 		/**
 		 * Makes an Ajax call to the server.
 		 */
-		function getItems(pageNumber) {
+		function getProducts(pageNumber) {
 			return new Promise(function(resolve, reject) {
+				if (paginator.notInPageRange(pageNumber)) {
+					return reject('Not in pagination range');
+				}
+
 				var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
 
 				xhr.open('GET', productSettings.url + '?page='+ pageNumber, true); 
@@ -407,11 +445,14 @@ var eCommerce = function(devSettings) {
 				xhr.onreadystatechange = function() {
 					if(this.status == 200 && this.readyState == 4) {
 						currentItems = JSON.parse(this.responseText);
+						replaceItems(currentItems);
 						resolve(currentItems);
 					}
 				};
 
-				xhr.onerror = reject;
+				xhr.onerror = function(error) {
+					reject(error);
+				};
 
 				xhr.send(null);
 			});
@@ -480,13 +521,11 @@ var eCommerce = function(devSettings) {
 			head.appendChild(styleTag);
 		}
 
-		return (Container.instanceExist('Pagination')) ? {
+		return {
 			Settings: init,
 			AfterLoaded: function() {},
-			Pagination: Container.getInstance('Pagination'),
-		} : {
-			Settings: init,
-			AfterLoaded: function() {},
+			replaceItems: getProducts,
+			Pagination: Container.make('Pagination'),
 		};
 	};
 
@@ -544,13 +583,14 @@ var eCommerce = function(devSettings) {
 				instance = getInstance(object);
 			} else if (typeof eCommerceInstance[object] == 'object') {
 				instance = eCommerceInstance[object];
+				Container.setInstance(object, instance);
 			} else if (typeof eCommerceInstance[object] == 'function') {
 				instance = new eCommerceInstance[object](...args);
+				Container.setInstance(object, instance);
 			} else {
 				instance = new eCommerceInstance[object];
+				Container.setInstance(object, instance);
 			}
-
-			Container.setInstance(object, instance);
 
 			return instance; 
 		}
