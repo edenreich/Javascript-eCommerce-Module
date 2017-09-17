@@ -21,31 +21,31 @@
 			'name' => 'Example Product 1', 
 			'price' => 100.00, 
 			'deliveryTime' => '6 days', 
-			'image' => 'http://lorempixel.com/200/280/sports/'
+			'image' => 'images/1.jpg'
 		],
 		[
 			'name' => 'Example Product 2', 
 			'price' => 120.00, 
 			'deliveryTime' => '6 days', 
-			'image' => 'http://lorempixel.com/200/280/sports/'
+			'image' => 'images/2.jpg'
 		],
 		[
 			'name' => 'Example Product 3', 
 			'price' => 105.00, 
 			'deliveryTime' => '6 days',
-			'image' => 'http://lorempixel.com/200/280/sports/'
+			'image' => 'images/3.jpg'
 		],
 		[
 			'name' => 'Example Product 4', 
 			'price' => 105.00, 
 			'deliveryTime' => '6 days',
-			'image' => 'http://lorempixel.com/200/280/sports/'
+			'image' => 'images/4.jpg'
 		],
 		[
 			'name' => 'Example Product 5', 
 			'price' => 105.00, 
 			'deliveryTime' => '6 days',
-			'image' => 'http://lorempixel.com/200/280/sports/'
+			'image' => 'images/5.jpg'
 		],
 	]); 
 

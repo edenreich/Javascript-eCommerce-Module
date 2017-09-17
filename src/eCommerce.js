@@ -34,6 +34,27 @@ var eCommerce = function(devSettings) {
 	};
 
 	/**
+	 * The default settings of the pagination.
+	 */
+	var paginationSettings = {
+		element: '.pagination-links',
+		class: 'col-xs-offset-4 col-xs-8',
+		perPage: 5,
+		totalPages: 3,
+	};
+
+	/**
+	 * The default settings of the filter.
+	 */
+	var filterSettings = {
+		element: '.filter',
+		data: {},
+		class: 'col-xs-2',
+		width: '',
+		height: '',
+	};
+
+	/**
 	 * Stores all the events.
 	 */
 	var events = [];
@@ -53,14 +74,6 @@ var eCommerce = function(devSettings) {
 	 */
 	this.Filter = function() {
 
-		var filterSettings = {
-			bindTo: '.filter',
-			data: {},
-			class: 'col-xs-2',
-			width: '',
-			height: '',
-		};
-
 		var filterContainer = {};
 
 		function init(devSettings) {
@@ -70,7 +83,7 @@ var eCommerce = function(devSettings) {
 
 			filterSettings = extend(filterSettings, devSettings);
 
-			filterContainer = queryElement(filterSettings.bindTo);
+			filterContainer = queryElement(filterSettings.element);
 			filterContainer = addClass(filterContainer, filterSettings.class);
 		}
 
@@ -123,16 +136,6 @@ var eCommerce = function(devSettings) {
 		 * Stores the pages buttons DOM elements.
 		 */
 		var pages = {};
-
-		/**
-		 * The default settings of each product.
-		 */
-		var paginationSettings = {
-			element: '.pagination-links',
-			class: 'col-xs-offset-4 col-xs-8',
-			perPage: 5,
-			totalPages: 3,
-		};
 
 		function init(devSettings) {
 			if (typeof devSettings != 'object') {
@@ -244,7 +247,7 @@ var eCommerce = function(devSettings) {
 			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			link.setAttribute('href', '#');
+			link.setAttribute('href', '');
 			link.setAttribute('aria-label', 'Previous');
 			span1.setAttribute('aria-hidden', 'true');
 
@@ -271,7 +274,7 @@ var eCommerce = function(devSettings) {
 			link.className = 'page-link';
 			span2.className = 'sr-only';
 
-			link.setAttribute('href', '#');
+			link.setAttribute('href', '');
 			link.setAttribute('aria-label', 'Next');
 			span1.setAttribute('aria-hidden', 'true');
 
@@ -326,8 +329,8 @@ var eCommerce = function(devSettings) {
 
 		    if (additionalURL) {
 		        tempArray = additionalURL.split("&");
-		        for (var i=0; i<tempArray.length; i++){
-		            if(tempArray[i].split('=')[0] != param){
+		        for (var i = 0; i < tempArray.length; i++){
+		            if (tempArray[i].split('=')[0] != param){
 		                newAdditionalURL += temp + tempArray[i];
 		                temp = "&";
 		            }
@@ -534,6 +537,7 @@ var eCommerce = function(devSettings) {
 					height: 100%;
 					opacity: 0.5;
 					z-index: 5;
+					transition: 1s all;
 					transform: translateX(-250px);
 				}
 
