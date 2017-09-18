@@ -7,7 +7,7 @@
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<h1 class="col-xs-offset-1">eCommerce</h1>
+<h1 class="col-xs-offset-1"><a href="/demo">eCommerce</a></h1>
 <hr>
 
 <div class="filter"></div>
@@ -72,7 +72,7 @@
 
 		eCommerce.Pagination().Settings({
 			element: '.pagination-links',
-			class: 'col-xs-offset-4 col-xs-10',
+			class: 'col-xs-offset-4 col-xs-8',
 		});
 
 		eCommerce.Products().AfterLoaded = function (product) {
