@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>eCommerce Module</title>
-	<script type="text/javascript" src="../src/eCommerce.js"></script>
+	<script type="text/javascript" src="/demo/js/bundle.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -53,13 +53,11 @@
 <script type="text/javascript">
 	(function(eCommerce) {
 
-		var eCommerce = new eCommerce;
-		
-		eCommerce.Settings({
+		var eCommerce = new eCommerce({
 			components: ['Products', 'Services', 'Filter', 'Pagination']
 		});
 
-		eCommerce.Products().Settings({
+		eCommerce.Products.setup({
 			element: '.products',
 			class: 'col-xs-9',
 			itemClass: 'col-xs-3',
@@ -67,19 +65,19 @@
 			height: '280px',
 			attributes: ['name', 'price', 'deliveryTime', 'image'],
 			url: 'products.php',
-			initStaticData: <?php echo $products ?>
+			initStaticData: <?php echo $products ?>,
 		});
 
-		eCommerce.Pagination().Settings({
+		eCommerce.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-4 col-xs-8',
 		});
 
-		eCommerce.Products().AfterLoaded = function (product) {
-			// run something after the products has been loaded.
+		eCommerce.Products.AfterLoaded = function (product) {
+			console.log(product);
 		};
 
-		eCommerce.Filter().Settings({
+		eCommerce.Filter.setup({
 			bindTo: '.filter',
 			class: 'col-xs-3',
 			width: '',
