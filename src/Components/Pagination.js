@@ -66,25 +66,40 @@ class Pagination
 	 */
 	bindEventListeners(links) 
 	{
+		let instance = this;
+		let Products = Container.getInstance('Products');
+
 		this.next.childNodes[0].onclick = function(event) {
 			event.preventDefault();
-			Container.getInstance('Products').replaceItems(this.current+1);
-			setCurrent(current+1);
-		}
+			
+			Products.getProductsByPage(instance.current+1).then(function(products) {
+				Products.replaceItems(products);
+			});
+
+			instance.setCurrent(instance.current+1);
+		};
 
 		this.previous.childNodes[0].onclick = function(event) {
 			event.preventDefault();
-			Container.getInstance('Products').replaceItems(this.current-1);
-			setCurrent(current-1);
-		}
+			
+			Products.getProductsByPage(instance.current-1).then(function(products) {
+				Products.replaceItems(products);
+			});
+
+			instance.setCurrent(instance.current-1);
+		};
 
 		for(var i = 0; i < this.pages.length; i++) {
 			this.pages[i].childNodes[0].onclick = function(event) {
 				event.preventDefault();
 				var pageNumber = this.getAttribute('data-page-nr');
-				Container.getInstance('Products').replaceItems(pageNumber);
-				setCurrent(pageNumber);
-			}
+				
+				Products.getProductsByPage(pageNumber).then(function(products) {
+					Products.replaceItems(products);
+				});
+				
+				instance.setCurrent(pageNumber);
+			};
 		}
 	}
 
@@ -112,7 +127,8 @@ class Pagination
 	/**
 	 * Creates the pagination links.
 	 */
-	createLinks() {	
+	createLinks() 
+	{	
 		let ul = document.createElement('ul');
 		
 		this.pages = this.createPageLinks();
@@ -217,7 +233,7 @@ class Pagination
 	 */
 	notInPageRange(pageNumber) 
 	{
-		return pageNumber > this.totalPages || pageNumber <= 0;
+		return (pageNumber > this.totalPages || pageNumber <= 0) || isNaN(pageNumber);
 	}
 
 	/**

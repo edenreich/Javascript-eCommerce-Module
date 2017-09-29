@@ -13,7 +13,7 @@ let defaultSettings = {
 	width: '200px',
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
-	url: '',
+	url: 'products.php',
 	initStaticData: {},
 };
 
@@ -24,6 +24,9 @@ let Container;
  */
 class Products 
 {
+	/**
+	 * Initalize the Container and the paginator
+	 */
 	constructor(container, paginator) 
 	{
 		this.setup(defaultSettings);
@@ -40,18 +43,24 @@ class Products
 
 		this.settings = Common.extend(defaultSettings, settings);
 
+		this.setElement(this.settings.element);
+
+		this.addStyleTag();	
+	
 		if (typeof Container == 'undefined') {
 			return;
 		}
 
-		if (Container.instanceExist('Pagination'))  {
+		if (Container.instanceExist('Pagination')) {
 			this.paginator.reset(this.settings.initStaticData);
-			this.getProducts(this.paginator.getCurrent());
+			let request = this.getProductsByPage(this.paginator.getCurrent());
+			
+			request.then(function(items) {
+				this.replaceItems(items);
+			}.bind(this)).catch(function(error) {
+
+			});
 		}
-
-		this.setElement(this.settings.element);
-
-		this.addStyleTag();
 	}
 
 	setElement(selector)
@@ -64,14 +73,15 @@ class Products
 	/**
 	 * Replace items in the container.
 	 */
-	replaceItems(items) {
+	replaceItems(items) 
+	{
 		if (! Array.isArray(items) || typeof items[0] == 'string') {
 			throw new InvalidArgumentException;
 		}
 
-		var items = this.wrapAllWithHTML(items, this.settings.itemClass, 'div');
+		let wrappedItems = this.wrapAllWithHTML(items, this.settings.itemClass, 'div');
 
-		this.wrapper.innerHTML = items.text;
+		this.wrapper.innerHTML = wrappedItems;
 
 		return items;
 	}
@@ -79,30 +89,34 @@ class Products
 	/**
 	 * Makes an Ajax call to the server.
 	 */
-	getProducts(pageNumber) 
+	getProductsByPage(pageNumber) 
 	{
 		return new Promise(function(resolve, reject) {
 			if (this.paginator.notInPageRange(pageNumber)) {
 				return reject('Not in pagination range');
 			}
 
-			var xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+			let xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
 
-			xhr.open('GET', this.settings.url + '?page='+ pageNumber, true); 
-
+			xhr.open('GET', this.settings.url + '?page=' + pageNumber, true); 
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			
 			let instance = this;
 
-			xhr.onreadystatechange = function() {
-				if(this.status == 200 && this.readyState == 4) {
-					instance.currentItems = JSON.parse(this.responseText);
+			xhr.onreadystatechange = function() {console.log(this.status);
+				if (this.readyState == 4) {
+					if (this.status == 200) {
+						instance.currentItems = JSON.parse(this.responseText);
 					
-					for (var i = 0; i < instance.currentItems.length; i++) {
-						var product = instance.currentItems[i];
-						instance.AfterLoaded.call(this, product);
-					}
+						for (var i = 0; i < instance.currentItems.length; i++) {
+							var product = instance.currentItems[i];
+							instance.AfterLoaded.call(this, product);
+						}
 
-					instance.replaceItems(instance.currentItems);
-					resolve(instance.currentItems);
+						resolve(instance.currentItems);
+					} else {
+						reject(this.statusText);
+					}
 				}
 			};
 
@@ -117,11 +131,12 @@ class Products
 	/**
 	 * Wrap all the items with specifc tag and classname.
 	 */
-	wrapAllWithHTML(items, className, tagType) {
+	wrapAllWithHTML(items, className, tagType) 
+	{
 		className = className || null;
 		className = (className) ? 'product ' + className : 'product';
 		
-		var text = '';
+		var wrappedItems = '';
 
 		items = items.map(function(product, index) {
 			var item = document.createElement(tagType);
@@ -153,15 +168,12 @@ class Products
 			var temp = document.createElement(tagType);
 			temp.appendChild(item);
 			
-			text += temp.innerHTML + "\n";
+			wrappedItems += temp.innerHTML + "\n";
 
 			return product;
 		}.bind(this));
 
-		return {
-			"data": items,
-			"text": text
-		};
+		return wrappedItems;
 	}
 
 	AfterLoaded(products) 

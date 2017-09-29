@@ -74,7 +74,7 @@
 		});
 
 		eCommerce.Products.AfterLoaded = function (product) {
-			console.log(product);
+			
 		};
 
 		eCommerce.Filter.setup({

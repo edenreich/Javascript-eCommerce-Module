@@ -91,7 +91,8 @@ class Container
 	/**
 	 * Retrieve all instances.
 	 */
-	instances() {
+	instances() 
+	{
 		return instances;
 	}
 }
