@@ -9,8 +9,8 @@ describe('ContainerTest', function() {
 		const window = new Window();
 		global.document = window.document;
 		document.body.innerHTML = `<div class="products"></div>
-									<div class="filter"></div>
-									<div class="pagination-links"></div>`;
+					   <div class="filter"></div>
+					   <div class="pagination-links"></div>`;
 	});
 	
 	it('binds an instance to the container and able to retrieve it later', function() {
