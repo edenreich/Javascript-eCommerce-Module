@@ -120,8 +120,12 @@ class Products
 			xhr.onreadystatechange = function() {
 				if (this.readyState == 4) {
 					if (this.status == 200) {
-						instance.currentItems = JSON.parse(this.responseText);
+						instance.currentItems = (this.responseText == '') ? [] : JSON.parse(this.responseText);
 					
+						if(instance.currentItems.length === 0) {
+							reject('No Items were retrieved!');
+						}
+
 						for (var i = 0; i < instance.currentItems.length; i++) {
 							var product = instance.currentItems[i];
 							instance.AfterLoaded.call(this, product);
