@@ -11,13 +11,22 @@ let defaultSettings = {
 	element: '.pagination-links',
 	class: 'col-xs-offset-4 col-xs-8',
 	per_page: 5,
-	total_pages: 3,
+	total_items: 10,
 };
 
+/**
+ * Stores the container object.
+ */
 let Container;
 
+/**
+ * The Pagination Object, handles the pagination.
+ */
 class Pagination 
 {
+	/**
+	 * Initialize the container object and the default settings.
+	 */
 	constructor(container) 
 	{
 		Container = container;
@@ -35,17 +44,9 @@ class Pagination
 
 		this.settings = Common.extend(defaultSettings, settings);
 
+		this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
 		this.setElement(this.settings.element);
 		this.replaceLinks(this.links);
-	}
-
-	/**
-	 * Replaces the links in the wrapper.
-	 */
-	replaceLinks(links)
-	{
-		this.wrapper.innerHTML = '';
-		this.wrapper.appendChild(links);
 	}
 
 	/**
@@ -59,6 +60,23 @@ class Pagination
 
 		this.links = this.createLinks();
 		this.bindEventListeners(this.links);
+	}
+
+	/**
+	 * Replaces the links in the wrapper.
+	 */
+	replaceLinks(links)
+	{
+		this.wrapper.innerHTML = '';
+		this.wrapper.appendChild(links);
+	}
+
+	calculateTotalPages(perPage, totalItems)
+	{
+		perPage = parseInt(perPage);
+		totalItems = parseInt(totalItems);
+
+		return Math.ceil(totalItems / perPage);
 	}
 
 	/**
@@ -153,8 +171,8 @@ class Pagination
 	createPageLinks() 
 	{
 		var pages = [];
-		
-		for(var i = 1; i <= 3; i++) {
+
+		for(var i = 1; i <= this.totalPages; i++) {
 			var pageItem = document.createElement('li');
 			var link = document.createElement('a');
 			pageItem.className = 'page-item';
@@ -223,8 +241,6 @@ class Pagination
 		link.appendChild(span2);
 		li.appendChild(link);
 
-		this.next = link; 
-
 		return li;
 	}
 
@@ -233,7 +249,7 @@ class Pagination
 	 */
 	notInPageRange(pageNumber) 
 	{
-		return (pageNumber > this.settings.total_pages || pageNumber <= 0) || isNaN(pageNumber);
+		return (pageNumber > this.totalPages || pageNumber <= 0) || isNaN(pageNumber);
 	}
 
 	/**
@@ -283,6 +299,9 @@ class Pagination
 	    return baseURL + "?" + newAdditionalURL + rowsText;
 	}
 
+	/**
+	 * Resets the pagination.
+	 */
 	reset() 
 	{
 		this.setCurrent(1);

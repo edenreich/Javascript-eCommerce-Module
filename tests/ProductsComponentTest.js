@@ -6,7 +6,7 @@ import Container from '../src/Core/Container.js';
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
 
-describe.only('ProductsComponentTest', function() {
+describe('ProductsComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
@@ -44,8 +44,8 @@ describe.only('ProductsComponentTest', function() {
 			width: '200px',
 		});
 
-		assert.equal(products.settings.class, '.test-class');
-		assert.equal(products.settings.height, '250px');
+		assert.equal(this.Products.settings.class, '.test-class');
+		assert.equal(this.Products.settings.height, '250px');
 
 	});
 
@@ -58,18 +58,17 @@ describe.only('ProductsComponentTest', function() {
 		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
 	});
 
-	it.only('should get products from the server side', function(done) {
+	it('should get products from the server side', function(done) {
 		let request = this.Products.getProductsByPage(1);
 
 		request.then(function(items) {
-			
+			assert.lengthOf(items, 5);
 			done();
 		}).catch(function(error) {
 			console.log(error);
 			done();
 		});
 	}).timeout(15000);
-
 });
 
 class ProductsGenerator

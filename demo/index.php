@@ -60,17 +60,19 @@
 		eCommerce.Products.setup({
 			element: '.products',
 			class: 'col-xs-9',
-			itemClass: 'col-xs-3',
+			item_class: 'col-xs-3',
 			width: '200px',
 			height: '280px',
 			attributes: ['name', 'price', 'deliveryTime', 'image'],
 			url: 'products.php',
-			initStaticData: <?php echo $products ?>,
+			init_static_data: <?php echo $products ?>,
 		});
 
 		eCommerce.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-4 col-xs-8',
+			per_page: 2,
+			total_items: 10
 		});
 
 		eCommerce.Products.AfterLoaded = function (product) {

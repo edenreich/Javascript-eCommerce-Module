@@ -9,14 +9,17 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
 let defaultSettings = {
 	element: '.products',
 	class: '',
-	itemClass: '',
+	item_class: '',
 	width: '200px',
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
-	initStaticData: {},
+	init_static_data: {},
 };
 
+/**
+ * Stores the container object.
+ */
 let Container;
 
 /**
@@ -25,7 +28,7 @@ let Container;
 class Products 
 {
 	/**
-	 * Initalize the Container and the paginator
+	 * Initalize the Container and the paginator.
 	 */
 	constructor(container, paginator) 
 	{
@@ -35,6 +38,9 @@ class Products
 		this.paginator = paginator;
 	}
 
+	/**
+	 * Sets the given settings from the user.
+	 */
 	setup(settings)
 	{
 		if (typeof settings != 'object') {
@@ -52,7 +58,7 @@ class Products
 		}
 
 		if (Container.instanceExist('Pagination')) {
-			this.paginator.reset(this.settings.initStaticData);
+			this.paginator.reset(this.settings.init_static_data);
 			let request = this.getProductsByPage(this.paginator.getCurrent());
 			
 			request.then(function(items) {
@@ -63,6 +69,9 @@ class Products
 		}
 	}
 
+	/**
+	 * Sets the DOM element for populating the products.
+	 */
 	setElement(selector)
 	{
 		this.wrapper = DOM.element(selector);
@@ -79,7 +88,12 @@ class Products
 			throw new InvalidArgumentException;
 		}
 
-		let wrappedItems = this.wrapAllWithHTML(items, this.settings.itemClass, 'div');
+		if (Container.instanceExist('Pagination')) {
+			let perPage = this.paginator.settings.per_page;
+			items = items.slice(0, perPage);
+		}
+
+		let wrappedItems = this.wrapAllWithHTML(items, this.settings.item_class, 'div');
 
 		this.wrapper.innerHTML = wrappedItems;
 
@@ -176,7 +190,10 @@ class Products
 		return wrappedItems;
 	}
 
-	AfterLoaded(products) 
+	/**
+	 * An event for the client of when the products as been loaded.
+	 */
+	AfterLoaded(product) 
 	{
 		//
 	}
