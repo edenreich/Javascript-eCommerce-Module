@@ -103,7 +103,7 @@ class Products
 			
 			let instance = this;
 
-			xhr.onreadystatechange = function() {console.log(this.status);
+			xhr.onreadystatechange = function() {
 				if (this.readyState == 4) {
 					if (this.status == 200) {
 						instance.currentItems = JSON.parse(this.responseText);
