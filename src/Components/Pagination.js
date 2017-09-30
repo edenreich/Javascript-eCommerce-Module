@@ -71,7 +71,7 @@ class Pagination
 
 		this.next.childNodes[0].onclick = function(event) {
 			event.preventDefault();
-			
+
 			Products.getProductsByPage(instance.current+1).then(function(products) {
 				Products.replaceItems(products);
 			});
@@ -112,7 +112,7 @@ class Pagination
 			return;
 		}
 
-		this.current = pageNumber;
+		this.current = parseInt(pageNumber);
 		this.changeUrl(pageNumber);
 	}
 
@@ -233,7 +233,7 @@ class Pagination
 	 */
 	notInPageRange(pageNumber) 
 	{
-		return (pageNumber > this.totalPages || pageNumber <= 0) || isNaN(pageNumber);
+		return (pageNumber > this.settings.total_pages || pageNumber <= 0) || isNaN(pageNumber);
 	}
 
 	/**
