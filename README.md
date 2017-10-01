@@ -1,11 +1,13 @@
 <p align="center"><img src="https://s21.postimg.org/6ak2pw1l3/laptop.png" width="220px" height="250px"></p>
 
 # Javascript-eCommerce-Module
-A javascript module to handle the products, services and filter that appears on each page. So basically insteaded of setting some HTML-Markups and running a foreach loop to display all of your products/services, you will simply set a server-side script that returns a an array of json products/services objects. Do note that it wont work if javascript is not activated on the user browser so under rare circumstancesit as the one Ive just mentioned it wont work.
+A super fast Javascript Webshop(everything is loaded with Ajax). This module is there for handeling the common components that needed to run a webshop(products, services, filter, cart, pagination etc..).
 
 
 ### Install
-import the script demo/bundle.js to your files project.
+Import the script demo/bundle.js to your files project.
+
+as an npm package will come soon..
 
 ### Configuration
 
@@ -80,7 +82,7 @@ shop.Cart.setup({
 ## Events
 If you want to run something after the products are loaded into the container you may use AfterLoaded callback:
 ```javascript
-eCommerce.Products.AfterLoaded = function(product) {
+shop.Products.AfterLoaded = function(product) {
 	// run something after the products has been loaded.
 };
 ```
