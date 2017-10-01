@@ -5,16 +5,16 @@ A javascript module to handle the products, services and filter that appears on 
 
 
 ### Install
-import the script eCommerce.js to your files project.
+import the script demo/bundle.js to your files project.
 
 ### Configuration
 
 #### Configure the eCommerce:
 - components - define the components you will need.
 ```javascript
-	var shop = new eCommerce({
-		components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
-	});
+var shop = new eCommerce({
+	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
+});
 ```
 
 #### Configure the Products:
@@ -53,7 +53,7 @@ shop.Pagination.setup({
 	total_items: 10
 });
 ```
-#### Configure the Pagination:
+#### Configure the Filter:
 - element - what DOM element should it be bound to.
 - class - the class name for each product element.
 ```javascript
