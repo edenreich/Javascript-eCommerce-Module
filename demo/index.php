@@ -26,9 +26,11 @@
 			element: '.products',
 			class: 'col-xs-10',
 			item_class: 'col-xs-3',
+			add_button_class: 'btn btn-primary',
+			favorite_button_class: 'btn btn-danger',
 			width: '200px',
 			height: '280px',
-			attributes: ['name', 'price', 'deliveryTime', 'image', 'custom'],
+			attributes: ['name', 'price', 'deliveryTime', 'image'],
 			url: 'products.php',
 		});
 
@@ -46,11 +48,11 @@
 		shop.Filter.setup({
 			element: '.filter',
 			class: 'col-xs-2',
-			
 		});
 
 		shop.Cart.setup({
 			element: '.cart',
+			cookie_name: 'cart',
 			placement: 'right-top',
 			hover_color: 'orange'
 		});

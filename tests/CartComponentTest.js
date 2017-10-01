@@ -3,10 +3,11 @@ import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
 import DOM from '../src/Helpers/DOM.js';
+import Common from '../src/Helpers/Common.js';
 import Container from '../src/Core/Container.js';
 import Cart from '../src/Components/Cart.js';
 
-describe('CartComponentTest', function() {
+describe.only('CartComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
@@ -59,7 +60,19 @@ describe('CartComponentTest', function() {
 		let svg = icon.querySelector('svg');
 
 		assert.isNotNull(svg);
-		
-
 	});
+
+	it('should have cart stored as a cookie', function() {
+		let cart = this.container.make('Cart');
+
+		cart.setup({
+			cookie_name: 'cart',
+			element: '.cart-icon',
+		});
+
+		cart.addItem('something');
+
+		assert.isNotNull(Common.getCookie('cart'));
+	});
+
 });

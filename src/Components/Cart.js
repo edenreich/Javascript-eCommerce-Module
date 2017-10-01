@@ -9,6 +9,7 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  */
 let defaultSettings = {
 	element: '.cart',
+	cookie_name: 'cart',
 	preview_class: '',
 	class: '',
 	width: '60px',
@@ -35,9 +36,10 @@ class Cart
 	constructor(container) 
 	{
 		Container = container;
-
+		
 		this.previewElement = this.createPreviewElement();
 		this.svgIcon = createIcon.call(this);
+		this.items = [];
 	}
 
 	/**
@@ -54,9 +56,20 @@ class Cart
 		this.setElement(this.settings.element);
 		DOM.addClass(this.previewElement, 'closed');
 		DOM.addClass(this.previewElement, this.settings.preview_class);
+		
 		this.bindEventListeners();
-
 		this.addStyleTag();
+		
+		this.setCartCookie(this.settings.cookie_name);
+	}
+
+	addItem(item)
+	{
+		this.items = Common.getCookie('cart');
+
+		this.items.push(item);
+
+		Common.createCookie(this.settings.cookie_name, this.items, 2);
 	}
 
 	/**
@@ -171,6 +184,15 @@ class Cart
 		this.previewElement.onmouseout = function(event) {
 			close.call(this, event);
 		}.bind(this);
+	}
+
+	setCartCookie(name)
+	{
+		if(Common.getCookie(name)) {
+			return;
+		}
+
+		Common.createCookie('cart', [], 2); 
 	}
 }
 

@@ -76,8 +76,7 @@ class DOM
 	 */
 	static element(selector) 
 	{
-		let element = queryElement(selector);
-		return element;
+		return queryElement.call(this, document, selector);
 	}
 
 	/**
@@ -125,6 +124,9 @@ class DOM
 		return element;
 	}
 
+	/**
+	 * Toggles the given classes.
+	 */
 	static toggleClass(element, className, secondClassName)
 	{
 		if(element == null || typeof element == 'undefined') {
@@ -139,13 +141,21 @@ class DOM
 			element.classList.toggle(secondClassName);
 		}
 	}
+
+	/**
+	 * Finds an element inside of parent.
+	 */
+	static find(element, selector) 
+	{
+		return queryElement(element, selector);
+	}
 }
 
 /**
  * Queries an element from the DOM.
  */
-function queryElement(selector) {
-	let element = document.querySelectorAll(selector) || null;
+function queryElement(parent, selector) {
+	var element = parent.querySelectorAll(selector);
 
 	if(element.length == 0) {
 		return null;

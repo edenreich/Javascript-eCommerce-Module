@@ -8,7 +8,7 @@ describe('DomHelperTest', function() {
 	beforeEach(function() {	
 		global.window = new Window();
 		global.document = window.document;
-		document.body.innerHTML = `<div class="test-class" id="testId"></div>`;
+		document.body.innerHTML = `<div class="test-class" id="testId"><div id="nestedElement"><div id="nestedNestedElement"></div></div></div>`;
 	});
 	
 	it('should fetch an element from the DOM', function() {
@@ -76,4 +76,12 @@ describe('DomHelperTest', function() {
 		assert.equal(element.getAttribute('id'), 'someId');
 	});
 
+	it('should find a nested element', function() {
+		let element = DOM.element('#testId');
+		let nestedElement = DOM.find(element, '#nestedElement');
+		let nestedNestedElement = DOM.find(element, '#nestedNestedElement');
+
+		assert.isNotNull(nestedElement);
+		assert.isNotNull(nestedNestedElement);
+	});
 });

@@ -10,6 +10,8 @@ let defaultSettings = {
 	element: '.products',
 	class: '',
 	item_class: '',
+	add_button_class: 'btn btn-primary',
+	favorite_button_class: 'btn btn-danger',
 	width: '200px',
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
@@ -215,14 +217,14 @@ class Products
 
 		let addToCart = DOM.createElement('button', {
 			id: 'addToCart',
-			class: 'btn btn-primary',
+			class: this.settings.add_button_class,
 			type: 'button',
 			text: '+',
 		});
 
 		let favorite = DOM.createElement('button', {
 			id: 'favorite',
-			class: 'btn btn-danger',
+			class: this.settings.favorite_button_class,
 			type: 'button',
 			text: '&hearts;'
 		});

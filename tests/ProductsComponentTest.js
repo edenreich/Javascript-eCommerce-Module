@@ -7,12 +7,12 @@ import Container from '../src/Core/Container.js';
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
 
-describe.only('ProductsComponentTest', function() {
+describe('ProductsComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
-	beforeEach(function() {	
-		global.window = new Window();
+	beforeEach(function(done) {	
+		global.window = new Window;
 		global.XMLHttpRequest = XMLHttpRequest;
 		global.document = window.document;
 		document.body.innerHTML = `<div class="products"></div>
@@ -31,13 +31,10 @@ describe.only('ProductsComponentTest', function() {
 
 		this.productGenerator = new ProductsGenerator;
 		this.Products = container.make('Products');
-		this.Products.setup({
-			url: baseUrl + '/demo/products.php'
-		});
+		done();
 	});
 
-	it('should set the given settings from the user', function() {
-
+	it('should set the given settings from the user', function(done) {
 		this.Products.setup({
 			element: '.products',
 			class: '.test-class',
@@ -47,19 +44,56 @@ describe.only('ProductsComponentTest', function() {
 
 		assert.equal(this.Products.settings.class, '.test-class');
 		assert.equal(this.Products.settings.height, '250px');
-
+		done();
 	});
 
-	it('should replace the items in the products container div', function() {
+	it('should replace the items in the products container div', function(done) {
 		this.Products.replaceItems(this.productGenerator.products());
 
 		let productNodeElements = this.Products.wrapper.getElementsByClassName('product');
 
 		assert.lengthOf(productNodeElements, 3);
 		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
+		done();
+	});
+
+	it('should have for each product a button with id #favorite and button with id #addToCart', function(done) {
+		this.Products.replaceItems(this.productGenerator.products());
+
+		this.Products.setup({});
+		
+		let buttons = DOM.element('.action-buttons')[0];
+		let favoriteButton = DOM.find(buttons, '#favorite');
+		let addToCartButton = DOM.find(buttons, '#addToCart');
+
+		assert.isNotNull(favoriteButton);
+		assert.isNotNull(addToCartButton);
+		done();
+	});
+
+	it('should let the developer override the default buttons classes', function(done) {
+		this.Products.setup({
+			add_button_class: 'test-class',
+			favorite_button_class: 'second-test-class'
+		});
+
+		this.Products.replaceItems(this.productGenerator.products());
+
+		let products = DOM.element('.product');
+		let buttons = DOM.find(products[0], '.action-buttons');
+		let addToCartButton = buttons.childNodes[0];
+		let favoriteButton = buttons.childNodes[1];
+
+		assert.equal(addToCartButton.className, 'test-class');
+		assert.equal(favoriteButton.className, 'second-test-class');
+		done();
 	});
 
 	it('should get products from the server side', function(done) {
+		this.Products.setup({
+			url: baseUrl + '/demo/products.php'
+		});
+
 		let request = this.Products.getProductsByPage(1);
 
 		request.then(function(items) {
@@ -69,23 +103,7 @@ describe.only('ProductsComponentTest', function() {
 			console.log(error);
 			done();
 		});
-	}).timeout(15000);
-
-	it('should have for each product a button with id #addToCart', function() {
-		this.Products.replaceItems(this.productGenerator.products());
-
-		let addToCartButtons = DOM.element('#addToCart');
-
-		assert.lengthOf(addToCartButtons, 3);
-	});
-
-	it('should have for each product a button with id #favorite', function() {
-		this.Products.replaceItems(this.productGenerator.products());
-
-		let addToCartButtons = DOM.element('#favorite');
-
-		assert.lengthOf(addToCartButtons, 3);
-	});
+	}).timeout(5000);
 });
 
 class ProductsGenerator
