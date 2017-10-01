@@ -2,11 +2,12 @@
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
+import DOM from '../src/Helpers/DOM.js';
 import Container from '../src/Core/Container.js';
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
 
-describe('ProductsComponentTest', function() {
+describe.only('ProductsComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
@@ -69,6 +70,22 @@ describe('ProductsComponentTest', function() {
 			done();
 		});
 	}).timeout(15000);
+
+	it('should have for each product a button with id #addToCart', function() {
+		this.Products.replaceItems(this.productGenerator.products());
+
+		let addToCartButtons = DOM.element('#addToCart');
+
+		assert.lengthOf(addToCartButtons, 3);
+	});
+
+	it('should have for each product a button with id #favorite', function() {
+		this.Products.replaceItems(this.productGenerator.products());
+
+		let addToCartButtons = DOM.element('#favorite');
+
+		assert.lengthOf(addToCartButtons, 3);
+	});
 });
 
 class ProductsGenerator

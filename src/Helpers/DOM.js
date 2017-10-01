@@ -31,11 +31,11 @@ class DOM
 	 */
 	static addClass(element, className) 
 	{
-		if(element == null) {
+		if(element === null) {
 			throw new InvalidArgumentException;
 		}
 
-		if(className == '' || typeof className == 'undefined') {
+		if(! className || className == '' || typeof className === undefined) {
 			return element;
 		}
 
@@ -109,12 +109,17 @@ class DOM
 	{
 		let element = document.createElement(elementType);
 	
-		if (options.hasOwnProperty('class')) {
-			element.className = options.class;
+		if (options === undefined) {
+			return element;
 		}
 
-		if (options.hasOwnProperty('id')) {
-			element.setAttribute('id', options.id);
+		for (let option in options) {
+			if(option == 'text') {
+				element.innerHTML = options[option];
+				continue;
+			}
+
+			element.setAttribute(option, options[option]);
 		}
 
 		return element;

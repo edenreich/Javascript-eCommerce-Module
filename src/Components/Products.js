@@ -85,7 +85,7 @@ class Products
 	 */
 	replaceItems(items) 
 	{
-		if (! Array.isArray(items) || typeof items[0] == 'string') {
+		if (! Array.isArray(items) || (items.length <= 0 && typeof items[0] == 'string')) {
 			throw new InvalidArgumentException;
 		}
 
@@ -94,9 +94,9 @@ class Products
 			items = items.slice(0, perPage);
 		}
 
-		let wrappedItems = this.wrapAllWithHTML(items, this.settings.item_class, 'div');
+		let products = this.buildProducts(items, this.settings.item_class, 'div');
 
-		this.wrapper.innerHTML = wrappedItems;
+		this.wrapper.innerHTML = products;
 
 		return items;
 	}
@@ -148,52 +148,91 @@ class Products
 	}
 
 	/**
-	 * Wrap all the items with specifc tag and classname.
+	 * Builds the html for the products.
 	 */
-	wrapAllWithHTML(items, className, tagType) 
+	buildProducts(attributesCollection, className, tagType) 
 	{
-		className = className || null;
+		if(attributesCollection.constructor.name != 'Array' ) {
+			throw new InvalidArgumentException;
+		}
 
-		var wrappedItems = '';
+		let builtProducts = '';
 
-		items = items.map(function(product, index) {
-			var item = document.createElement(tagType);
-			item = DOM.addClass(item, 'product');
-			item = DOM.addClass(item, className);
-			
-
-			var overlay = document.createElement('div');
-			overlay = DOM.addClass(overlay, 'product-overlay');
-			item.appendChild(overlay);
-
-			for(var prop in product) {
-				if(this.settings.attributes.indexOf(prop) == -1) {
-					continue;
-				}
-
-				var tag = document.createElement(tagType);
-
-				if(prop == 'image') {
-					var image = document.createElement('img');
-					image.setAttribute('src', product[prop]);
-					item.appendChild(image);
-				} else {
-					tag.innerHTML = product[prop] || '';
-				}
-
-				tag.className = 'product-' + Common.kebabCase(prop);
-				overlay.appendChild(tag);
-			}
-
-			var temp = document.createElement(tagType);
-			temp.appendChild(item);
-			
-			wrappedItems += temp.innerHTML + "\n";
-
-			return product;
+		attributesCollection.forEach(function(attributes) {
+			builtProducts += this.buildProduct(attributes, className, tagType);
 		}.bind(this));
 
-		return wrappedItems;
+		return builtProducts;
+	}
+
+	/**
+	 * Builds the html for a single product.
+	 */
+	buildProduct(attributes, className, tagType) 
+	{
+		if (typeof attributes != 'object' || typeof tagType != 'string') {
+			throw new InvalidArgumentException;
+		}
+
+		className = className || null;
+
+		let product = DOM.createElement('div', {
+			class: 'product'
+		});
+
+		DOM.addClass(product, className);
+
+		let overlay = DOM.createElement('div', {
+			class: 'product-overlay',
+		});
+
+		product.appendChild(overlay);
+
+		for (var attribute in attributes) {
+			if (! Common.in_array(attribute, this.settings.attributes)) {
+				continue;
+			}
+
+			let tag = DOM.createElement(tagType);
+
+			if (attribute == 'image') {
+				let image = DOM.createElement('img', {
+					src: attributes[attribute]
+				});
+				product.appendChild(image);
+			} else {
+				tag.innerHTML = attributes[attribute] || '';
+			}
+
+			DOM.addClass(tag, 'product-' + Common.kebabCase(attribute));
+			overlay.appendChild(tag);
+		}
+
+		let tag = DOM.createElement('div', {
+			id: 'actionButtons',
+			class: 'action-buttons'
+		});
+
+		let addToCart = DOM.createElement('button', {
+			id: 'addToCart',
+			class: 'btn btn-primary',
+			type: 'button',
+			text: '+',
+		});
+
+		let favorite = DOM.createElement('button', {
+			id: 'favorite',
+			class: 'btn btn-danger',
+			type: 'button',
+			text: '&hearts;'
+		});
+
+		tag.appendChild(addToCart);
+		tag.appendChild(favorite);
+
+		overlay.appendChild(tag);
+
+		return product.outerHTML;
 	}
 
 	/**
@@ -267,6 +306,17 @@ class Products
 				text-align: center;
 				margin-top: 25px;
 			}
+
+			.product > .product-overlay > .action-buttons {
+				width: 100%;
+				margin-top: 10px;
+				text-align: center;
+			}
+
+			.product > .product-overlay > .action-buttons > #favorite {
+				margin-left: 10px;
+			}
+
 		`;
 	    
 	    DOM.addStyle('eCommerce-Products', css);

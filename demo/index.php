@@ -18,39 +18,38 @@
 <script type="text/javascript">
 	(function(eCommerce) {
 
-		var eCommerce = new eCommerce({
+		var shop = new eCommerce({
 			components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 		});
 
-		eCommerce.Products.setup({
+		shop.Products.setup({
 			element: '.products',
 			class: 'col-xs-10',
 			item_class: 'col-xs-3',
 			width: '200px',
 			height: '280px',
-			attributes: ['name', 'price', 'deliveryTime', 'image'],
+			attributes: ['name', 'price', 'deliveryTime', 'image', 'custom'],
 			url: 'products.php',
 		});
 
-		eCommerce.Pagination.setup({
+		shop.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-4 col-xs-8',
 			per_page: 5,
 			total_items: 10
 		});
 
-		eCommerce.Products.AfterLoaded = function (product) {
+		shop.Products.AfterLoaded = function (product) {
 			
 		};
 
-		eCommerce.Filter.setup({
+		shop.Filter.setup({
 			element: '.filter',
 			class: 'col-xs-2',
-			width: '',
-			height: '',
+			
 		});
 
-		eCommerce.Cart.setup({
+		shop.Cart.setup({
 			element: '.cart',
 			placement: 'right-top',
 			hover_color: 'orange'
