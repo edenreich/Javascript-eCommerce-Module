@@ -14,7 +14,6 @@ let defaultSettings = {
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
-	init_static_data: {},
 };
 
 /**
@@ -58,7 +57,7 @@ class Products
 		}
 
 		if (Container.instanceExist('Pagination')) {
-			this.paginator.reset(this.settings.init_static_data);
+			this.paginator.reset();
 			let request = this.getProductsByPage(this.paginator.getCurrent());
 			
 			request.then(function(items) {
@@ -75,8 +74,10 @@ class Products
 	setElement(selector)
 	{
 		this.wrapper = DOM.element(selector);
-		
-		DOM.addClass(this.wrapper, this.settings.class);
+
+		if (this.wrapper) {
+			DOM.addClass(this.wrapper, this.settings.class);
+		}
 	}
 
 	/**
@@ -152,16 +153,17 @@ class Products
 	wrapAllWithHTML(items, className, tagType) 
 	{
 		className = className || null;
-		className = (className) ? 'product ' + className : 'product';
-		
+
 		var wrappedItems = '';
 
 		items = items.map(function(product, index) {
 			var item = document.createElement(tagType);
+			item = DOM.addClass(item, 'product');
 			item = DOM.addClass(item, className);
+			
 
 			var overlay = document.createElement('div');
-			overlay.className = 'product-overlay';
+			overlay = DOM.addClass(overlay, 'product-overlay');
 			item.appendChild(overlay);
 
 			for(var prop in product) {
@@ -207,6 +209,10 @@ class Products
 	 */
 	addStyleTag() 
 	{
+		if(DOM.element('#eCommerce-Products')) {
+			return;
+		}
+
 		let css = `
 			.product {
 				position: relative;
@@ -263,7 +269,7 @@ class Products
 			}
 		`;
 	    
-	    return DOM.addStyle('eCommerce-Products', css);
+	    DOM.addStyle('eCommerce-Products', css);
 	}
 }
 

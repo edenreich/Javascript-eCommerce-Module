@@ -6,7 +6,7 @@ import Container from '../src/Core/Container.js';
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
 
-describe.only('PaginationComponentTest', function() {
+describe('PaginationComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
@@ -50,7 +50,7 @@ describe.only('PaginationComponentTest', function() {
 		}, 5000);
 	}).timeout(15000);
 
-	it.only('should show the links corresponding to the amount of pages', function(done) {
+	it('should show the links corresponding to the amount of pages', function(done) {
 		this.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-4 col-xs-8',

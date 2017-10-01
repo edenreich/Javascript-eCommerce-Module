@@ -9,17 +9,13 @@ import Filter from './Components/Filter.js';
 import Products from './Components/Products.js';
 import Services from './Components/Services.js';
 import Pagination from './Components/Pagination.js';
+import Cart from './Components/Cart.js';
 
-import ComponentsException from './Exceptions/ComponentsException.js';
-import BadEventCallException from './Exceptions/BadEventCallException.js';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
-import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
-import NodeElementDoesNotExistException from './Exceptions/NodeElementDoesNotExistException.js';
 
 let initalized = false;
 
 let defaultSettings = {
-	cartSessionId: [],
 	importBootstrap: false,
 	components: ['Products', 'Services', 'Filter', 'Pagination']
 };
@@ -53,22 +49,24 @@ class eCommerce
  * Binds components dependencies.
  */
 function bindComponentsDependencies(components) {
-	let container = this.container;
-
-	container.bind('Filter', function() {
+	this.container.bind('Filter', function(container) {
 		return new Filter(container);
 	});
 	
-	container.bind('Services', function() { 
+	this.container.bind('Services', function(container) { 
 		return new Services(container);
 	});
 
-	container.bind('Pagination', function() {
+	this.container.bind('Pagination', function(container) {
 		return new Pagination(container);
 	});
 
-	container.bind('Products', function() {
+	this.container.bind('Products', function(container) {
 		return new Products(container, container.make('Pagination'));
+	});
+
+	this.container.bind('Cart', function(container) {
+		return new Cart(container);
 	});
 }
 

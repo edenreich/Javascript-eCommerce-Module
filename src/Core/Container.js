@@ -21,8 +21,7 @@ class Container
 			throw new InvalidBindingException;
 		}
 
-		this[key] = concrete;
-		this[key].bind(concrete);
+		this[key] = concrete.bind(concrete, this);
 	}
 
 	/**

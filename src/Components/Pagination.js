@@ -45,6 +45,7 @@ class Pagination
 		this.settings = Common.extend(defaultSettings, settings);
 
 		this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
+		
 		this.setElement(this.settings.element);
 		this.replaceLinks(this.links);
 	}

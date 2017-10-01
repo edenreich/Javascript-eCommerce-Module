@@ -4,7 +4,6 @@ import BadEventCallException from './BadEventCallException.js';
 import InvalidArgumentException from './InvalidArgumentException.js';
 import InvalidBindingException from './InvalidBindingException.js';
 import ComponentNotRegisteredException from './ComponentNotRegisteredException.js';
-import NodeElementDoesNotExistException from './NodeElementDoesNotExistException.js';
 
 
 class ExceptionHandler
@@ -25,8 +24,6 @@ class ExceptionHandler
 				// handle
 			} else if (error instanceof ComponentNotRegisteredException) {
 				// handle
-			} else if (error instanceof NodeElementDoesNotExistException) {
-				
 			} else {
 				return false;
 			}
