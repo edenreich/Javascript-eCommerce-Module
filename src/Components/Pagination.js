@@ -30,7 +30,7 @@ class Pagination
 	constructor(container) 
 	{
 		Container = container;
-		this.setup(defaultSettings);
+		// this.setup(defaultSettings);
 	}
 
 	/**

@@ -12,6 +12,7 @@ import Pagination from './Components/Pagination.js';
 import Cart from './Components/Cart.js';
 
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
+import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
 
 let initalized = false;
 
@@ -39,6 +40,10 @@ class eCommerce
 
 		return new Proxy(this, {
 			get: function(target, object) {
+				if(! Common.in_array(object, settings.components)) {
+					throw new ComponentNotRegisteredException;
+				}
+
 				return target.container.make(object);
 			}
 		});
