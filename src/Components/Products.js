@@ -29,14 +29,11 @@ let Container;
 class Products 
 {
 	/**
-	 * Initalize the Container and the paginator.
+	 * Initalize the Container.
 	 */
-	constructor(container, paginator) 
+	constructor(container) 
 	{
-		this.setup(defaultSettings);
-
 		Container = container;
-		this.paginator = paginator;
 	}
 
 	/**
@@ -44,6 +41,8 @@ class Products
 	 */
 	setup(settings)
 	{
+		document.addEventListener('DOMContentLoaded', function() {
+			
 		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -53,21 +52,24 @@ class Products
 		this.setElement(this.settings.element);
 
 		this.addStyleTag();	
-	
-		if (typeof Container == 'undefined') {
-			return;
-		}
+		
+		this.loadProducts();
 
-		if (Container.instanceExist('Pagination')) {
-			this.paginator.reset();
-			let request = this.getProductsByPage(this.paginator.getCurrent());
+		}.bind(this));
+	}
+
+	/**
+	 * Loads the products and replace them in the div container.
+	 */
+	loadProducts()
+	{
+		let request = this.getProducts();
 			
-			request.then(function(items) {
-				this.replaceItems(items);
-			}.bind(this)).catch(function(error) {
+		request.then(function(items) {
+			this.replaceItems(items);
+		}.bind(this)).catch(function(error) {
 
-			});
-		}
+		});
 	}
 
 	/**
@@ -91,11 +93,6 @@ class Products
 			throw new InvalidArgumentException;
 		}
 
-		if (Container.instanceExist('Pagination')) {
-			let perPage = this.paginator.settings.per_page;
-			items = items.slice(0, perPage);
-		}
-
 		let products = this.buildProducts(items, this.settings.item_class, 'div');
 
 		this.wrapper.innerHTML = products;
@@ -104,18 +101,38 @@ class Products
 	}
 
 	/**
+	 * Makes an Ajax call to the server without parameters.
+	 */
+	getProducts()
+	{
+		return this.askServer();
+	}
+
+	/**
 	 * Makes an Ajax call to the server.
 	 */
 	getProductsByPage(pageNumber) 
 	{
+		return this.askServer(pageNumber);
+	}
+
+	/**
+	 * Sends the request to the server.
+	 */
+	askServer(pageNumber)
+	{
+		pageNumber = pageNumber || null;
+
 		return new Promise(function(resolve, reject) {
-			if (this.paginator.notInPageRange(pageNumber)) {
-				return reject('Not in pagination range');
-			}
 
 			let xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
 
-			xhr.open('GET', this.settings.url + '?page=' + pageNumber, true); 
+			if(pageNumber) {
+				xhr.open('GET', this.settings.url + '?page=' + pageNumber, true);
+			} else {
+				xhr.open('GET', this.settings.url, true);
+			}
+
 			xhr.setRequestHeader('Content-Type', 'application/json');
 			
 			let instance = this;

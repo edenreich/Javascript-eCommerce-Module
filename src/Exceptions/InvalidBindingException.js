@@ -1,11 +1,10 @@
 
-class InvalidBindingException
+class InvalidBindingException extends Error
 {
 	constructor() 
 	{ 
-    	console.error(`${this.constructor.name}, trying to bind an already existing bound.`);
-
-    	throw new Error;
+    	super();
+    	console.error(`InvalidBindingException, trying to bind an already existing bound.`);
     }
 }
 

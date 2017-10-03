@@ -1,12 +1,11 @@
 
-class ComponentsException
+class ComponentsException extends Error
 {
 	constructor() 
 	{ 
-    	console.error(`${this.constructor.name}, expecting for at least one components, but none was given, 
-								please add at least one requirement(Products, Services or/and Filter`);
-
-    	throw new Error;
+    	super();
+    	console.error(`ComponentsException, expecting for at least one components, but none was given, 
+								please add at least one requirement(Products, Services or/and Filter.`);
     }
 }
 

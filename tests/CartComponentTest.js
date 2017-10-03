@@ -7,7 +7,7 @@ import Common from '../src/Helpers/Common.js';
 import Container from '../src/Core/Container.js';
 import Cart from '../src/Components/Cart.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 

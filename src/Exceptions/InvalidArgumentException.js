@@ -1,11 +1,10 @@
 
-class InvalidArgumentException
+class InvalidArgumentException extends Error
 {
 	constructor() 
 	{ 
-    	console.error(`${this.constructor.name}, passing invalid arguments.`);
-
-    	throw new Error;
+    	super();
+    	console.error(`InvalidArgumentException, an invalid argument was passed.`);
     }
 }
 

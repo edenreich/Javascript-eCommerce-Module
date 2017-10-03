@@ -19,7 +19,7 @@
 	(function(eCommerce) {
 
 		var shop = new eCommerce({
-			components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
+			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
 		});
 
 		shop.Products.setup({

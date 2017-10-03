@@ -4,7 +4,7 @@
 
 $products = [];
 
-if($_GET['page'] == 1) {
+if(isset($_GET['page']) && $_GET['page'] == 1) {
 	$products = [
 		[
 			'name' => 'Example Product 1', 
@@ -39,7 +39,7 @@ if($_GET['page'] == 1) {
 	];
 
 	echo json_encode($products);
-} elseif($_GET['page'] == 2) {
+} elseif(isset($_GET['page']) && $_GET['page'] == 2) {
 	$products = [
 		[
 			'name' => 'Example Product 6', 
@@ -74,7 +74,7 @@ if($_GET['page'] == 1) {
 	];
 
 	echo json_encode($products);
-} elseif($_GET['page'] == 3) {
+} elseif(isset($_GET['page']) && $_GET['page'] == 3) {
 	$products = [
 		[
 			'name' => 'Example Product 11', 

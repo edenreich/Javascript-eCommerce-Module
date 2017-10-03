@@ -78,8 +78,10 @@ class Container
 
 		if (typeof object == 'object') {
 			instance = object;
-		} else {
+		} else if(typeof object == 'string' && this.hasOwnProperty(object)) {
 			instance = new this[object];	
+		} else {
+			throw new InvalidBindingException;
 		}
 
 		this.setInstance(object, instance); 

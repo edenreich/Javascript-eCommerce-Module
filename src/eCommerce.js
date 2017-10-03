@@ -18,7 +18,7 @@ let initalized = false;
 
 let defaultSettings = {
 	importBootstrap: false,
-	components: ['Products', 'Services', 'Filter', 'Pagination']
+	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 };
 
 class eCommerce
@@ -55,24 +55,35 @@ class eCommerce
  */
 function bindComponentsDependencies(components) {
 	this.container.bind('Filter', function(container) {
+		container['Filter'].booted = true;
 		return new Filter(container);
 	});
 	
 	this.container.bind('Services', function(container) { 
+		container['Services'].booted = true;
 		return new Services(container);
 	});
 
-	this.container.bind('Pagination', function(container) {
-		return new Pagination(container);
+	this.container.bind('Products', function(container) {
+		container['Products'].booted = true;
+		return new Products(container);
 	});
 
-	this.container.bind('Products', function(container) {
-		return new Products(container, container.make('Pagination'));
+	this.container.bind('Pagination', function(container) {
+		container['Pagination'].booted = true;
+		return new Pagination(container, container.make('Products'));
 	});
 
 	this.container.bind('Cart', function(container) {
+		container['Cart'].booted = true;
 		return new Cart(container);
 	});
+
+	this.container['Filter']['booted'] = false;
+	this.container['Services']['booted'] = false;
+	this.container['Products']['booted'] = false;
+	this.container['Pagination']['booted'] = false;
+	this.container['Cart']['booted'] = false;
 }
 
 export default eCommerce;

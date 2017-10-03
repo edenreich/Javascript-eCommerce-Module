@@ -1,11 +1,10 @@
 
-class ComponentNotRegisteredException
+class ComponentNotRegisteredException extends Error
 {
 	constructor() 
 	{ 
-    	console.error(`${this.constructor.name}, components must be registered in order to use them`);
-
-    	throw new Error;
+    	super();
+    	console.error(`ComponentNotRegisteredException, components must be registered in order to use them.`);
     }
 }
 

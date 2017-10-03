@@ -2,6 +2,7 @@
 import DOM from '../Helpers/DOM.js';
 import Common from '../Helpers/Common.js';
 
+import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
  
 /**
@@ -20,6 +21,11 @@ let defaultSettings = {
 let Container;
 
 /**
+ * Stores the products component.
+ */
+let Products;
+
+/**
  * The Pagination Object, handles the pagination.
  */
 class Pagination 
@@ -27,10 +33,10 @@ class Pagination
 	/**
 	 * Initialize the container object and the default settings.
 	 */
-	constructor(container) 
+	constructor(container, products) 
 	{
 		Container = container;
-		// this.setup(defaultSettings);
+		Products = products;
 	}
 
 	/**
@@ -38,6 +44,8 @@ class Pagination
 	 */
 	setup(settings)
 	{
+		document.addEventListener('DOMContentLoaded', function() {
+
 		if(typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -48,6 +56,8 @@ class Pagination
 		
 		this.setElement(this.settings.element);
 		this.replaceLinks(this.links);
+
+		}.bind(this));
 	}
 
 	/**
@@ -86,38 +96,50 @@ class Pagination
 	bindEventListeners(links) 
 	{
 		let instance = this;
-		let Products = Container.getInstance('Products');
 
 		this.next.childNodes[0].onclick = function(event) {
 			event.preventDefault();
 
-			Products.getProductsByPage(instance.current+1).then(function(products) {
+			let requestedPage = instance.current+1;
+
+			if(instance.notInPageRange(requestedPage)) {
+				throw new NotInPageRangeException;
+			}
+
+			Products.getProductsByPage(requestedPage).then(function(products) {
 				Products.replaceItems(products);
 			});
 
-			instance.setCurrent(instance.current+1);
+			instance.setCurrent(requestedPage);
 		};
 
 		this.previous.childNodes[0].onclick = function(event) {
 			event.preventDefault();
+
+			let requestedPage = instance.current-1;
+
+			if(instance.notInPageRange(requestedPage)) {
+				throw new NotInPageRangeException;
+			}
 			
-			Products.getProductsByPage(instance.current-1).then(function(products) {
+			Products.getProductsByPage(requestedPage).then(function(products) {
 				Products.replaceItems(products);
 			});
 
-			instance.setCurrent(instance.current-1);
+			instance.setCurrent(requestedPage);
 		};
 
 		for(var i = 0; i < this.pages.length; i++) {
 			this.pages[i].childNodes[0].onclick = function(event) {
 				event.preventDefault();
-				var pageNumber = this.getAttribute('data-page-nr');
 				
-				Products.getProductsByPage(pageNumber).then(function(products) {
+				let requestedPage = this.getAttribute('data-page-nr');
+				
+				Products.getProductsByPage(requestedPage).then(function(products) {
 					Products.replaceItems(products);
 				});
 				
-				instance.setCurrent(pageNumber);
+				instance.setCurrent(requestedPage);
 			};
 		}
 	}
@@ -127,10 +149,6 @@ class Pagination
 	 */
 	setCurrent(pageNumber) 
 	{
-		if(this.notInPageRange(pageNumber)) {
-			return;
-		}
-
 		this.current = parseInt(pageNumber);
 		this.changeUrl(pageNumber);
 	}
