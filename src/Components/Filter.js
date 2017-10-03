@@ -10,11 +10,15 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
 let defaultSettings = {
 	element: '.filter',
 	data: {},
-	class: 'col-xs-2',
+	class: '',
 	width: '',
 	height: '',
 };
 
+/**
+ * Stores the container object.
+ */
+let Container;
 
 /**
  * The Filter Object, handles the filter of the products/services.
@@ -23,7 +27,7 @@ class Filter
 {
 	constructor(container) 
 	{
-		this.setup(defaultSettings);
+		Container = container;
 	}
 
 	setup(settings)

@@ -25,7 +25,7 @@
 		shop.Products.setup({
 			element: '.products',
 			class: 'col-xs-10',
-			item_class: 'col-xs-3',
+			item_class: 'col-xs-2',
 			add_button_class: 'btn btn-primary',
 			favorite_button_class: 'btn btn-danger',
 			width: '200px',
@@ -38,7 +38,7 @@
 			element: '.pagination-links',
 			class: 'col-xs-offset-4 col-xs-8',
 			per_page: 5,
-			total_items: 10
+			total_items: 15,
 		});
 
 		shop.Products.AfterLoaded = function (product) {

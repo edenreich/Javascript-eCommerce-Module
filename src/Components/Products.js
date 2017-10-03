@@ -1,6 +1,8 @@
 
 import DOM from '../Helpers/DOM.js';
 import Common from '../Helpers/Common.js';
+import Str from '../Helpers/Str.js';
+import Event from '../Core/Event.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
@@ -53,7 +55,15 @@ class Products
 
 		this.addStyleTag();	
 		
-		this.loadProducts();
+		if (Container.Pagination && Container.Pagination.booted) {
+			let instance = this;
+
+			instance.getProductsByPage(1).then(function(products) {
+				instance.replaceItems(products);
+			});
+		} else {
+			this.loadAllProducts();
+		}
 
 		}.bind(this));
 	}
@@ -61,11 +71,12 @@ class Products
 	/**
 	 * Loads the products and replace them in the div container.
 	 */
-	loadProducts()
+	loadAllProducts()
 	{
 		let request = this.getProducts();
 			
 		request.then(function(items) {
+			Event.trigger('ProductsWereFetched', items);
 			this.replaceItems(items);
 		}.bind(this)).catch(function(error) {
 
@@ -95,7 +106,10 @@ class Products
 
 		let products = this.buildProducts(items, this.settings.item_class, 'div');
 
-		this.wrapper.innerHTML = products;
+		this.wrapper.innerHTML = '';
+		products.forEach(function(product) {
+			this.wrapper.appendChild(product);
+		}.bind(this));
 
 		return items;
 	}
@@ -175,10 +189,11 @@ class Products
 			throw new InvalidArgumentException;
 		}
 
-		let builtProducts = '';
+		let builtProducts = [];
 
 		attributesCollection.forEach(function(attributes) {
-			builtProducts += this.buildProduct(attributes, className, tagType);
+			let builtProduct = this.buildProduct(attributes, className, tagType);
+			builtProducts.push(builtProduct);
 		}.bind(this));
 
 		return builtProducts;
@@ -223,7 +238,7 @@ class Products
 				tag.innerHTML = attributes[attribute] || '';
 			}
 
-			DOM.addClass(tag, 'product-' + Common.kebabCase(attribute));
+			DOM.addClass(tag, 'product-' + Str.kebabCase(attribute));
 			overlay.appendChild(tag);
 		}
 
@@ -249,9 +264,20 @@ class Products
 		tag.appendChild(addToCart);
 		tag.appendChild(favorite);
 
+		addToCart.addEventListener('click', function(event) {
+			event.preventDefault();
+			Container.getInstance('Cart').addItem(attributes);
+			Event.trigger('ProductWasAdded', attributes);
+		});
+
 		overlay.appendChild(tag);
 
-		return product.outerHTML;
+		return product;
+	}
+
+	addToCart(event)
+	{
+		
 	}
 
 	/**

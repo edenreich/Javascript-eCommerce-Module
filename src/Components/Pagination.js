@@ -1,5 +1,6 @@
 
 import DOM from '../Helpers/DOM.js';
+import Event from '../Core/Event.js';
 import Common from '../Helpers/Common.js';
 
 import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
@@ -10,7 +11,7 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  */
 let defaultSettings = {
 	element: '.pagination-links',
-	class: 'col-xs-offset-4 col-xs-8',
+	class: '',
 	per_page: 5,
 	total_items: 10,
 };
@@ -82,6 +83,9 @@ class Pagination
 		this.wrapper.appendChild(links);
 	}
 
+	/**
+	 * Calculates the total pages.
+	 */
 	calculateTotalPages(perPage, totalItems)
 	{
 		perPage = parseInt(perPage);
@@ -102,7 +106,7 @@ class Pagination
 
 			let requestedPage = instance.current+1;
 
-			if(instance.notInPageRange(requestedPage)) {
+			if (instance.notInPageRange(requestedPage)) {
 				throw new NotInPageRangeException;
 			}
 

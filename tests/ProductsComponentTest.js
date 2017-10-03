@@ -6,6 +6,8 @@ import DOM from '../src/Helpers/DOM.js';
 import Container from '../src/Core/Container.js';
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
+import Generator from './Helpers/Generator.js';
+import DomEvents from './Helpers/DomEvents.js';
 
 describe('ProductsComponentTest', function() {
 
@@ -19,38 +21,46 @@ describe('ProductsComponentTest', function() {
 									<div class="filter"></div>
 									<div class="pagination-links"></div>`;
 
-		let container = new Container;
+		this.container = new Container;
 
-		container.bind('Pagination', function() {
-			return new Pagination(container);
+		this.container.bind('Pagination', function(container) {
+			return new Pagination(container, container.make('Products'));
 		});
 
-		container.bind('Products', function() {
-			return new Products(container, container.make('Pagination'));
+		this.container.bind('Products', function(container) {
+			return new Products(container);
 		});
 
-		this.productGenerator = new ProductsGenerator;
-		this.Products = container.make('Products');
 		done();
 	});
 
 	it('should set the given settings from the user', function(done) {
-		this.Products.setup({
+		let products = this.container.make('Products');
+
+		products.setup({
 			element: '.products',
 			class: '.test-class',
 			itemClass: '',
 			width: '200px',
 		});
 
-		assert.equal(this.Products.settings.class, '.test-class');
-		assert.equal(this.Products.settings.height, '250px');
+		DomEvents.dispatch('DOMContentLoaded');
+		
+		assert.equal(products.settings.class, '.test-class');
+		assert.equal(products.settings.height, '250px');
 		done();
 	});
 
 	it('should replace the items in the products container div', function(done) {
-		this.Products.replaceItems(this.productGenerator.products());
+		let products = this.container.make('Products');
 
-		let productNodeElements = this.Products.wrapper.getElementsByClassName('product');
+		products.setup({});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		products.replaceItems(Generator.products(3));
+
+		let productNodeElements = DOM.element('.product');
 
 		assert.lengthOf(productNodeElements, 3);
 		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
@@ -58,9 +68,13 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should have for each product a button with id #favorite and button with id #addToCart', function(done) {
-		this.Products.replaceItems(this.productGenerator.products());
+		let products = this.container.make('Products');
 
-		this.Products.setup({});
+		products.setup({});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		products.replaceItems(Generator.products(3));
 		
 		let buttons = DOM.element('.action-buttons')[0];
 		let favoriteButton = DOM.find(buttons, '#favorite');
@@ -72,15 +86,19 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should let the developer override the default buttons classes', function(done) {
-		this.Products.setup({
+		let products = this.container.make('Products');
+
+		products.setup({
 			add_button_class: 'test-class',
 			favorite_button_class: 'second-test-class'
 		});
 
-		this.Products.replaceItems(this.productGenerator.products());
+		DomEvents.dispatch('DOMContentLoaded');
 
-		let products = DOM.element('.product');
-		let buttons = DOM.find(products[0], '.action-buttons');
+		products.replaceItems(Generator.products(3));
+
+		let productElements = DOM.element('.product');
+		let buttons = DOM.find(productElements[0], '.action-buttons');
 		let addToCartButton = buttons.childNodes[0];
 		let favoriteButton = buttons.childNodes[1];
 
@@ -90,11 +108,15 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should get products from the server side', function(done) {
-		this.Products.setup({
+		let products = this.container.make('Products');
+
+		products.setup({
 			url: baseUrl + '/demo/products.php'
 		});
 
-		let request = this.Products.getProductsByPage(1);
+		DomEvents.dispatch('DOMContentLoaded');
+
+		let request = products.getProductsByPage(1);
 
 		request.then(function(items) {
 			assert.lengthOf(items, 5);
@@ -105,30 +127,3 @@ describe('ProductsComponentTest', function() {
 		});
 	}).timeout(5000);
 });
-
-class ProductsGenerator
-{
-	products()
-	{
-		return [
-			{
-				name: "Example Product 1", 
-				price: 100, 
-				deliveryTime: "6 days", 
-				image: "images/1.jpg"
-			},
-			{
-				name: "Example Product 2", 
-				price: 120, 
-				deliveryTime: "6 days", 
-				image: "images/2.jpg"
-			},
-			{
-				name: "Example Product 3", 
-				price: 105, 
-				deliveryTime: "6 days", 
-				image: "images/3.jpg"
-			}
-		];
-	}
-}

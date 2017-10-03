@@ -1,4 +1,6 @@
 
+let events = [];
+
 class Event
 {
 	/**
@@ -9,25 +11,26 @@ class Event
 			throw new InvalidArgumentException;
 		}
 
-		events[name] = callback;
+		if (typeof events[name] == 'undefined') {
+			events[name] = [];
+		}
+
+		events[name].push(callback);
 	}
 
 	/**
 	 * Fires an event.
 	 */
-	static trigger(name, data) {
+	static trigger(name, ...data) {
 		data = data || null;
 
-		if(typeof events[name] !== 'function') {
-			throw new BadEventCallException;
-		}
-
-		if(data != null && data instanceof Array) {
-	
-			return events[name](...data);
-		}
-
-		events[name]();
+		events[name].forEach(function(callback) {
+			if(typeof callback !== 'function') {
+				throw new BadEventCallException;
+			}
+			
+			return callback(...data);
+		});
 	}
 }
 

@@ -1,6 +1,9 @@
 
+import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
+import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
+import Event from '../Core/Event.js';
 
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
@@ -39,7 +42,6 @@ class Cart
 		
 		this.previewElement = this.createPreviewElement();
 		this.svgIcon = createIcon.call(this);
-		this.items = [];
 	}
 
 	/**
@@ -54,22 +56,85 @@ class Cart
 		this.settings = Common.extend(defaultSettings, settings);
 
 		this.setElement(this.settings.element);
+
 		DOM.addClass(this.previewElement, 'closed');
 		DOM.addClass(this.previewElement, this.settings.preview_class);
 		
 		this.bindEventListeners();
 		this.addStyleTag();
-		
-		this.setCartCookie(this.settings.cookie_name);
+
+		if(this.isEmpty(Cookie.get(this.settings.cookie_name))) {
+			this.cart = {};
+			this.setCart(this.cart);
+		}
+
+
+		Event.listen('ProductWasAdded', function(attributes) {
+			this.addToPreview(attributes);
+		}.bind(this));
 	}
 
+	/**
+	 * Checks if the cart is empty
+	 */
+	isEmpty(cart)
+	{
+		return Common.emptyObject(cart);
+	}
+
+	/**
+	 * Sets the cart as a cookie.
+	 */
+	setCart(cart)
+	{
+		this.cart.id = Str.random(10);
+		this.cart.items = [];
+		this.cart.favorites = [];
+		Cookie.set(this.settings.cookie_name, cart, 2);
+	}
+
+	/**
+	 * Adds an item to the cart.
+	 */
 	addItem(item)
 	{
-		this.items = Common.getCookie('cart');
+		this.cart = Cookie.get(this.settings.cookie_name);
 
-		this.items.push(item);
+		this.cart.items.push(item);
 
-		Common.createCookie(this.settings.cookie_name, this.items, 2);
+		Cookie.set(this.settings.cookie_name, this.cart, 2);
+	}
+
+	/**
+	 * Removes an item from the cart.
+	 */
+	removeItem(item)
+	{
+ 		this.cart = Cookie.get(this.settings.cookie_name);
+
+ 		this.cart.items.splice(this.cart.items.indexOf(item), 1);
+
+ 		Cookie.set(this.settings.cookie_name, this.cart, 2);
+	}
+
+	/**
+	 * Adds the item to preview.
+	 */
+	addToPreview(item)
+	{
+		let li = DOM.createElement('li', {
+				class: 'item'
+			});
+
+		for(let attribute in item) {
+			let span = DOM.createElement('span', {
+				text: item[attribute]
+			});
+
+			li.appendChild(span);
+		}
+
+		this.previewElement.querySelector('.items').appendChild(li);
 	}
 
 	/**
@@ -95,6 +160,12 @@ class Cart
 		let previewElement = DOM.createElement('div', {
 			id: 'preview'
 		});
+
+		let ul = DOM.createElement('ul', {
+				class: 'items'
+			});
+
+		previewElement.appendChild(ul);
 
 		return previewElement;
 	}
@@ -162,6 +233,12 @@ class Cart
 				visibility: hidden;
 				transform: translateX(60px);
 			}
+
+			${this.settings.element} > #preview > ul.items,
+			${this.settings.element} > #preview > ul.items > li.item {
+				color: #000000;
+				list-style-type: none;
+			}
 		`;
 	    
 	    DOM.addStyle('eCommerce-Cart', css);
@@ -180,19 +257,6 @@ class Cart
 			event.preventDefault();
 			DOM.toggleClass(this.previewElement, 'opened', 'closed');
 		}.bind(this);
-
-		this.previewElement.onmouseout = function(event) {
-			close.call(this, event);
-		}.bind(this);
-	}
-
-	setCartCookie(name)
-	{
-		if(Common.getCookie(name)) {
-			return;
-		}
-
-		Common.createCookie('cart', [], 2); 
 	}
 }
 
