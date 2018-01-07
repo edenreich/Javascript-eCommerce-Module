@@ -1,4 +1,12 @@
 
+/**
+ * @file 
+ * Str class.
+ *
+ * Adds some useful functionality for
+ * manipulating strings or creating string.
+ */
+
 class Str
 {
 

@@ -29,6 +29,11 @@ let defaultSettings = {
 let Container;
 
 /**
+ * Stores the request object.
+ */
+let Http;
+
+/**
  * Stores the cart loader.
  */
 let loadingOverlay;
@@ -42,9 +47,10 @@ class Cart
 	 * Initialize the default settings, setting the element,
 	 * and creating the preview for the carts details.
 	 */
-	constructor(container) 
+	constructor(container, http) 
 	{
 		Container = container;
+		Http = http;
 		
 		this.previewElement = this.createPreviewElement();
 		this.svgIcon = createIcon.call(this);

@@ -2,6 +2,7 @@
 import DOM from './Helpers/DOM.js';
 import Event from './Core/Event.js';
 import Common from './Helpers/Common.js';
+import Request from './Helpers/Request.js';
 import Container from './Core/Container.js';
 import ExceptionHandler from './Exceptions/ExceptionHandler.js';
 
@@ -56,6 +57,9 @@ class eCommerce
  * Binds components dependencies.
  */
 function bindComponentsDependencies(components) {
+
+	let request = this.container.make(new Request);
+
 	this.container.bind('Filter', function(container) {
 		container['Filter'].booted = true;
 		return new Filter(container);
@@ -68,7 +72,7 @@ function bindComponentsDependencies(components) {
 
 	this.container.bind('Products', function(container) {
 		container['Products'].booted = true;
-		return new Products(container);
+		return new Products(container, request);
 	});
 
 	this.container.bind('Pagination', function(container) {
@@ -78,7 +82,7 @@ function bindComponentsDependencies(components) {
 
 	this.container.bind('Cart', function(container) {
 		container['Cart'].booted = true;
-		return new Cart(container);
+		return new Cart(container, request);
 	});
 
 	this.container['Filter']['booted'] = false;
