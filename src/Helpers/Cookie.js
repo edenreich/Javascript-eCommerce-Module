@@ -10,6 +10,8 @@ class Cookie
 			value = JSON.stringify(value);
 		}
 
+		days = days || 10;
+
 	    let expires;
 	    
 	    if (days) {

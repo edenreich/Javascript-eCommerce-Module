@@ -14,6 +14,7 @@ let defaultSettings = {
 	element: '.cart',
 	cookie_name: 'cart',
 	preview_class: '',
+	loader: '/images/icons/spinner.svg',
 	class: '',
 	width: '60px',
 	height: '60px',
@@ -26,6 +27,11 @@ let defaultSettings = {
  * Stores the container object.
  */
 let Container;
+
+/**
+ * Stores the cart loader.
+ */
+let loadingOverlay;
 
 /**
  * The Cart Object, handles the cart icon and sessions.
@@ -67,11 +73,6 @@ class Cart
 			this.cart = {};
 			this.setCart(this.cart);
 		}
-
-
-		Event.listen('ProductWasAdded', function(attributes) {
-			this.addToPreview(attributes);
-		}.bind(this));
 	}
 
 	/**
@@ -120,21 +121,29 @@ class Cart
 	/**
 	 * Adds the item to preview.
 	 */
-	addToPreview(item)
+	addToPreview(items)
 	{
-		let li = DOM.createElement('li', {
-				class: 'item'
-			});
+		let itemsDiv = DOM.find(this.previewElement, '.items');
 
-		for(let attribute in item) {
-			let span = DOM.createElement('span', {
-				text: item[attribute]
-			});
+		itemsDiv.innerHTML = '';
+		for (let i = 0; i < items.length; i++) {
 
-			li.appendChild(span);
+			let li = DOM.createElement('li', {
+					class: 'item'
+				});
+
+			let attributes = items[i];
+
+			for(let attribute in attributes) {
+				let span = DOM.createElement('span', {
+					text: attributes[attribute]
+				});
+
+				li.appendChild(span);
+			}
+
+			itemsDiv.appendChild(li);
 		}
-
-		this.previewElement.querySelector('.items').appendChild(li);
 	}
 
 	/**
@@ -222,6 +231,8 @@ class Cart
 				border: 1px solid #e4e4e4;
 				background: #ffffff;
 				transition: transform 1s, visibility 1s;
+				cursor: default;
+				overflow-Y: scroll;
 			}
 
 			${this.settings.element} > #preview.opened {
@@ -239,9 +250,88 @@ class Cart
 				color: #000000;
 				list-style-type: none;
 			}
+
+			.cart-loader-overlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				background: #ffffff;
+				width: 100%;
+				height: 100%;
+			}
+
+			.cart-loader-overlay .cart-loader {
+				position: absolute;
+				width: 50px;
+				height: 50px;
+				margin-left: -25px;
+				margin-top: -25px;
+				left: 50%;
+				right: 50%;
+				top: 50%;
+				bottom: 50%;
+			}
 		`;
 	    
 	    DOM.addStyle('eCommerce-Cart', css);
+	}
+
+	/**
+	 * Creates an loading overlay.
+	 */
+	loadingOverlay()
+	{
+		if (loadingOverlay) {
+			return loadingOverlay;
+		}
+
+		let loader = DOM.createElement('img', {
+			src: this.settings.loader,
+			class: 'cart-loader'
+		});
+
+		loadingOverlay = DOM.createElement('div', {
+			class: 'cart-loader-overlay'
+		});
+
+		loadingOverlay.appendChild(loader);
+
+		return loadingOverlay;
+	}
+
+	/**
+	 * Loading the cart preview.
+	 */
+	previewStartLoading()
+	{
+		this.previewElement.appendChild(this.loadingOverlay());
+	}
+
+	/**
+	 * Loading the cart preview.
+	 */
+	previewStopLoading()
+	{
+		if (DOM.find(this.previewElement, '.cart-loader-overlay')) {
+			this.previewElement.removeChild(this.loadingOverlay());
+		}
+	}
+
+	/**
+	 * Reloads the items in the cart preview.
+	 */
+	reloadCartPreview()
+	{
+
+		this.previewStartLoading();
+		let items = this.getCartItems();
+		this.addToPreview(items);
+		
+		let instance = this;
+
+		setTimeout(function() {
+			instance.previewStopLoading.call(instance);
+		}, 2000);
 	}
 
 	/**
@@ -253,10 +343,31 @@ class Cart
 			return;
 		}
 
-		this.svgIcon.onclick = function(event) {
-			event.preventDefault();
-			DOM.toggleClass(this.previewElement, 'opened', 'closed');
+		this.svgIcon.onclick = function(e) {
+			e.preventDefault();
+			let opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
+			
+			if (opening) {
+				this.reloadCartPreview();	
+			}
 		}.bind(this);
+
+		Event.listen('ProductWasAdded', function(attributes) {
+			let cart = Cookie.get(this.settings.cookie_name);
+			cart.items.push(attributes);
+			Cookie.set(this.settings.cookie_name, cart);
+			this.reloadCartPreview();
+		}.bind(this));
+	}
+
+	/**
+	 * Retrieve the carts items from the cookie.
+	 */
+	getCartItems()
+	{
+		let cart = Cookie.get(this.settings.cookie_name);
+
+		return (cart) ? cart.items : [];
 	}
 }
 
@@ -285,7 +396,6 @@ function createIcon() {
 
 	g.appendChild(path);
 	svg.appendChild(g);
-
 
 	return svg;
 }

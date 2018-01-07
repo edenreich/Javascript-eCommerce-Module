@@ -135,11 +135,11 @@ class DOM
 
 		secondClassName = secondClassName || undefined;
 
-		element.classList.toggle(className);
-
 		if(secondClassName) {
 			element.classList.toggle(secondClassName);
 		}
+
+		return element.classList.toggle(className);
 	}
 
 	/**
@@ -155,13 +155,29 @@ class DOM
  * Queries an element from the DOM.
  */
 function queryElement(parent, selector) {
-	var element = parent.querySelectorAll(selector);
+	let element = parent.querySelectorAll(selector);
 
 	if(element.length == 0) {
 		return null;
 	}
 
 	return (element.length > 1) ? element : element[0];
+}
+
+/**
+ * Checks if parent has child.
+ */
+function hasChild(parent, child) {
+     let node = child.parentNode;
+     
+     while (node != null) {
+         if (node == parent) {
+             return true;
+         }
+         node = node.parentNode;
+     }
+     
+     return false;
 }
 
 export default DOM;

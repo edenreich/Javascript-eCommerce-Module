@@ -266,7 +266,6 @@ class Products
 
 		addToCart.addEventListener('click', function(event) {
 			event.preventDefault();
-			Container.getInstance('Cart').addItem(attributes);
 			Event.trigger('ProductWasAdded', attributes);
 		});
 
