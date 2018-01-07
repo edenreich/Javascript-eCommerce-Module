@@ -1,10 +1,21 @@
 
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
+/**
+ * @file 
+ * DOM class.
+ *
+ * Adds some useful functionality for
+ * fetching or manipulating DOM elements.
+ */
+
 class DOM
 {
 	/**
 	 * Minifies the css text.
+	 * 
+	 * @param string | string
+	 * @return string
 	 */
 	static minifyCss(string) 
 	{
@@ -19,6 +30,11 @@ class DOM
 
 	/**
 	 * Switches between two given classes.
+	 *
+	 * @param object | element
+	 * @param string | className
+	 * @param string | newClassName
+	 * @return object
 	 */
 	static switchClasses(element, className, newClassName) 
 	{
@@ -28,6 +44,10 @@ class DOM
 
 	/**
 	 * Adds class to a given element.
+	 *
+	 * @param object | element
+	 * @param string | className
+	 * @return object
 	 */
 	static addClass(element, className) 
 	{
@@ -50,6 +70,10 @@ class DOM
 
 	/**
 	 * Removes class from a given element.
+	 * 
+	 * @param object | element
+	 * @param string | className
+	 * @return object
 	 */
 	static removeClass(element, className) 
 	{
@@ -72,19 +96,15 @@ class DOM
 	}
 
 	/**
-	 * Queries the element from the DOM.
-	 */
-	static element(selector) 
-	{
-		return queryElement.call(this, document, selector);
-	}
-
-	/**
 	 * Adds style tag with given id and css to the DOM.
+	 * 
+	 * @param string | id
+	 * @param string | css
+	 * @return void
 	 */
 	static addStyle(id, css) 
 	{
-		if(typeof css != 'string') {
+		if (typeof css != 'string') {
 			throw new InvalidArgumentException;
 		}
 
@@ -103,6 +123,10 @@ class DOM
 
 	/**
 	 * Creates an element with the given options.
+	 * 
+	 * @param string | elementType
+	 * @param object | options
+	 * @return HTMLElement
 	 */
 	static createElement(elementType, options)
 	{
@@ -126,10 +150,14 @@ class DOM
 
 	/**
 	 * Toggles the given classes.
+	 * 
+	 * @param object | element
+	 * @param string | className
+	 * @return bool
 	 */
 	static toggleClass(element, className, secondClassName)
 	{
-		if(element == null || typeof element == 'undefined') {
+		if (element == null || typeof element == 'undefined') {
 			throw new InvalidArgumentException;
 		}
 
@@ -144,20 +172,29 @@ class DOM
 
 	/**
 	 * Finds an element inside of parent.
+	 *
+	 * @param string | selector
+	 * @param object | context
+	 * @return mixed
 	 */
-	static find(element, selector) 
+	static find(selector, context = window.document) 
 	{
-		return queryElement(element, selector);
+		return queryElement(selector, context);
 	}
 }
 
 /**
  * Queries an element from the DOM.
+ *
+ * @param string | selector
+ * @param object | parentElement
+ * @return mixed
  */
-function queryElement(parent, selector) {
-	let element = parent.querySelectorAll(selector);
+function queryElement(selector, parentElement) 
+{
+	let element = parentElement.querySelectorAll(selector);
 
-	if(element.length == 0) {
+	if (element.length == 0) {
 		return null;
 	}
 
@@ -166,12 +203,17 @@ function queryElement(parent, selector) {
 
 /**
  * Checks if parent has child.
+ *
+ * @param object | parentElement
+ * @param object | childElement
+ * @return bool
  */
-function hasChild(parent, child) {
-     let node = child.parentNode;
+function hasChild(parentElement, childElement) 
+{
+     let node = childElement.parentNode;
      
      while (node != null) {
-         if (node == parent) {
+         if (node == parentElement) {
              return true;
          }
          node = node.parentNode;
