@@ -1,8 +1,21 @@
+
+/**
+ * @file 
+ * Cookie class.
+ *
+ * Adds some useful functionality for
+ * setting or getting cookies.
+ */
 	
 class Cookie
 {
 	/**
- 	* Sets a cookie. 
+ 	* Sets a cookie.
+ 	* 
+ 	* @param string | name
+ 	* @param JSON | value
+ 	* @param integer | days
+ 	* @return void
 	*/
 	static set(name, value, days) 
 	{
@@ -27,6 +40,9 @@ class Cookie
 
 	/**
 	 * Retrieves the cookie by name.
+	 *
+	 * @param string | name
+ 	 * @return JSON
 	 */
 	static get(name) 
 	{
@@ -45,7 +61,7 @@ class Cookie
 	        }
 	    }
 
-	    return [];
+	    return {};
 	}
 }
 
