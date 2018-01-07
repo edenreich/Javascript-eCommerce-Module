@@ -71,6 +71,7 @@ class Container
 	make(object)
 	{
 		let instance = {};
+		let key;
 
 		if (this.instanceExist(object)) {
 			return this.getInstance(object);
@@ -78,13 +79,15 @@ class Container
 
 		if (typeof object == 'object') {
 			instance = object;
+			key = object.constructor.name;
+			this.setInstance(key, instance); 
 		} else if(typeof object == 'string' && this.hasOwnProperty(object)) {
-			instance = new this[object];	
+			instance = new this[object];
+			key = object;
+			this.setInstance(key, instance);	
 		} else {
 			throw new InvalidBindingException;
 		}
-
-		this.setInstance(object, instance); 
 
 		return instance;
 	}
