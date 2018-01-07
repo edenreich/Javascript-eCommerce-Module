@@ -1,0 +1,27 @@
+{
+  "name": "eCommerce-Module",
+  "version": "2.0.0",
+  "main": "demo/index.php",
+  "autor": "Eden Reich",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.1.2",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-notify": "^3.1.0",
+    "gulp-plumber": "^1.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-rollup": "^2.15.0",
+    "gulp-sourcemaps": "^2.6.3",
+    "mocha": "^3.5.3",
+    "window": "^4.2.4",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha tests --require babel-register || true"
+  }
+}
