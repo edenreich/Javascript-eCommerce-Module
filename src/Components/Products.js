@@ -26,6 +26,11 @@ let defaultSettings = {
 let Container;
 
 /**
+ * Stores the request object.
+ */
+let Http;
+
+/**
  * The Products Object, handles the products.
  */
 class Products 
@@ -33,9 +38,10 @@ class Products
 	/**
 	 * Initalize the Container.
 	 */
-	constructor(container) 
+	constructor(container, http) 
 	{
 		Container = container;
+		Http = http;
 	}
 
 	/**
@@ -139,45 +145,31 @@ class Products
 
 		return new Promise(function(resolve, reject) {
 
-			let xhr = new XMLHttpRequest || new ActiveXObject("Microsoft.XMLHTTP");
+			let action = (pageNumber) ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 
-			if(pageNumber) {
-				xhr.open('GET', this.settings.url + '?page=' + pageNumber, true);
-			} else {
-				xhr.open('GET', this.settings.url, true);
-			}
-
-			xhr.setRequestHeader('Content-Type', 'application/json');
-			
 			let instance = this;
 
-			xhr.onreadystatechange = function() {
-				if (this.readyState == 4) {
-					if (this.status == 200) {
-						instance.currentItems = (this.responseText == '') ? [] : JSON.parse(this.responseText);
+			Http.get({
+				url: action,
+				success: function(response) {
+					instance.currentItems = response;
 					
-						if(instance.currentItems.length === 0) {
-							reject('No Items were retrieved!');
-						}
-
-						for (var i = 0; i < instance.currentItems.length; i++) {
-							var product = instance.currentItems[i];
-							instance.AfterLoaded.call(this, product);
-						}
-
-						resolve(instance.currentItems);
-					} else {
-						reject(this.statusText);
+					if(instance.currentItems.length === 0) {
+						reject('No Items were retrieved!');
 					}
+
+					for (var i = 0; i < instance.currentItems.length; i++) {
+						var product = instance.currentItems[i];
+						instance.AfterLoaded.call(this, product);
+					}
+
+					resolve(instance.currentItems);
+				},
+				error: function() {
+					reject(error);
 				}
-			};
-
-			xhr.onerror = function(error) {
-				reject(error);
-			};
-
-			xhr.send(null);
-		}.bind(this));
+			});
+		}
 	}
 
 	/**
