@@ -36,6 +36,7 @@ class Pagination
 	 */
 	constructor(container, products) 
 	{
+		this.setCurrent(1);
 		Container = container;
 		Products = products;
 	}
@@ -155,6 +156,7 @@ class Pagination
 	{
 		this.current = parseInt(pageNumber);
 		this.changeUrl(pageNumber);
+		this.setActiveLink(pageNumber);
 	}
 
 	/**
@@ -169,7 +171,7 @@ class Pagination
 	 * Creates the pagination links.
 	 */
 	createLinks() 
-	{	
+	{
 		let ul = document.createElement('ul');
 		
 		this.pages = this.createPageLinks();
@@ -198,7 +200,7 @@ class Pagination
 		for(var i = 1; i <= this.totalPages; i++) {
 			var pageItem = document.createElement('li');
 			var link = document.createElement('a');
-			pageItem.className = 'page-item';
+			pageItem.className = (this.current == i) ? 'page-item active' : 'page-item';
 			link.className = 'page-link';
 			link.setAttribute('href', '?page='+ i);
 			link.setAttribute('data-page-nr', i);
@@ -282,6 +284,17 @@ class Pagination
 	{
 		pageNumber =  pageNumber || GET_Vars()['page'];
 		window.history.replaceState('', '', this.updateURLParameter(window.location.href, 'page', pageNumber));
+	}
+
+	setActiveLink(pageNumber)
+	{
+		for(var page in this.pages) {
+			if (this.pages[page].childNodes[0].getAttribute('data-page-nr') == pageNumber) {
+				DOM.addClass(this.pages[page], 'active');
+			} else {
+				DOM.removeClass(this.pages[page], 'active');
+			}
+		}
 	}
 
 	/**
