@@ -43,7 +43,7 @@ class Filter
 
 	setElement(selector)
 	{
-		this.wrapper = DOM.element(selector);
+		this.wrapper = DOM.find(selector);
 		
 		DOM.addClass(this.wrapper, this.settings.class);
 	}

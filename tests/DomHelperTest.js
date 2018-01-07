@@ -78,8 +78,8 @@ describe('DomHelperTest', function() {
 
 	it('should find a nested element', function() {
 		let element = DOM.element('#testId');
-		let nestedElement = DOM.find(element, '#nestedElement');
-		let nestedNestedElement = DOM.find(element, '#nestedNestedElement');
+		let nestedElement = DOM.find('#nestedElement', element);
+		let nestedNestedElement = DOM.find('#nestedNestedElement', element);
 
 		assert.isNotNull(nestedElement);
 		assert.isNotNull(nestedNestedElement);

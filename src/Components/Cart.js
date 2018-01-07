@@ -123,7 +123,7 @@ class Cart
 	 */
 	addToPreview(items)
 	{
-		let itemsDiv = DOM.find(this.previewElement, '.items');
+		let itemsDiv = DOM.find('.items', this.previewElement);
 
 		itemsDiv.innerHTML = '';
 		for (let i = 0; i < items.length; i++) {
@@ -151,7 +151,7 @@ class Cart
 	 */
 	setElement(selector)
 	{
-		this.icon = DOM.element(selector);
+		this.icon = DOM.find(selector);
 
 		if (this.icon) {
 			DOM.addClass(this.icon, this.settings.class);
@@ -184,7 +184,7 @@ class Cart
 	 */
 	addStyleTag() 
 	{
-		if(DOM.element('#eCommerce-Cart')) {
+		if(DOM.find('#eCommerce-Cart')) {
 			return;
 		}
 
@@ -312,7 +312,7 @@ class Cart
 	 */
 	previewStopLoading()
 	{
-		if (DOM.find(this.previewElement, '.cart-loader-overlay')) {
+		if (DOM.find('.cart-loader-overlay', this.previewElement)) {
 			this.previewElement.removeChild(this.loadingOverlay());
 		}
 	}
@@ -322,7 +322,6 @@ class Cart
 	 */
 	reloadCartPreview()
 	{
-
 		this.previewStartLoading();
 		let items = this.getCartItems();
 		this.addToPreview(items);

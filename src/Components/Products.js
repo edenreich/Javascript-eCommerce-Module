@@ -88,7 +88,7 @@ class Products
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.element(selector);
+		this.wrapper = DOM.find(selector);
 
 		if (this.wrapper) {
 			DOM.addClass(this.wrapper, this.settings.class);
@@ -292,7 +292,7 @@ class Products
 	 */
 	addStyleTag() 
 	{
-		if(DOM.element('#eCommerce-Products')) {
+		if(DOM.find('#eCommerce-Products')) {
 			return;
 		}
 

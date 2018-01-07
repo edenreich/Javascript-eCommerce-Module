@@ -17,6 +17,7 @@ import ComponentNotRegisteredException from './Exceptions/ComponentNotRegistered
 let initalized = false;
 
 let defaultSettings = {
+	element: 'body',
 	importBootstrap: false,
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 };
@@ -33,6 +34,7 @@ class eCommerce
 
 		this.container = new Container;
 		this.settings = Common.extend(defaultSettings, settings);
+		this.settings.element = DOM.find(this.settings.element);
 		
 		bindComponentsDependencies.call(this, settings.components);
 

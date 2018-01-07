@@ -153,7 +153,7 @@ describe.only('CartComponentTest', function() {
 		let product1 = DOM.element('#addToCart')[0];
 		let product2 = DOM.element('#addToCart')[4];
 		let cartIcon = DOM.element('.cart-icon');
-		let preview = DOM.find(cartIcon, '#preview');
+		let preview = DOM.find('#preview', cartIcon);
 
 		product1.click();
 		product2.click();

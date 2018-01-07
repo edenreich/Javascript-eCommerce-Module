@@ -77,8 +77,8 @@ describe('ProductsComponentTest', function() {
 		products.replaceItems(Generator.products(3));
 		
 		let buttons = DOM.element('.action-buttons')[0];
-		let favoriteButton = DOM.find(buttons, '#favorite');
-		let addToCartButton = DOM.find(buttons, '#addToCart');
+		let favoriteButton = DOM.find('#favorite', buttons);
+		let addToCartButton = DOM.find('#addToCart', buttons);
 
 		assert.isNotNull(favoriteButton);
 		assert.isNotNull(addToCartButton);
@@ -98,7 +98,7 @@ describe('ProductsComponentTest', function() {
 		products.replaceItems(Generator.products(3));
 
 		let productElements = DOM.element('.product');
-		let buttons = DOM.find(productElements[0], '.action-buttons');
+		let buttons = DOM.find('.action-buttons', productElements[0]);
 		let addToCartButton = buttons.childNodes[0];
 		let favoriteButton = buttons.childNodes[1];
 
