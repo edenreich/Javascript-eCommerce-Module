@@ -2,12 +2,12 @@
 <html>
 <head>
 	<title>Turbo-eCommerce Module</title>
-	<script type="text/javascript" src="/demo/js/bundle.js"></script>
+	<script type="text/javascript" src="/js/bundle.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<h2 class="col-xs-offset-1"><a href="/demo">Turbo-eCommerce</a></h2>
+<h2 class="col-xs-offset-1"><a href="/">Turbo-eCommerce</a></h2>
 <hr>
 
 <div class="cart"></div>
