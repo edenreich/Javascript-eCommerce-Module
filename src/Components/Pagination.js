@@ -111,7 +111,7 @@ class Pagination
 				throw new NotInPageRangeException;
 			}
 
-			Products.getProductsByPage(requestedPage).then(function(products) {
+			Products.getProducts(requestedPage).then(function(products) {
 				Products.replaceItems(products);
 			});
 
@@ -127,7 +127,7 @@ class Pagination
 				throw new NotInPageRangeException;
 			}
 			
-			Products.getProductsByPage(requestedPage).then(function(products) {
+			Products.getProducts(requestedPage).then(function(products) {
 				Products.replaceItems(products);
 			});
 
@@ -140,7 +140,7 @@ class Pagination
 				
 				let requestedPage = this.getAttribute('data-page-nr');
 				
-				Products.getProductsByPage(requestedPage).then(function(products) {
+				Products.getProducts(requestedPage).then(function(products) {
 					Products.replaceItems(products);
 				});
 				

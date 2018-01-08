@@ -64,7 +64,7 @@ class Products
 		if (Container.Pagination && Container.Pagination.booted) {
 			let instance = this;
 
-			instance.getProductsByPage(1).then(function(products) {
+			instance.getProducts(1).then(function(products) {
 				instance.replaceItems(products);
 			});
 		} else {
@@ -82,6 +82,14 @@ class Products
 		let request = this.getProducts();
 			
 		request.then(function(items) {
+
+			this.currentItems = items;
+
+			for (var i = 0; i < this.currentItems.length; i++) {
+				var product = this.currentItems[i];
+				this.AfterLoaded.call(this, product);
+			}
+
 			Event.trigger('ProductsWereFetched', items);
 			this.replaceItems(items);
 		}.bind(this)).catch(function(error) {
@@ -123,53 +131,13 @@ class Products
 	/**
 	 * Makes an Ajax call to the server without parameters.
 	 */
-	getProducts()
+	getProducts(pageNumber = null)
 	{
-		return this.askServer();
-	}
+		let action = (pageNumber) ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 
-	/**
-	 * Makes an Ajax call to the server.
-	 */
-	getProductsByPage(pageNumber) 
-	{
-		return this.askServer(pageNumber);
-	}
-
-	/**
-	 * Sends the request to the server.
-	 */
-	askServer(pageNumber)
-	{
-		pageNumber = pageNumber || null;
-
-		return new Promise(function(resolve, reject) {
-
-			let action = (pageNumber) ? this.settings.url + '?page=' + pageNumber : this.settings.url;
-
-			let instance = this;
-
-			Http.get({
-				url: action,
-				success: function(response) {
-					instance.currentItems = response;
-					
-					if(instance.currentItems.length === 0) {
-						reject('No Items were retrieved!');
-					}
-
-					for (var i = 0; i < instance.currentItems.length; i++) {
-						var product = instance.currentItems[i];
-						instance.AfterLoaded.call(this, product);
-					}
-
-					resolve(instance.currentItems);
-				},
-				error: function() {
-					reject(error);
-				}
-			});
-		}
+		return Http.get({
+			url: action,
+		});
 	}
 
 	/**

@@ -39,6 +39,11 @@ let Http;
 let loadingOverlay;
 
 /**
+ * Stores the items wrapper.
+ */
+let itemsDiv
+
+/**
  * The Cart Object, handles the cart icon and sessions.
  */
 class Cart 
@@ -129,9 +134,8 @@ class Cart
 	 */
 	addToPreview(items)
 	{
-		let itemsDiv = DOM.find('.items', this.previewElement);
-
 		itemsDiv.innerHTML = '';
+
 		for (let i = 0; i < items.length; i++) {
 
 			let li = DOM.createElement('li', {
@@ -176,11 +180,11 @@ class Cart
 			id: 'preview'
 		});
 
-		let ul = DOM.createElement('ul', {
+		itemsDiv = DOM.createElement('ul', {
 				class: 'items'
 			});
 
-		previewElement.appendChild(ul);
+		previewElement.appendChild(itemsDiv);
 
 		return previewElement;
 	}
@@ -257,16 +261,25 @@ class Cart
 				list-style-type: none;
 			}
 
-			.cart-loader-overlay {
-				position: absolute;
-				top: 0;
-				left: 0;
+			${this.settings.element} .items.loading {
+				display: none;
+				overflow-Y: none;
+			}
+
+			${this.settings.element} .cart-loader-overlay {
+				position: fixed;
+				top: 0; 
+			    left: 0;
+			    right: 0;
+			    bottom: 0;
 				background: #ffffff;
 				width: 100%;
 				height: 100%;
+				min-height: 100%;
+				overflow: auto;
 			}
 
-			.cart-loader-overlay .cart-loader {
+			${this.settings.element} .cart-loader-overlay .cart-loader {
 				position: absolute;
 				width: 50px;
 				height: 50px;
@@ -310,6 +323,7 @@ class Cart
 	 */
 	previewStartLoading()
 	{
+		DOM.addClass(itemsDiv, 'loading');
 		this.previewElement.appendChild(this.loadingOverlay());
 	}
 
@@ -320,6 +334,7 @@ class Cart
 	{
 		if (DOM.find('.cart-loader-overlay', this.previewElement)) {
 			this.previewElement.removeChild(this.loadingOverlay());
+			DOM.removeClass(itemsDiv, 'loading');
 		}
 	}
 
@@ -336,7 +351,7 @@ class Cart
 
 		setTimeout(function() {
 			instance.previewStopLoading.call(instance);
-		}, 2000);
+		}, 1000);
 	}
 
 	/**
