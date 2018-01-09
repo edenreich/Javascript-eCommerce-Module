@@ -1,16 +1,16 @@
 
 import DOM from './Helpers/DOM.js';
-import Event from './Core/Event.js';
 import Common from './Helpers/Common.js';
 import Request from './Helpers/Request.js';
 import Container from './Core/Container.js';
+import EventManager from './Core/EventManager.js';
 import ExceptionHandler from './Exceptions/ExceptionHandler.js';
 
+import Cart from './Components/Cart.js';
 import Filter from './Components/Filter.js';
 import Products from './Components/Products.js';
 import Services from './Components/Services.js';
 import Pagination from './Components/Pagination.js';
-import Cart from './Components/Cart.js';
 
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
 import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
@@ -23,7 +23,7 @@ let defaultSettings = {
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 };
 
-class eCommerce
+class TurboeCommerce
 {
 	constructor(settings)
 	{
@@ -43,7 +43,11 @@ class eCommerce
 
 		return new Proxy(this, {
 			get: function(target, object) {
-				if(! Common.in_array(object, settings.components)) {
+				if (object == 'Events') {
+					return EventManager;
+				}
+
+				if (! Common.in_array(object, settings.components)) {
 					throw new ComponentNotRegisteredException;
 				}
 
@@ -92,4 +96,4 @@ function bindComponentsDependencies(components) {
 	this.container['Cart']['booted'] = false;
 }
 
-export default eCommerce;
+export default TurboeCommerce; 

@@ -2,7 +2,7 @@
 import DOM from '../Helpers/DOM.js';
 import Common from '../Helpers/Common.js';
 import Str from '../Helpers/Str.js';
-import Event from '../Core/Event.js';
+import EventManager from '../Core/EventManager.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
@@ -22,11 +22,15 @@ let defaultSettings = {
 
 /**
  * Stores the container object.
+ * 
+ * @var \Core\Container
  */
 let Container;
 
 /**
  * Stores the request object.
+ * 
+ * @var \Helper\Request 
  */
 let Http;
 
@@ -37,6 +41,10 @@ class Products
 {
 	/**
 	 * Initalize the Container.
+	 *
+	 * @param \Core\Container | container
+	 * @param \Helpers\Request | http
+	 * @return void
 	 */
 	constructor(container, http) 
 	{
@@ -46,6 +54,9 @@ class Products
 
 	/**
 	 * Sets the given settings from the user.
+	 *
+	 * @param object | settings
+	 * @return void
 	 */
 	setup(settings)
 	{
@@ -62,11 +73,7 @@ class Products
 		this.addStyleTag();	
 		
 		if (Container.Pagination && Container.Pagination.booted) {
-			let instance = this;
-
-			instance.getProducts(1).then(function(products) {
-				instance.replaceItems(products);
-			});
+			this.loadPageProducts();
 		} else {
 			this.loadAllProducts();
 		}
@@ -74,31 +81,56 @@ class Products
 		}.bind(this));
 	}
 
-	/**
-	 * Loads the products and replace them in the div container.
-	 */
-	loadAllProducts()
+	loadPageProducts()
 	{
-		let request = this.getProducts();
-			
-		request.then(function(items) {
+		let request = this.getProducts(1);
 
-			this.currentItems = items;
+		request.then(function(products) {
+			this.currentItems = products;
 
 			for (var i = 0; i < this.currentItems.length; i++) {
 				var product = this.currentItems[i];
-				this.AfterLoaded.call(this, product);
+				EventManager.publish('AfterLoaded', product);
 			}
 
-			Event.trigger('ProductsWereFetched', items);
-			this.replaceItems(items);
+			EventManager.publish('ProductsWereFetched', products);
+			this.replaceItems(products);
 		}.bind(this)).catch(function(error) {
 
 		});
 	}
 
 	/**
-	 * Sets the DOM element for populating the products.
+	 * Loads the products and 
+	 * replace them in the div container.
+	 *
+	 * @return void
+	 */
+	loadAllProducts()
+	{
+		let request = this.getProducts();
+			
+		request.then(function(products) {
+			this.currentItems = products;
+
+			for (var i = 0; i < this.currentItems.length; i++) {
+				var product = this.currentItems[i];
+				EventManager.publish('AfterLoaded', product);
+			}
+
+			EventManager.publish('ProductsWereFetched', products);
+			this.replaceItems(products);
+		}.bind(this)).catch(function(error) {
+
+		});
+	}
+
+	/**
+	 * Sets the DOM element 
+	 * for populating the products.
+	 *
+	 * @param string | selector
+	 * @return void
 	 */
 	setElement(selector)
 	{
@@ -110,7 +142,11 @@ class Products
 	}
 
 	/**
-	 * Replace items in the container.
+	 * Replace items in 
+	 * the products container.
+	 *
+	 * @param array | items
+	 * @return array
 	 */
 	replaceItems(items) 
 	{
@@ -129,9 +165,13 @@ class Products
 	}
 
 	/**
-	 * Makes an Ajax call to the server without parameters.
+	 * Makes an Ajax call to the 
+	 * server without parameters.
+	 *
+	 * @param integer | pageNumber
+	 * @return Promise
 	 */
-	getProducts(pageNumber = null)
+	getProducts(pageNumber = 1)
 	{
 		let action = (pageNumber) ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 
@@ -142,6 +182,11 @@ class Products
 
 	/**
 	 * Builds the html for the products.
+	 * 
+	 * @param array | attributesCollection
+	 * @param string | className
+	 * @param string | tagType
+	 * @return array
 	 */
 	buildProducts(attributesCollection, className, tagType) 
 	{
@@ -161,6 +206,11 @@ class Products
 
 	/**
 	 * Builds the html for a single product.
+	 *
+	 * @param object | attributes
+	 * @param string | className
+	 * @param string | tagType
+	 * @return object
 	 */
 	buildProduct(attributes, className, tagType) 
 	{
@@ -224,27 +274,14 @@ class Products
 		tag.appendChild(addToCart);
 		tag.appendChild(favorite);
 
-		addToCart.addEventListener('click', function(event) {
-			event.preventDefault();
-			Event.trigger('ProductWasAdded', attributes);
+		addToCart.addEventListener('click', function(e) {
+			e.preventDefault();
+			EventManager.publish('ProductWasAdded', attributes);
 		});
 
 		overlay.appendChild(tag);
 
 		return product;
-	}
-
-	addToCart(event)
-	{
-		
-	}
-
-	/**
-	 * An event for the client of when the products as been loaded.
-	 */
-	AfterLoaded(product) 
-	{
-		//
 	}
 
 	/**

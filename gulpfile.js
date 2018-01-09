@@ -14,10 +14,10 @@ gulp.task('build', () => {
 				.pipe(plumber())
 				.pipe(sourcemaps.init())
 			   	.pipe(rollup({
-			   		input: './src/eCommerce.js',
+			   		input: './src/TurboeCommerce.js',
 					format: 'iife',
 					treeshake: false,
-					name: 'eCommerce'
+					name: 'TurboeCommerce'
 			   	}))
 			   	.pipe(babel({
 			   		presets: ['es2015']

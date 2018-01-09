@@ -4,12 +4,28 @@ import Common from '../Helpers/Common.js';
 import InvalidBindingException from '../Exceptions/InvalidBindingException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
+/**
+ * @file 
+ * Container class.
+ *
+ * Handles/Controls the dependencies of ecommerce.
+ */
+
+/**
+ * Stores the instances
+ *
+ * @var array
+ */
 let instances = [];
 
 class Container 
 {
 	/**
 	 * Binds key to concrete class.
+	 *
+	 * @param string | key
+	 * @param class | concrete
+	 * @return void
 	 */
 	bind(key, concrete) 
 	{
@@ -26,6 +42,10 @@ class Container
 
 	/**
 	 * Sets an instance.
+	 *
+	 * @param string | key
+	 * @param object | instance
+	 * @return void
 	 */
 	setInstance(key, instance) 
 	{
@@ -37,7 +57,11 @@ class Container
 	}
 
 	/**
-	 * Gets an instance.
+	 * Resolves an instance out of 
+	 * the ioc container.
+	 * 
+	 * @param string | key
+	 * @return object
 	 */
 	getInstance(key) 
 	{
@@ -54,19 +78,28 @@ class Container
 
 	/**
 	 * Checks if an instance exist.
+	 *
+	 * @param mixed | instance
+	 * @return bool
 	 */
 	instanceExist(instance) 
 	{
-		if(typeof instance == 'object') {
+		if (typeof instance == 'object') {
 			return (typeof instances[instance.constructor.name] !== 'undefined');
+		} else if (typeof instance == 'string') {
+			return (typeof instances[instance] !== 'undefined')
 		}
 		
-		
-		return (instance in instances);
+		throw new InvalidArgumentException;
 	}
 
 	/**
-	 * Creates an instance.
+	 * Retrieve an object, if not exists
+	 * will create it, set it in the ioc container
+	 * for later use and retrieve it.
+	 *
+	 * @param mixed | object 
+	 * @return object
 	 */
 	make(object)
 	{
@@ -94,6 +127,8 @@ class Container
 
 	/**
 	 * Retrieve all instances.
+	 *
+	 * @return array
 	 */
 	instances() 
 	{

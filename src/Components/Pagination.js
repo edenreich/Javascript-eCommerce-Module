@@ -1,6 +1,6 @@
 
 import DOM from '../Helpers/DOM.js';
-import Event from '../Core/Event.js';
+import EventManager from '../Core/EventManager.js';
 import Common from '../Helpers/Common.js';
 
 import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
@@ -102,8 +102,8 @@ class Pagination
 	{
 		let instance = this;
 
-		this.next.childNodes[0].onclick = function(event) {
-			event.preventDefault();
+		this.next.childNodes[0].onclick = function(e) {
+			e.preventDefault();
 
 			let requestedPage = instance.current+1;
 
@@ -118,8 +118,8 @@ class Pagination
 			instance.setCurrent(requestedPage);
 		};
 
-		this.previous.childNodes[0].onclick = function(event) {
-			event.preventDefault();
+		this.previous.childNodes[0].onclick = function(e) {
+			e.preventDefault();
 
 			let requestedPage = instance.current-1;
 
@@ -135,8 +135,8 @@ class Pagination
 		};
 
 		for(var i = 0; i < this.pages.length; i++) {
-			this.pages[i].childNodes[0].onclick = function(event) {
-				event.preventDefault();
+			this.pages[i].childNodes[0].onclick = function(e) {
+				e.preventDefault();
 				
 				let requestedPage = this.getAttribute('data-page-nr');
 				

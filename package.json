@@ -1,7 +1,7 @@
 {
-  "name": "eCommerce-Module",
-  "version": "2.0.0",
-  "main": "demo/index.php",
+  "name": "turbo-ecommerce",
+  "version": "2.0.1",
+  "main": "demo/js/bundle.js",
   "autor": "Eden Reich",
   "license": "MIT",
   "devDependencies": {

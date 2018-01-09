@@ -1,9 +1,9 @@
 
 import ComponentsException from './ComponentsException.js';
 import BadEventCallException from './BadEventCallException.js';
-import InvalidArgumentException from './InvalidArgumentException.js';
 import InvalidBindingException from './InvalidBindingException.js';
 import NotInPageRangeException from './NotInPageRangeException.js';
+import InvalidArgumentException from './InvalidArgumentException.js';
 import ComponentNotRegisteredException from './ComponentNotRegisteredException.js';
 
 

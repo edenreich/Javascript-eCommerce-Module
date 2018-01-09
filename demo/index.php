@@ -16,9 +16,9 @@
 <nav class="pagination-links"></nav>
 
 <script type="text/javascript">
-	(function(eCommerce) {
+	(function(TurboeCommerce) {
 
-		var shop = new eCommerce({
+		var shop = new TurboeCommerce({
 			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
 		});
 
@@ -41,9 +41,14 @@
 			total_items: 15,
 		});
 
-		shop.Products.AfterLoaded = function (product) {
-			
-		};
+		shop.Events.subscribe('AfterLoaded', function(product) {
+			console.log(product);	
+		});
+
+		shop.Events.subscribe('ProductsWereFetched', function(products) {
+			console.log(products);
+		});
+		
 
 		shop.Filter.setup({
 			element: '.filter',
@@ -57,7 +62,7 @@
 			hover_color: 'orange'
 		});
 
-	})(eCommerce);
+	})(TurboeCommerce);
 </script>
 </body>
 </html>

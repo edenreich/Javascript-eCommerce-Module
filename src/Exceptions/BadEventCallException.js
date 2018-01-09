@@ -1,10 +1,10 @@
 
 class BadEventCallException extends Error
 {
-	constructor() 
+	constructor(message) 
 	{ 
-		super();
-    	console.error(`BadEventCallException, listening to a none-existing event.`);
+		super(message);
+    	console.error('BadEventCallException: ' + message);
     }
 }
 

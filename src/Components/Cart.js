@@ -3,7 +3,7 @@ import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
-import Event from '../Core/Event.js';
+import EventManager from '../Core/EventManager.js';
 
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
@@ -372,7 +372,7 @@ class Cart
 			}
 		}.bind(this);
 
-		Event.listen('ProductWasAdded', function(attributes) {
+		EventManager.subscribe('ProductWasAdded', function(attributes) {
 			let cart = Cookie.get(this.settings.cookie_name);
 			cart.items.push(attributes);
 			Cookie.set(this.settings.cookie_name, cart);
