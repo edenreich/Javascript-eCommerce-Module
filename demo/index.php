@@ -19,7 +19,7 @@
 	(function(TurboeCommerce) {
 
 		var shop = new TurboeCommerce({
-			components: ['Products', 'Services', 'Filter', 'Cart', '']
+			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
 		});
 
 		shop.Products.setup({
