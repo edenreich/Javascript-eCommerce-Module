@@ -4,9 +4,9 @@
   "main": "demo/js/bundle.js",
   "author": "Eden Reich",
   "license": "MIT",
-  "repository" : { 
-    "type" : "git", 
-    "url" : "https://github.com/edenreich/Turbo-eCommerce.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edenreich/Turbo-eCommerce.git"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -21,8 +21,8 @@
     "gulp-rename": "^1.2.2",
     "gulp-rollup": "^2.15.0",
     "gulp-sourcemaps": "^2.6.3",
+    "gulp-uglify": "^3.0.0",
     "mocha": "^3.5.3",
-    "uglify-js": "^3.3.5",
     "window": "^4.2.4",
     "xmlhttprequest": "^1.8.0"
   },

@@ -6,30 +6,55 @@ const rollup = require('gulp-rollup');
 const sourcemaps = require('gulp-sourcemaps');
 const plumber = require('gulp-plumber');
 const notify = require("gulp-notify");
+const uglify = require("gulp-uglify");
 
 gulp.task('build', () => {
-	return gulp.src([
-					'src/**/*.js'
-				])
-				.pipe(plumber())
-				.pipe(sourcemaps.init())
-			   	.pipe(rollup({
-			   		input: './src/TurboeCommerce.js',
-					format: 'iife',
-					treeshake: false,
-					name: 'TurboeCommerce'
-			   	}))
-			   	.pipe(babel({
-			   		presets: ['es2015']
-			   	}))
-			   	.pipe(sourcemaps.write())
-			   	.pipe(rename('bundle.js'))
-			   	.pipe(notify({
-		            title: "Javascript Compiled"
-		        }))
-			   	.pipe(gulp.dest('demo/js/'));
+	gulp.src([
+				'src/**/*.js'
+			])
+			.pipe(plumber())
+			.pipe(sourcemaps.init())
+		   	.pipe(rollup({
+		   		input: './src/TurboeCommerce.js',
+				format: 'iife',
+				treeshake: false,
+				name: 'TurboeCommerce'
+		   	}))
+		   	.pipe(babel({
+		   		presets: ['es2015']
+		   	}))
+		   	.pipe(sourcemaps.write())
+		   	.pipe(rename('bundle.js'))
+		   	.pipe(notify({
+	            title: "Javascript Compiled"
+	        }))
+		   	.pipe(gulp.dest('demo/js/'));
 });
 
-gulp.task('default', ['build'], () => {
-	gulp.watch('src/**/*.js', ['build']);
+gulp.task('build-min', () => {
+	gulp.src([
+				'src/**/*.js'
+			])
+			.pipe(plumber())
+			.pipe(sourcemaps.init())
+		   	.pipe(rollup({
+		   		input: './src/TurboeCommerce.js',
+				format: 'iife',
+				treeshake: false,
+				name: 'TurboeCommerce'
+		   	}))
+		   	.pipe(babel({
+		   		presets: ['es2015']
+		   	}))
+		   	.pipe(sourcemaps.write())
+		   	.pipe(rename('bundle.min.js'))
+		   	.pipe(notify({
+	            title: "Javascript Compiled"
+	        }))
+	        .pipe(uglify())
+		   	.pipe(gulp.dest('demo/js/'));
+});
+
+gulp.task('default', ['build', 'build-min'], () => {
+	gulp.watch('src/**/*.js', ['build', 'build-min']);
 });
