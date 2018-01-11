@@ -15,8 +15,6 @@ import Pagination from './Components/Pagination.js';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
 import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
 
-let initalized = false;
-
 let defaultSettings = {
 	element: 'body',
 	importBootstrap: false,
@@ -39,8 +37,6 @@ class TurboeCommerce
 		
 		bindComponentsDependencies.call(this, settings.components);
 
-		initalized = true;
-
 		return new Proxy(this, {
 			get: function(target, object) {
 				if (object == 'Events') {
@@ -48,7 +44,7 @@ class TurboeCommerce
 				}
 
 				if (! Common.in_array(object, settings.components)) {
-					throw new ComponentNotRegisteredException;
+					throw new ComponentNotRegisteredException('components must be registered in order to use them.');
 				}
 
 				return target.container.make(object);
@@ -59,6 +55,9 @@ class TurboeCommerce
 
 /**
  * Binds components dependencies.
+ *
+ * @param object | components
+ * @return void
  */
 function bindComponentsDependencies(components) {
 

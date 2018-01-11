@@ -11,6 +11,9 @@ class Str
 {
 	/**
 	 * Convert camelCase to kebab-case.
+	 *
+	 * @param string | string
+	 * @return string
 	 */
 	static kebabCase(string) 
 	{
@@ -19,6 +22,9 @@ class Str
 
 	/**
 	 * Generates a random string.
+	 *
+	 * @param integer | length
+	 * @return string
 	 */
 	static random(length) 
 	{

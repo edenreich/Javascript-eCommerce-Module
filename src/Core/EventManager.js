@@ -3,7 +3,7 @@ import BadEventCallException from '../Exceptions/BadEventCallException';
 
 /**
  * @file 
- * Event class.
+ * EventManager class.
  *
  * Handles subscripions and publishing of events.
  */
