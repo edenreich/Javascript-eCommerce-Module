@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Turbo-eCommerce Module</title>
-	<script type="text/javascript" src="/js/bundle.js"></script>
+	<script type="text/javascript" src="/js/bundle.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -42,11 +42,11 @@
 		});
 
 		shop.Events.subscribe('AfterLoaded', function(product) {
-			console.log(product);	
+			console.log(product);
 		});
 
 		shop.Events.subscribe('ProductsWereFetched', function(products) {
-			console.log(products);
+			
 		});
 		
 

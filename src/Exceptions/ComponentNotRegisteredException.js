@@ -1,10 +1,12 @@
 
+let defaultMessage = 'In order to use components you must register them with the shop!'; 
+
 class ComponentNotRegisteredException extends Error
 {
-	constructor() 
+	constructor(message) 
 	{ 
     	super();
-    	console.error(`ComponentNotRegisteredException, components must be registered in order to use them.`);
+    	console.error('ComponentNotRegisteredException: ' + message || defaultMessage);
     }
 }
 
