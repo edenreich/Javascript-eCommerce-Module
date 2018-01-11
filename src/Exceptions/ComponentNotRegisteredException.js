@@ -5,7 +5,7 @@ class ComponentNotRegisteredException extends Error
 {
 	constructor(message) 
 	{ 
-    	super();
+    	super(message || defaultMessage);
     	console.error('ComponentNotRegisteredException: ' + message || defaultMessage);
     }
 }

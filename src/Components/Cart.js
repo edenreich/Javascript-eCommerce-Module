@@ -66,14 +66,18 @@ let loadingOverlay;
  */
 let itemsDiv
 
-/**
- * The Cart Object, handles the cart icon and sessions.
- */
 class Cart 
 {
 	/**
-	 * Initialize the default settings, setting the element,
-	 * and creating the preview for the carts details.
+	 * - Initialize the IoC container
+	 * - Initialize the Request
+	 * - Initialize the EventManager
+	 * - Creates the preview and the icon of the cart.
+	 *
+	 * @param \Core\Container | container
+	 * @param \Helpers\Request | http
+	 * @param \Core\EventManager | eventManager
+	 * @return void
 	 */
 	constructor(container, http, eventManager) 
 	{
@@ -87,6 +91,9 @@ class Cart
 
 	/**
 	 * Sets the object by the users setting.
+	 *
+	 * @param object | settings
+	 * @return void
 	 */
 	setup(settings)
 	{
@@ -112,6 +119,9 @@ class Cart
 
 	/**
 	 * Checks if the cart is empty
+	 *
+	 * @param object | cart
+	 * @return bool
 	 */
 	isEmpty(cart)
 	{
@@ -119,7 +129,10 @@ class Cart
 	}
 
 	/**
-	 * Sets the cart as a cookie.
+	 * Initialize/Sets the cart as a cookie.
+	 *
+	 * @param object | cart
+	 * @return void
 	 */
 	setCart(cart)
 	{
@@ -131,6 +144,9 @@ class Cart
 
 	/**
 	 * Adds an item to the cart.
+	 *
+	 * @param object | item
+	 * @return void
 	 */
 	addItem(item)
 	{
@@ -143,6 +159,9 @@ class Cart
 
 	/**
 	 * Removes an item from the cart.
+	 *
+	 * @param object | item
+	 * @return void
 	 */
 	removeItem(item)
 	{
@@ -155,6 +174,9 @@ class Cart
 
 	/**
 	 * Adds the item to preview.
+	 *
+	 * @param array | items
+	 * @return void
 	 */
 	addToPreview(items)
 	{
@@ -182,6 +204,9 @@ class Cart
 
 	/**
 	 * Binds everthing to the element.
+	 *
+	 * @param string | selector
+	 * @return void
 	 */
 	setElement(selector)
 	{
@@ -197,6 +222,8 @@ class Cart
 
 	/**
 	 * Creates the cart details preview element.
+	 *
+	 * @return HTMLDivElement
 	 */
 	createPreviewElement()
 	{
@@ -215,6 +242,8 @@ class Cart
 
 	/**
 	 * Add the eCommerce style tags to the DOM.
+	 *
+	 * @return void
 	 */
 	addStyleTag() 
 	{
@@ -321,6 +350,8 @@ class Cart
 
 	/**
 	 * Creates an loading overlay.
+	 *
+	 * @return HTMLDivElement
 	 */
 	loadingOverlay()
 	{
@@ -344,6 +375,8 @@ class Cart
 
 	/**
 	 * Loading the cart preview.
+	 *
+	 * @return void
 	 */
 	previewStartLoading()
 	{
@@ -353,6 +386,8 @@ class Cart
 
 	/**
 	 * Loading the cart preview.
+	 *
+	 * @return void
 	 */
 	previewStopLoading()
 	{
@@ -364,6 +399,8 @@ class Cart
 
 	/**
 	 * Reloads the items in the cart preview.
+	 *
+	 * @return void
 	 */
 	reloadCartPreview()
 	{
@@ -380,6 +417,8 @@ class Cart
 
 	/**
 	 * Binds event listeners to the cart icon.
+	 *
+	 * @return void
 	 */
 	bindEventListeners()
 	{
@@ -406,6 +445,8 @@ class Cart
 
 	/**
 	 * Retrieve the carts items from the cookie.
+	 *
+	 * @return object
 	 */
 	getCartItems()
 	{
@@ -415,11 +456,21 @@ class Cart
 	}
 }
 
+/**
+ * Closes the cart preview element.
+ *
+ * @param event.click
+ */
 function close(event) {
 	event.preventDefault();
 	DOM.switchClasses(this.previewElement, 'opened', 'closed');
 }
 
+/**
+ * Creates the cart svg icon.
+ *
+ * @return SVGSVGElement
+ */
 function createIcon() {
 	let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	let g = document.createElementNS("http://www.w3.org/2000/svg", "g");

@@ -5,7 +5,17 @@ import Str from '../Helpers/Str.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
+ * @file 
+ * Products class.
+ *
+ * The Products component, handles the products tasks.
+ */
+
+
+/**
  * The default settings of each product.
+ *
+ * @var object
  */
 let defaultSettings = {
 	element: '.products',
@@ -40,9 +50,6 @@ let EventManager;
  */
 let Http;
 
-/**
- * The Products Object, handles the products.
- */
 class Products 
 {
 	/**
@@ -88,6 +95,12 @@ class Products
 		}.bind(this));
 	}
 
+	/**
+	 * Loads the products and 
+	 * replace them in the div container.
+	 *
+	 * @return void
+	 */
 	loadPageProducts()
 	{
 		let request = this.getProducts(1);
@@ -100,7 +113,7 @@ class Products
 				EventManager.publish('products.loading', product);
 			}
 
-			EventManager.publish('products.fetched', products);
+			EventManager.publish('products.loaded', products);
 			this.replaceItems(products);
 		}.bind(this)).catch(function(error) {
 
@@ -125,7 +138,7 @@ class Products
 				EventManager.publish('products.loading', product);
 			}
 
-			EventManager.publish('products.fetched', products);
+			EventManager.publish('products.loaded', products);
 			this.replaceItems(products);
 		}.bind(this)).catch(function(error) {
 
@@ -175,7 +188,7 @@ class Products
 	 * Makes an Ajax call to the 
 	 * server without parameters.
 	 *
-	 * @param integer | pageNumber
+	 * @param number | pageNumber
 	 * @return Promise
 	 */
 	getProducts(pageNumber = 1)

@@ -19,7 +19,7 @@
 	(function(TurboeCommerce) {
 
 		var shop = new TurboeCommerce({
-			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
+			components: ['Products', 'Services', 'Filter', 'Cart', '']
 		});
 
 		shop.Products.setup({
@@ -41,12 +41,12 @@
 			total_items: 15,
 		});
 
-		shop.Events.subscribe('AfterLoaded', function(product) {
-			// handle product after loaded
+		shop.Events.subscribe('products.loading', function(product) {
+			// handle products while loading.
 		});
 
-		shop.Events.subscribe('ProductsWereFetched', function(products) {
-			// handle products after all were fetched
+		shop.Events.subscribe('products.loaded', function(products) {
+			// handle products after loaded.
 		});
 		
 

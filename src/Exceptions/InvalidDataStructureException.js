@@ -1,9 +1,12 @@
 
+let defaultMessage = 'The data structure is invalid';
+
 class InvalidDataStructureException  extends Error
 {
-	constructor() 
+	constructor(message) 
 	{ 
-    	super();
+    	super(message || defaultMessage);
+    	console.error('InvalidDataStructureException: ' + message || defaultMessage);
     }
 }
 

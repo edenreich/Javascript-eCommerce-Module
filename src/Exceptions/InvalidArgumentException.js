@@ -5,7 +5,7 @@ class InvalidArgumentException extends Error
 {
 	constructor(message) 
 	{ 
-    	super();
+    	super(message || defaultMessage);
     	console.error('InvalidArgumentException: ' + message || defaultMessage);
     }
 }

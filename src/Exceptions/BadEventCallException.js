@@ -5,7 +5,7 @@ class BadEventCallException extends Error
 {
 	constructor(message) 
 	{ 
-		super(message);
+		super(message || defaultMessage);
     	console.error('BadEventCallException: ' + message || defaultMessage);
     }
 }

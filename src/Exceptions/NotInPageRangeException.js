@@ -1,10 +1,12 @@
 
+let defaultMessage = 'sorry, no more pages.';
+
 class NotInPageRangeException extends Error
 {
-	constructor() 
+	constructor(message) 
 	{ 
-    	super();
-    	console.error(`NotInPageRangeException, sorry, no more pages.`);
+    	super(message || defaultMessage);
+    	console.error('NotInPageRangeException: ' + message || defaultMessage);
     }
 }
 

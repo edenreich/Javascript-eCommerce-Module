@@ -6,7 +6,16 @@ import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
  
 /**
+ * @file 
+ * Pagination class.
+ *
+ * The Pagination component, handles the pagination.
+ */
+
+/**
  * The default settings of the pagination.
+ *
+ * @var object
  */
 let defaultSettings = {
 	element: '.pagination-links',
@@ -17,21 +26,27 @@ let defaultSettings = {
 
 /**
  * Stores the container object.
+ *
+ * @var \Core\Container
  */
 let Container;
 
 /**
  * Stores the products component.
+ *
+ * @var \Components\Products
  */
 let Products;
 
-/**
- * The Pagination Object, handles the pagination.
- */
 class Pagination 
 {
 	/**
-	 * Initialize the container object and the default settings.
+	 * - Initialize the container object.
+	 * - Initialize the products component.
+	 *
+	 * @param \Core\Container | container
+	 * @param \Components\Products | products
+	 * @return void
 	 */
 	constructor(container, products) 
 	{
@@ -41,7 +56,10 @@ class Pagination
 	}
 
 	/**
-	 * Set the Pagination object up.
+	 * Setup the pagination.
+	 *
+	 * @param object | settings
+	 * @return void
 	 */
 	setup(settings)
 	{
@@ -63,6 +81,9 @@ class Pagination
 
 	/**
 	 * Sets the wrapper element.
+	 *
+	 * @param string | selector
+	 * @return void
 	 */
 	setElement(selector)
 	{
@@ -76,6 +97,9 @@ class Pagination
 
 	/**
 	 * Replaces the links in the wrapper.
+	 *
+	 * @param HTMLUListElement | links
+	 * @return void
 	 */
 	replaceLinks(links)
 	{
@@ -85,6 +109,10 @@ class Pagination
 
 	/**
 	 * Calculates the total pages.
+	 *
+	 * @param number | perPage
+	 * @param number | totalItems
+	 * @return number
 	 */
 	calculateTotalPages(perPage, totalItems)
 	{
@@ -96,6 +124,9 @@ class Pagination
 
 	/**
 	 * Binds the buttons events listeners.
+	 *
+	 * @param HTMLUListElement | links
+	 * @return void
 	 */
 	bindEventListeners(links) 
 	{
@@ -150,6 +181,9 @@ class Pagination
 
 	/**
 	 * Sets the current page.
+	 *
+	 * @param number | pageNumber
+	 * @return void
 	 */
 	setCurrent(pageNumber) 
 	{
@@ -160,6 +194,8 @@ class Pagination
 
 	/**
 	 * Gets the current page.
+	 *
+	 * @return number
 	 */
 	getCurrent() 
 	{
@@ -168,6 +204,8 @@ class Pagination
 
 	/**
 	 * Creates the pagination links.
+	 *
+	 * @return HTMLUListElement
 	 */
 	createLinks() 
 	{
@@ -191,6 +229,8 @@ class Pagination
 
 	/**
 	 * Creates the pages item links.
+	 *
+	 * @return array<HTMLLIElement>
 	 */
 	createPageLinks() 
 	{
@@ -213,6 +253,8 @@ class Pagination
 
 	/**
 	 * Creates the previous button link.
+	 *
+	 * @return HTMLLIElement
 	 */
 	createPreviousButton() 
 	{
@@ -242,6 +284,8 @@ class Pagination
 
 	/**
 	 * Creates the next button link.
+	 *
+	 * @return HTMLLIElement
 	 */
 	createNextButton() 
 	{
@@ -270,6 +314,9 @@ class Pagination
 
 	/**
 	 * Checks if the given page is in range.
+	 *
+	 * @param number | pageNumber
+	 * @return bool
 	 */
 	notInPageRange(pageNumber) 
 	{
@@ -278,13 +325,22 @@ class Pagination
 
 	/**
 	 * Changes the url to a given page number.
+	 *
+	 * @param number | pageNumber
+	 * @return void
 	 */
 	changeUrl(pageNumber) 
 	{
-		pageNumber =  pageNumber || GET_Vars()['page'];
+		pageNumber =  pageNumber || queryString()['page'];
 		window.history.replaceState('', '', this.updateURLParameter(window.location.href, 'page', pageNumber));
 	}
 
+	/**
+	 * Sets the active link.
+	 *
+	 * @param number | pageNumber
+	 * @return void
+	 */
 	setActiveLink(pageNumber)
 	{
 		for(var page in this.pages) {
@@ -298,8 +354,10 @@ class Pagination
 
 	/**
 	 * Get the get variables from the url.
+	 *
+	 * @return array
 	 */
-	GET_Vars() 
+	queryString() 
 	{
 		var vars = {};
 		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
@@ -311,6 +369,11 @@ class Pagination
 
 	/**
 	 * Modifies the get parameter in the url.
+	 *
+	 * @param string | url
+	 * @param string | param
+	 * @param number | paramVal
+	 * @return string
 	 */
 	updateURLParameter(url, param, paramVal) 
 	{
@@ -336,6 +399,8 @@ class Pagination
 
 	/**
 	 * Resets the pagination.
+	 *
+	 * @return void
 	 */
 	reset() 
 	{
