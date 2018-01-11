@@ -38,16 +38,14 @@ class TurboeCommerce
 		bindComponentsDependencies.call(this, settings.components);
 
 		return new Proxy(this, {
-			get: function(target, object) {
-				if (object == 'Events') {
-					return EventManager;
+			get: function(target, source) {
+				if (Common.in_array(source, settings.components)) {
+					return target.container.make(source);
+				} else if (target.container.instanceExist(source)) {
+					return target.container.getInstance(source);
 				}
 
-				if (! Common.in_array(object, settings.components)) {
-					throw new ComponentNotRegisteredException('components must be registered in order to use them.');
-				}
-
-				return target.container.make(object);
+				throw new ComponentNotRegisteredException('components must be registered in order to use them.');
 			}
 		});
 	}
@@ -60,6 +58,8 @@ class TurboeCommerce
  * @return void
  */
 function bindComponentsDependencies(components) {
+
+	this.container.setInstance('Events', new EventManager);
 
 	let request = this.container.make(new Request);
 
@@ -75,17 +75,17 @@ function bindComponentsDependencies(components) {
 
 	this.container.bind('Products', function(container) {
 		container['Products'].booted = true;
-		return new Products(container, request);
+		return new Products(container, request, container.Events);
 	});
 
 	this.container.bind('Pagination', function(container) {
 		container['Pagination'].booted = true;
-		return new Pagination(container, container.make('Products'));
+		return new Pagination(container, container.make('Products'), container.Events);
 	});
 
 	this.container.bind('Cart', function(container) {
 		container['Cart'].booted = true;
-		return new Cart(container, request);
+		return new Cart(container, request, container.Events);
 	});
 
 	this.container['Filter']['booted'] = false;

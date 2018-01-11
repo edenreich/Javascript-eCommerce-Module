@@ -2,7 +2,6 @@
 import DOM from '../Helpers/DOM.js';
 import Common from '../Helpers/Common.js';
 import Str from '../Helpers/Str.js';
-import EventManager from '../Core/EventManager.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
@@ -28,6 +27,13 @@ let defaultSettings = {
 let Container;
 
 /**
+ * Stores the container object.
+ * 
+ * @var \Core\EventManager
+ */
+let EventManager;
+
+/**
  * Stores the request object.
  * 
  * @var \Helper\Request 
@@ -46,10 +52,11 @@ class Products
 	 * @param \Helpers\Request | http
 	 * @return void
 	 */
-	constructor(container, http) 
+	constructor(container, http, eventManager) 
 	{
 		Container = container;
 		Http = http;
+		EventManager = eventManager;
 	}
 
 	/**
@@ -90,10 +97,10 @@ class Products
 
 			for (var i = 0; i < this.currentItems.length; i++) {
 				var product = this.currentItems[i];
-				EventManager.publish('AfterLoaded', product);
+				EventManager.publish('products.loading', product);
 			}
 
-			EventManager.publish('ProductsWereFetched', products);
+			EventManager.publish('products.fetched', products);
 			this.replaceItems(products);
 		}.bind(this)).catch(function(error) {
 
@@ -115,10 +122,10 @@ class Products
 
 			for (var i = 0; i < this.currentItems.length; i++) {
 				var product = this.currentItems[i];
-				EventManager.publish('AfterLoaded', product);
+				EventManager.publish('products.loading', product);
 			}
 
-			EventManager.publish('ProductsWereFetched', products);
+			EventManager.publish('products.fetched', products);
 			this.replaceItems(products);
 		}.bind(this)).catch(function(error) {
 
@@ -276,7 +283,7 @@ class Products
 
 		addToCart.addEventListener('click', function(e) {
 			e.preventDefault();
-			EventManager.publish('ProductWasAdded', attributes);
+			EventManager.publish('cart.products.added', attributes);
 		});
 
 		overlay.appendChild(tag);

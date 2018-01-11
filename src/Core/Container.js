@@ -29,12 +29,16 @@ class Container
 	 */
 	bind(key, concrete) 
 	{
-		if (typeof key != 'string' || typeof concrete != 'function') {
-			throw new InvalidArgumentException;
+		if (typeof key != 'string') {
+			throw new InvalidArgumentException('bind() expects the first parameter to be string, but ' + typeof key + ' was passed instead.');
+		}
+
+		if (typeof concrete != 'function') { 
+			throw new InvalidArgumentException('bind() expects the second parameter to be a function, but ' + typeof concrete + ' was passed instead.');
 		}
 
 		if (typeof this[key] != 'undefined') {
-			throw new InvalidBindingException;
+			throw new InvalidBindingException('bind() recieved an already existing bind.');
 		}
 
 		this[key] = concrete.bind(concrete, this);
@@ -45,15 +49,22 @@ class Container
 	 *
 	 * @param string | key
 	 * @param object | instance
+	 * @param string | alias
 	 * @return void
 	 */
-	setInstance(key, instance) 
+	setInstance(key, instance, alias = null) 
 	{
-		if(typeof key != 'string' || typeof instance != 'object') {
-			throw new InvalidArgumentException;
+		if (typeof key != 'string') {
+			throw new InvalidArgumentException('setInstace() expects the first parameter to be a string, but ' + typeof key + ' was passed instead.');
+		}
+
+		if (typeof instance != 'object') {
+			throw new InvalidArgumentException('setInstance() expects the second parameter to be an object, but ' + typeof instance + ' was passed instead.');
 		}
 
 		instances[key] = instance;
+		instances[alias] = instance;
+		this[key] = instance;
 	}
 
 	/**
@@ -66,7 +77,7 @@ class Container
 	getInstance(key) 
 	{
 		if(typeof key != 'string') {
-			throw new InvalidArgumentException;
+			throw new InvalidArgumentException('getInstace() expects the first parameter to be a string, but ' + typeof key + ' was passed instead.');
 		}
 
 		if(typeof key == 'object') {
@@ -90,7 +101,7 @@ class Container
 			return (typeof instances[instance] !== 'undefined')
 		}
 		
-		throw new InvalidArgumentException;
+		throw new InvalidArgumentException('instanceExist() expects the first parameter to be string or an object, but ' + typeof instance + ' was passed instead.');
 	}
 
 	/**
@@ -119,7 +130,7 @@ class Container
 			key = object;
 			this.setInstance(key, instance);	
 		} else {
-			throw new InvalidBindingException;
+			throw new InvalidBindingException('The parameter you passed could not be bounded to the container, parameter: ' + typeof object);
 		}
 
 		return instance;

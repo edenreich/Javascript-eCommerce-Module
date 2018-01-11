@@ -1,6 +1,5 @@
 
 import DOM from '../Helpers/DOM.js';
-import EventManager from '../Core/EventManager.js';
 import Common from '../Helpers/Common.js';
 
 import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';

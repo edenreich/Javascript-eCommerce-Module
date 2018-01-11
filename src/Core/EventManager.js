@@ -24,7 +24,8 @@ class EventManager
 	 * @param function | callback
 	 * @return void
 	 */
-	static subscribe(name, callback) {
+	subscribe(name, callback) 
+	{
 		if (typeof callback !== 'function') {
 			throw new InvalidArgumentException;
 		}
@@ -43,7 +44,8 @@ class EventManager
 	 * @param list | data
 	 * @return void
 	 */
-	static publish(name, ...data) {
+	publish(name, ...data) 
+	{
 		data = data || null;
 
 		// If there are no subscribers simply ignore that event.

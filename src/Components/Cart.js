@@ -3,12 +3,20 @@ import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
-import EventManager from '../Core/EventManager.js';
 
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
+ * @file 
+ * Cart class.
+ *
+ * Handles adding, removing etc... of items.
+ */
+
+/**
  * The default settings of the cart.
+ *
+ * @var object
  */
 let defaultSettings = {
 	element: '.cart',
@@ -25,21 +33,36 @@ let defaultSettings = {
 
 /**
  * Stores the container object.
+ *
+ * @var \Core\Container
  */
 let Container;
 
 /**
+ * Stores the event manager object.
+ *
+ * @var \Core\EventManager
+ */
+let EventManager;
+
+/**
  * Stores the request object.
+ *
+ * @var \Helpers\Request
  */
 let Http;
 
 /**
  * Stores the cart loader.
+ *
+ * @var HTMLDivElement
  */
 let loadingOverlay;
 
 /**
  * Stores the items wrapper.
+ *
+ * @var HTMLDivElement
  */
 let itemsDiv
 
@@ -52,10 +75,11 @@ class Cart
 	 * Initialize the default settings, setting the element,
 	 * and creating the preview for the carts details.
 	 */
-	constructor(container, http) 
+	constructor(container, http, eventManager) 
 	{
 		Container = container;
 		Http = http;
+		EventManager = eventManager;
 		
 		this.previewElement = this.createPreviewElement();
 		this.svgIcon = createIcon.call(this);
@@ -371,8 +395,8 @@ class Cart
 				this.reloadCartPreview();	
 			}
 		}.bind(this);
-
-		EventManager.subscribe('ProductWasAdded', function(attributes) {
+		
+		EventManager.subscribe('cart.products.added', function(attributes) {
 			let cart = Cookie.get(this.settings.cookie_name);
 			cart.items.push(attributes);
 			Cookie.set(this.settings.cookie_name, cart);
