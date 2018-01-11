@@ -2,6 +2,19 @@
 import Common from '../Helpers/Common.js';
 import InvalidDataStructureException from '../Exceptions/InvalidDataStructureException.js';
 
+/**
+ * @file 
+ * Request class.
+ *
+ * Handles ajax requests POST, GET etc...
+ */
+
+/**
+ * Stores the default settings.
+ *
+ * @var object
+ */
+
 let defaultSettings = {
 	headers: {
 		'Content-Type': 'application/json'
@@ -9,9 +22,15 @@ let defaultSettings = {
 	async: true
 };
 
-
 class Request
 {
+	/**
+	 * - Initialize the settings object.
+	 * - Initialize the xhr object.
+	 *
+	 * @param object | settings
+	 * @return void
+	 */
 	constructor(settings)
 	{
 		this.xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");
@@ -19,6 +38,11 @@ class Request
 		this.setDefaultRequestHeader();
 	}
 
+	/**
+	 * Sets the default request headers.
+	 *
+	 * @return void
+	 */
 	setDefaultRequestHeader()
 	{
 		let header;
@@ -38,56 +62,64 @@ class Request
 		}
 	}
 
+	/**
+	 * Makes a POST request.
+	 *
+	 * @param object | options
+	 * @return Promise
+	 */
 	post(options)
 	{
-		if(typeof options !== 'object') {
-			throw new Error('post expecting a json object to be passed as an argument, but '+ typeof options + ' was passed.');
-		}
-
-		if(typeof options.data !== 'object') {
-			throw new Error('data property expecting a json object to be passed as an argument, but ' + typeof options.data + ' was passed.');
-		}
-
-		options.data = options.data || null;
-
-		xhr.open('POST', options.url, true);
-		xhr.setRequestHeader("Content-type", options.headers || "application/x-www-form-urlencoded");
+		let xhr = this.xhr;
 
 		if(options.hasOwnProperty('before') && typeof options.before == 'function') {
-			options.before();
+			options.before.call(this);
 		}
 
-		xhr.onreadystatechange = function() {
-		    if(this.readyState == 4 && this.status == 200) {
-		       	if(options.hasOwnProperty('success') && typeof options.success == 'function') {
-		       		options.success(JSON.parse(this.response));
-		   		}
-		       
-		       	if(options.hasOwnProperty('after') && typeof options.after == 'function') {
-		       		options.after(this.response);
-		   		}
-		    }
-		}
-
-		xhr.onerror = function(message, a, b) {
-			if(options.hasOwnProperty('error') && typeof options.error == 'function') {
-				options.error(message, a, b);
+		return new Promise(function(resolve, reject) {
+			if(typeof options !== 'object') {
+				throw new Error('get expecting a json object to be passed as an argument, but '+ typeof options + ' was passed.');
 			}
-		}
 
-		if(! options.data) {
-			xhr.send(null);
-			return options;
-		}
+			options.data = options.data || {};
 
-		var queryString = Object.keys(options.data).map(function(key) {
-	            return encodeURIComponent(key) + '=' +
-	                	encodeURIComponent(options.data[key]);
-	        	}).join('&');
+			if(typeof options.data !== 'object') {
+				throw new Error('data property expecting a json object to be passed as an argument, but ' + typeof options.data + ' was passed.');
+			}
 
-		xhr.send(queryString);
+			xhr.open('POST', options.url, true);
 
-		return options;
+			xhr.responseType = options.dataType || 'json';
+			xhr.timeout = options.timeout || 3000;
+
+			xhr.onreadystatechange = function() {
+			    if(this.readyState != 4 || this.status != 200) {
+			    	return;
+			    }
+	       	
+       			resolve(this.response);
+       			
+       			if(options.hasOwnProperty('after') && typeof options.after == 'function') {
+					options.after.call(this);
+				}
+			};
+
+			xhr.onerror = function(message) {
+				options.error(message);
+				reject(message);
+			};
+
+			if(! options.data) {
+				xhr.send(null);
+			}
+
+			var queryString = Object.keys(options.data).map(function(key) {
+		            return encodeURIComponent(key) + '=' +
+		                	encodeURIComponent(options.data[key]);
+		        	}).join('&');
+
+			xhr.send(queryString);
+		});
 	}
 
 	/**

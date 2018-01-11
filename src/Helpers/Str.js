@@ -9,7 +9,6 @@
 
 class Str
 {
-
 	/**
 	 * Convert camelCase to kebab-case.
 	 */
@@ -32,7 +31,6 @@ class Str
 
 		return string;
 	}
-
 }
 
 export default Str;
