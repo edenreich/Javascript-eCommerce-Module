@@ -1,20 +1,26 @@
 <p align="center"><img src="https://s21.postimg.org/6ak2pw1l3/laptop.png" width="220px" height="250px"></p>
 
 # Javascript-eCommerce-Module
-A super fast Javascript Webshop(everything is loaded with Ajax). This module is there for handeling the common components that needed to run a webshop(products, services, filter, cart, pagination etc..).
+A super fast Webshop built with Vanila-Javascript(everything is loaded with Ajax). This module is there for handling the common components that are needed for runing a Webshop(Products, Services, Filter, Cart, Checkout, Pagination etc..).
 
 
 ### Install
-Import the script demo/bundle.js to your files project.
+Import the script demo/bundle.min.js to your files project.
 
-as an npm package will come soon..
+or
+
+run in the command line: npm install turbo-ecommerce
 
 ### Configuration
 
 #### Configure the eCommerce:
+- element - what DOM element should it be bound to.
+- importBootstrap - if you want setting this to true will link a stylesheet of bootstrap.
 - components - define the components you will need.
 ```javascript
-var shop = new eCommerce({
+var shop = new TurboeCommerce({
+	element: 'body',
+	importBootstrap: false,
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 });
 ```
@@ -27,7 +33,7 @@ var shop = new eCommerce({
 - favorite_button_class - the class to apply on the favorite button.
 - width - the fixed width of each product item.
 - height - the fixed height of each product item.
-- attributes - to be explicit, only attributes names you specify will be showen inside of a product frame.
+- attributes - to be explicit, only attributes names you specify will be showen inside of each product frame.
 - url - the server side url to fetch the products from.
 ```javascript
 shop.Products.setup({
@@ -68,21 +74,75 @@ shop.Filter.setup({
 #### Configure the Cart:
 - element - what DOM element should it be bound to.
 - cookie_name - the name of the cookie.
+- class - the class to apply to the preview cart icon.
+- width - the width to apply to the preview cart icon.
+- height - the height to apply to the preview cart icon.
+- preview_class - the class to apply to the preview cart box.
+- loader - the source/path to the loader you wish to be used.
 - placement - the place where you want to cart icon to apear(available options: 'left-top', 'right-top').
 - hover_color - the color when going over the cart icon with the mouse.
+- page - the page where you want to display your cart.
 ```javascript
 shop.Cart.setup({
 	element: '.cart',
 	cookie_name: 'cart',
+	class: '',
+	width: '60px',
+	height: '60px',
+	preview_class: '',
+	loader: '/images/icons/spinner.svg',
 	placement: 'right-top',
+	fixed: true,
 	hover_color: 'orange'
+	page: 'path/to/the/cart/page.php'
 });
 ```
 
-## Events
-If you want to run something after the products are loaded into the container you may use AfterLoaded callback:
+#### Configure the Checkout:
+upcomming...
 ```javascript
-shop.Products.AfterLoaded = function(product) {
-	// run something after the products has been loaded.
+shop.Checkout.setup({
+	
+});
+```
+
+#### Configure the Services:
+upcomming...will be slightly different from Products
+```javascript
+shop.Services.setup({
+	
+});
+```
+
+#### Configure the Filter:
+upcomming...
+```javascript
+shop.Filter.setup({
+	
+});
+```
+
+
+## Events
+You can also subscribe to events that will be published at certain point and time.
+
+When products are loading your callback will be executed with a product object:
+```javascript
+shop.Events.subscribe('products.loading', function(product) {
+	// handle event
+};
+```
+
+When products are loaded your callback will be executed with a products object:
+```javascript
+shop.Events.subscribe('products.loaded', function(products) {
+	// handle event
+};
+```
+
+When product has been added to the cart your callback will be executed with the attributes of the product:
+```javascript
+shop.Events.subscribe('cart.products.added', function(attributes) {
+	// handle event
 };
 ```
