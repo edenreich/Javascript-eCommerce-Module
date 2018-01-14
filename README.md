@@ -14,11 +14,13 @@ run in the command line: npm install turbo-ecommerce
 ### Configuration
 
 #### Configure the eCommerce:
+- debug_level - the level of debuging('info', 'warning', 'error').
 - element - what DOM element should it be bound to.
 - importBootstrap - if you want setting this to true will link a stylesheet of bootstrap.
 - components - define the components you will need.
 ```javascript
 var shop = new TurboeCommerce({
+	debug_level: 'info',
 	element: 'body',
 	importBootstrap: false,
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
