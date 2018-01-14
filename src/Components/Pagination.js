@@ -19,6 +19,7 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  */
 let defaultSettings = {
 	element: '.pagination-links',
+	proccessing: 'client-side',
 	class: '',
 	per_page: 5,
 	total_items: 10,
@@ -62,9 +63,7 @@ class Pagination
 	 * @return void
 	 */
 	setup(settings)
-	{
-		document.addEventListener('DOMContentLoaded', function() {
-
+	{	
 		if(typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -74,9 +73,9 @@ class Pagination
 		this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
 		
 		this.setElement(this.settings.element);
+		this.links = this.createLinks();
+		this.bindEventListeners(this.links);
 		this.replaceLinks(this.links);
-
-		}.bind(this));
 	}
 
 	/**
@@ -90,9 +89,6 @@ class Pagination
 		this.wrapper = DOM.find(selector);
 		
 		DOM.addClass(this.wrapper, this.settings.class);
-
-		this.links = this.createLinks();
-		this.bindEventListeners(this.links);
 	}
 
 	/**
@@ -141,11 +137,9 @@ class Pagination
 				throw new NotInPageRangeException;
 			}
 
-			Products.getProducts(requestedPage).then(function(products) {
-				Products.replaceItems(products);
+			Products.loadProducts(requestedPage).then(function(products) {
+				instance.setCurrent(requestedPage);
 			});
-
-			instance.setCurrent(requestedPage);
 		};
 
 		this.previous.childNodes[0].onclick = function(e) {
@@ -157,11 +151,9 @@ class Pagination
 				throw new NotInPageRangeException;
 			}
 			
-			Products.getProducts(requestedPage).then(function(products) {
-				Products.replaceItems(products);
+			Products.loadProducts(requestedPage).then(function(products) {
+				instance.setCurrent(requestedPage);
 			});
-
-			instance.setCurrent(requestedPage);
 		};
 
 		for(var i = 0; i < this.pages.length; i++) {
@@ -170,11 +162,9 @@ class Pagination
 				
 				let requestedPage = this.getAttribute('data-page-nr');
 				
-				Products.getProducts(requestedPage).then(function(products) {
-					Products.replaceItems(products);
+				Products.loadProducts(requestedPage).then(function(products) {
+					instance.setCurrent(requestedPage);
 				});
-				
-				instance.setCurrent(requestedPage);
 			};
 		}
 	}

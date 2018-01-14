@@ -74,50 +74,46 @@ class Products
 	 */
 	setup(settings)
 	{
-		document.addEventListener('DOMContentLoaded', function() {
-			
 		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
 		this.settings = Common.extend(defaultSettings, settings);
+		this.totalItems = null;
 
-		this.setElement(this.settings.element);
+		document.addEventListener('DOMContentLoaded', function() {
 
-		this.addStyleTag();	
-		
-		if (Container.Pagination && Container.Pagination.booted) {
-			this.loadPageProducts();
-		} else {
-			this.loadAllProducts();
-		}
+			this.setElement(this.settings.element);
 
+			this.addStyleTag();	
+
+			this.loadProducts(1);
 		}.bind(this));
 	}
 
 	/**
-	 * Loads the products and 
-	 * replace them in the div container.
-	 *
-	 * @return void
+	 * Loads the products for the page.
+	 * 
+	 * @param number | pageNumber
+	 * @param bool | all
 	 */
-	loadPageProducts()
+	loadProducts(pageNumber = 1, all)
 	{
-		let request = this.getProducts(1);
+		if (Container.Pagination && Container.Pagination.booted) {
 
-		request.then(function(products) {
-			this.currentItems = products;
+			if (Container.Pagination.settings.proccessing == 'client-side') {
 
-			for (var i = 0; i < this.currentItems.length; i++) {
-				var product = this.currentItems[i];
-				EventManager.publish('products.loading', product);
+				return this.loadPageProductsByClient(pageNumber);
+
+			} else if (Container.Pagination.settings.proccessing == 'server-side') {
+
+				return this.loadPageProductsByServer(pageNumber);
+
+			} else {
+
+				throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
 			}
-
-			EventManager.publish('products.loaded', products);
-			this.replaceItems(products);
-		}.bind(this)).catch(function(error) {
-
-		});
+		}
 	}
 
 	/**
@@ -126,11 +122,12 @@ class Products
 	 *
 	 * @return void
 	 */
-	loadAllProducts()
+	loadPageProductsByServer(pageNumber)
 	{
-		let request = this.getProducts();
-			
+		let request = this.getProducts(pageNumber);
+
 		request.then(function(products) {
+
 			this.currentItems = products;
 
 			for (var i = 0; i < this.currentItems.length; i++) {
@@ -140,9 +137,51 @@ class Products
 
 			EventManager.publish('products.loaded', products);
 			this.replaceItems(products);
+			resolve();
 		}.bind(this)).catch(function(error) {
 
 		});
+
+		return request;
+	}
+
+	/**
+	 * Loads the products and 
+	 * replace them in the div container.
+	 *
+	 * @return void
+	 */
+	loadPageProductsByClient(pageNumber)
+	{
+		let request;
+
+		if (this.totalItems == null) { // need to fetch them from the server.
+			request = this.getProducts();
+		} else { // no need to wait can resolve immediately with the products. 
+			request = Promise.resolve(this.totalItems);
+		}
+
+		request.then(function(products) {
+			this.totalItems = products;
+			let perPage = Container.Pagination.settings.per_page; 
+			Container.Pagination.settings.total_items = products.length;
+			let pages = Common.array_chunk(products, perPage);
+			this.currentItems = pages[pageNumber-1];
+
+			for (var i = 0; i < this.currentItems.length; i++) {
+				var product = this.currentItems[i];
+				EventManager.publish('products.loading', product);
+			}
+
+			EventManager.publish('products.loaded', products);
+			this.replaceItems(this.currentItems);
+			Promise.resolve(this.currentItems);
+
+		}.bind(this)).catch(function(error) {
+
+		});
+
+		return request;
 	}
 
 	/**
@@ -191,7 +230,7 @@ class Products
 	 * @param number | pageNumber
 	 * @return Promise
 	 */
-	getProducts(pageNumber = 1)
+	getProducts(pageNumber = null)
 	{
 		let action = (pageNumber) ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 

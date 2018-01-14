@@ -60,6 +60,37 @@ class Common
 	}
 
 	/**
+	 * Takes an array and chunks it.
+	 *
+	 * @param array | total
+	 * @param number | chunks
+	 * @return array
+	 */
+	static array_chunk(total, size = 5)
+	{        
+      	if (isNaN(size)) {
+      		throw new InvalidArgumentException('Common.array_chunk() expects the second parameter to be a number, but ' + typeof size + ' passed instead.')
+      	}
+
+      	size = parseInt(size);
+       
+       	let i;
+       	let collection = [];
+
+        // add each chunk to the result
+        for (i = 0; i < Math.ceil(total.length / size); i++) {
+            
+            var start = i * size;
+            var end = start + size;
+            
+            collection.push(total.slice(start, end));
+            
+        }
+        
+        return collection;
+	}
+
+	/**
 	 * Checks if an object is empty.
 	 *
 	 * @param object | object

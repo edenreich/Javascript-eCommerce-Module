@@ -41,6 +41,7 @@
 			class: 'col-xs-offset-4 col-xs-8',
 			per_page: 5,
 			total_items: 15,
+			proccessing: 'client-side',
 		});
 
 		shop.Events.subscribe('products.loading', function(product) {

@@ -118,35 +118,40 @@ function bindComponentsDependencies(components) {
 	let request = this.container.make(new Request);
 
 	this.container.bind('Filter', function(container) {
-		container['Filter'].booted = true;
-		return new Filter(container);
+		let component = new Filter(container);
+		component.booted = true; 
+		return component;
 	});
 	
 	this.container.bind('Services', function(container) { 
-		container['Services'].booted = true;
-		return new Services(container);
+		let component = new Services(container); 
+		component.booted = true;
+		return component;
 	});
 
 	this.container.bind('Products', function(container) {
-		container['Products'].booted = true;
-		return new Products(container, request, container.Events);
+		let component = new Products(container, request, container.Events);
+		component.booted = true;
+		return component;
 	});
 
 	this.container.bind('Pagination', function(container) {
-		container['Pagination'].booted = true;
-		return new Pagination(container, container.make('Products'), container.Events);
+		let component = new Pagination(container, container.make('Products'), container.Events);
+		component.booted = true;
+		return component;
 	});
 
 	this.container.bind('Cart', function(container) {
-		container['Cart'].booted = true;
-		return new Cart(container, request, container.Events);
+		let component = new Cart(container, request, container.Events);
+		component.booted = true;
+		return component;
 	});
 
-	this.container['Filter']['booted'] = false;
-	this.container['Services']['booted'] = false;
-	this.container['Products']['booted'] = false;
-	this.container['Pagination']['booted'] = false;
-	this.container['Cart']['booted'] = false;
+	this.container.Filter.booted = false;
+	this.container.Services.booted = false;
+	this.container.Products.booted = false;
+	this.container.Pagination.booted = false;
+	this.container.Cart.booted = false;
 }
 
 export default TurboeCommerce; 
