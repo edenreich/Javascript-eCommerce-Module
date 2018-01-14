@@ -345,7 +345,7 @@ class Cart
 			}
 		`;
 	    
-	    DOM.addStyle('eCommerce-Cart', css);
+	    DOM.addStyle('Turbo-eCommerce-Cart', css);
 	}
 
 	/**

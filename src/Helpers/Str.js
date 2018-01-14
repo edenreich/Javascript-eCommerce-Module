@@ -37,6 +37,18 @@ class Str
 
 		return string;
 	}
+
+	/**
+	 * Changes the first letter 
+	 * of the string to uppercase.
+	 * 
+	 * @param string | string
+	 * @return string
+	 */
+	static ucfirst(string) 
+	{
+	    return string.charAt(0).toUpperCase() + string.slice(1);
+	}
 }
 
 export default Str;

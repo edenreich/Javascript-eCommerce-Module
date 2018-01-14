@@ -309,7 +309,7 @@ class Products
 	 */
 	addStyleTag() 
 	{
-		if(DOM.find('#eCommerce-Products')) {
+		if(DOM.find('#Turbo-eCommerce-Products')) {
 			return;
 		}
 
@@ -380,7 +380,7 @@ class Products
 
 		`;
 	    
-	    DOM.addStyle('eCommerce-Products', css);
+	    DOM.addStyle('Turbo-eCommerce-Products', css);
 	}
 }
 

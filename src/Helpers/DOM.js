@@ -102,7 +102,7 @@ class DOM
 	 * @param string | css
 	 * @return void
 	 */
-	static addStyle(id, css) 
+	static addStyle(id, css)
 	{
 		if (typeof css != 'string') {
 			throw new InvalidArgumentException;
@@ -119,6 +119,31 @@ class DOM
 		styleTag.setAttribute('id', id);
 		// appending that style tag to the DOM head tag
 		head.appendChild(styleTag);
+	}
+
+	/**
+	 * Adds linked style tag with given id and src to the DOM.
+	 * 
+	 * @param string | id
+	 * @param string | source
+	 * @return void
+	 */
+	static addLinkedStyle(id, source) 
+	{
+		if (typeof source != 'string') {
+			throw new InvalidArgumentException('DOM.addLinkedStyle() excpects the second parameter to be string, but ' + typeof source + ' was passed instead.');
+		}
+
+		let head = document.head || document.getElementsByTagName('head')[0];
+		let linkedStyleTag = document.createElement('link');
+
+	    // give an id to recognize the style tag
+		linkedStyleTag.setAttribute('id', id);
+		linkedStyleTag.setAttribute('href', source);
+		linkedStyleTag.setAttribute('rel', 'stylesheet');
+		linkedStyleTag.setAttribute('type', 'text/css');
+		// appending that style tag to the DOM head tag
+		head.appendChild(linkedStyleTag);
 	}
 
 	/**

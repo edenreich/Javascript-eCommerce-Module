@@ -4,24 +4,23 @@
 	<title>Turbo-eCommerce Module</title>
 	<script type="text/javascript" src="/js/bundle.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <h2 class="col-xs-offset-1"><a href="/">Turbo-eCommerce</a></h2>
 <hr>
-
-<div class="cart"></div>
-<div class="filter"></div>
-<div class="products"></div>
-<nav class="pagination-links"></nav>
-
+<div class="turbo-ecommerce">
+	<div class="cart"></div>
+	<div class="filter"></div>
+	<div class="products"></div>
+	<nav class="pagination-links"></nav>
+</div>
 <script type="text/javascript">
 	(function(TurboeCommerce) {
 
 		var shop = new TurboeCommerce({
-			debug_level: 'info',
-			element: 'body',
-			importBootstrap: false,
+			debug_level: 'error',
+			element: '.turbo-ecommerce',
+			inject_libraries: ['bootstrap'],
 			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
 		});
 

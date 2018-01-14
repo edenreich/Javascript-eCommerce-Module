@@ -1,4 +1,5 @@
 
+import Str from './Helpers/Str.js';
 import DOM from './Helpers/DOM.js';
 import Common from './Helpers/Common.js';
 import Request from './Helpers/Request.js';
@@ -18,8 +19,12 @@ import ComponentNotRegisteredException from './Exceptions/ComponentNotRegistered
 let defaultSettings = {
 	debug_level: 'error',
 	element: 'body',
-	importBootstrap: false,
+	inject_libraries: [],
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
+};
+
+let externalLibraries = {
+	bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
 };
 
 let debugLevel;
@@ -34,14 +39,15 @@ class TurboeCommerce
 
 		this.container = new Container;
 		this.settings = Common.extend(defaultSettings, settings);
-		this.settings.element = DOM.find(this.settings.element);
-		
+
+		this.loadExternalLibraries();
+		this.addStyleTag();
+
 		debugLevel = this.settings.debug_level;
 		
 		if (debugLevel == 'warning' || debugLevel == 'info') {
 			window.onerror = function() { return true; };
 		}
-
 
 		bindComponentsDependencies.call(this, settings.components);
 
@@ -56,6 +62,41 @@ class TurboeCommerce
 				throw new ComponentNotRegisteredException('components must be registered in order to use them.');
 			}
 		});
+	}
+
+	loadExternalLibraries()
+	{
+		let i;
+		let libraries = this.settings.inject_libraries;
+
+		for (i = 0; i < libraries.length; i++) {
+			if (externalLibraries.hasOwnProperty(libraries[i])) {
+				let id = 'Turbo-eCommerce-' + Str.ucfirst(libraries[i]);
+				
+				if (! DOM.find(id)) {
+					DOM.addLinkedStyle(id, externalLibraries[libraries[i]]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add the eCommerce style tags to the DOM.
+	 */
+	addStyleTag() 
+	{
+		if(DOM.find('#Turboe-Commerce')) {
+			return;
+		}
+
+		let css = `
+			${this.settings.element} {
+				position: relative;
+				clear: both;
+			}
+		`;
+	    
+	    DOM.addStyle('Turbo-eCommerce', css);
 	}
 
 	static debugLevel()
