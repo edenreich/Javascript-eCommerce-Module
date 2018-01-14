@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'trying to bind an already existing bound.';
 
-class InvalidBindingException extends Error
+class InvalidBindingException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-    	super(message || defaultMessage);
-    	console.error('InvalidBindingException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super(message);
+    	super.stackTrace(this, message);
     }
 }
 

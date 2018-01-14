@@ -16,17 +16,18 @@ import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
 import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
 
 let defaultSettings = {
+	debug_level: 'error',
 	element: 'body',
 	importBootstrap: false,
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
 };
 
+let debugLevel;
+
 class TurboeCommerce
 {
 	constructor(settings)
 	{
-		ExceptionHandler.initalize();
-
 		if(typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -35,6 +36,13 @@ class TurboeCommerce
 		this.settings = Common.extend(defaultSettings, settings);
 		this.settings.element = DOM.find(this.settings.element);
 		
+		debugLevel = this.settings.debug_level;
+		
+		if (debugLevel == 'warning' || debugLevel == 'info') {
+			window.onerror = function() { return true; };
+		}
+
+
 		bindComponentsDependencies.call(this, settings.components);
 
 		return new Proxy(this, {
@@ -48,6 +56,11 @@ class TurboeCommerce
 				throw new ComponentNotRegisteredException('components must be registered in order to use them.');
 			}
 		});
+	}
+
+	static debugLevel()
+	{
+		return debugLevel;
 	}
 }
 

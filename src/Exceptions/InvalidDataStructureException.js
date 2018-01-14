@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'The data structure is invalid';
 
-class InvalidDataStructureException  extends Error
+class InvalidDataStructureException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-    	super(message || defaultMessage);
-    	console.error('InvalidDataStructureException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super(message);
+    	super.stackTrace(this, message);
     }
 }
 

@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'an invalid argument was passed.';
 
-class InvalidArgumentException extends Error
+class InvalidArgumentException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-    	super(message || defaultMessage);
-    	console.error('InvalidArgumentException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super(message);
+    	super.stackTrace(this, message);
     }
 }
 

@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'sorry, no more pages.';
 
-class NotInPageRangeException extends Error
+class NotInPageRangeException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-    	super(message || defaultMessage);
-    	console.error('NotInPageRangeException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super();
+    	super.stackTrace(this, message);
     }
 }
 

@@ -19,6 +19,9 @@
 	(function(TurboeCommerce) {
 
 		var shop = new TurboeCommerce({
+			debug_level: 'info',
+			element: 'body',
+			importBootstrap: false,
 			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
 		});
 

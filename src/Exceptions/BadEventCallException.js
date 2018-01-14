@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'The event you called does not exists or you supplied wrong argument';
 
-class BadEventCallException extends Error
+class BadEventCallException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-		super(message || defaultMessage);
-    	console.error('BadEventCallException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super(message);
+    	super.stackTrace(this, message);
     }
 }
 

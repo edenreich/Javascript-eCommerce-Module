@@ -1,12 +1,15 @@
 
+import ExceptionHandler from './ExceptionHandler.js';
+
 let defaultMessage = 'In order to use components you must register them with the shop!'; 
 
-class ComponentNotRegisteredException extends Error
+class ComponentNotRegisteredException extends ExceptionHandler
 {
-	constructor(message) 
-	{ 
-    	super(message || defaultMessage);
-    	console.error('ComponentNotRegisteredException: ' + message || defaultMessage);
+	constructor(message = null) 
+	{
+		message = message || defaultMessage;
+		super(message);
+    	super.stackTrace(this, message);
     }
 }
 
