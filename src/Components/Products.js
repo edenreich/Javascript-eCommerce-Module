@@ -50,6 +50,14 @@ let EventManager;
  */
 let Http;
 
+/**
+ * Stores the chunked per 
+ * page products.
+ * 
+ * @var array
+ */
+let chunkedProducts;
+
 class Products 
 {
 	/**
@@ -64,6 +72,7 @@ class Products
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
+		chunkedProducts = [];
 	}
 
 	/**
@@ -102,17 +111,14 @@ class Products
 		if (Container.Pagination && Container.Pagination.booted) {
 
 			if (Container.Pagination.settings.proccessing == 'client-side') {
-
 				return this.loadPageProductsByClient(pageNumber);
-
 			} else if (Container.Pagination.settings.proccessing == 'server-side') {
-
 				return this.loadPageProductsByServer(pageNumber);
-
 			} else {
-
 				throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
 			}
+		} else {
+			this.loadPageProductsByServer();
 		}
 	}
 
@@ -120,9 +126,10 @@ class Products
 	 * Loads the products and 
 	 * replace them in the div container.
 	 *
+	 * @param number | pageNumber
 	 * @return void
 	 */
-	loadPageProductsByServer(pageNumber)
+	loadPageProductsByServer(pageNumber = null)
 	{
 		let request = this.getProducts(pageNumber);
 
@@ -165,7 +172,12 @@ class Products
 			this.totalItems = products;
 			let perPage = Container.Pagination.settings.per_page; 
 			Container.Pagination.settings.total_items = products.length;
-			let pages = Common.array_chunk(products, perPage);
+			
+			if (chunkedProducts.length == 0) {
+				chunkedProducts = Common.array_chunk(products, perPage);
+			}
+
+			let pages = chunkedProducts;
 			this.currentItems = pages[pageNumber-1];
 
 			for (var i = 0; i < this.currentItems.length; i++) {
