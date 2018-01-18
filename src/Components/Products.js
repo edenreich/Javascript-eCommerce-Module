@@ -382,13 +382,21 @@ class Products
 			return;
 		}
 
+		let width = this.settings.width || 'auto';
+		let height = this.settings.height || '200px';
+		let minWidth = this.settings.min_width || '200px';
+		let maxWidth = this.settings.max_width || '250px';
+	
+
 		let css = `
 			.product {
 				position: relative;
 				margin: 5px 5px;
 				border: 1px solid #e4e4e4;
-				width: ${this.settings.width};
-				height: ${this.settings.height};
+				width: ${width};
+				min-width: ${minWidth};
+				max-width: ${maxWidth};
+				height: ${height};
 				cursor: pointer;
 				color: #ffffff;
 				overflow: hidden;

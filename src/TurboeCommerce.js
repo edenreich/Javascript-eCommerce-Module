@@ -41,7 +41,11 @@ class TurboeCommerce
 		this.settings = Common.extend(defaultSettings, settings);
 
 		this.loadExternalLibraries();
-		this.addStyleTag();
+
+		document.addEventListener('DOMContentLoaded', function() {
+			this.setElement(this.settings.element);
+			this.addStyleTag();	
+		}.bind(this));
 
 		debugLevel = this.settings.debug_level;
 		
@@ -78,6 +82,19 @@ class TurboeCommerce
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets the element to be bound to.
+	 *
+	 * @param string | selector
+	 * @return void
+	 */
+	setElement(selector)
+	{
+		this.wrapper = DOM.find(selector);
+		
+		DOM.addClass(this.wrapper, this.settings.class);
 	}
 
 	/**

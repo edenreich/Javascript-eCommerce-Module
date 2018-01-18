@@ -16,7 +16,6 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  */
 let defaultSettings = {
 	element: '.filter',
-	data: {},
 	class: '',
 	width: '',
 	height: '',
@@ -56,7 +55,12 @@ class Filter
 
 		this.settings = Common.extend(defaultSettings, settings);
 
-		this.setElement(this.settings.element);
+		document.addEventListener('DOMContentLoaded', function() {
+
+			this.setElement(this.settings.element);
+
+			this.addStyleTag();	
+		}.bind(this));
 	}
 
 	/**
@@ -70,6 +74,37 @@ class Filter
 		this.wrapper = DOM.find(selector);
 		
 		DOM.addClass(this.wrapper, this.settings.class);
+	}
+
+	/**
+	 * Add the eCommerce style tags to the DOM.
+	 */
+	addStyleTag() 
+	{
+		if (DOM.find('#Turbo-eCommerce-Filter')) {
+			return;
+		}
+
+		let width = (this.settings.width) ? 'width:' + this.settings.width + ';' : '';
+		let minWidth = this.settings.min_width || '200px';
+		let height = this.settings.height || 'auto';
+
+		let css = `
+			${this.settings.element} {
+				position: relative;
+				margin: 5px 5px;
+				border: 1px solid #e4e4e4;
+				${width}
+				min-width: ${minWidth};
+				height: ${height};
+				min-height: 200px;
+				color: #ffffff;
+				overflow: hidden;
+			}
+
+		`;
+	    
+	    DOM.addStyle('Turbo-eCommerce-Filter', css);
 	}
 }
 
