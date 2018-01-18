@@ -170,14 +170,9 @@ class Products
 
 		request.then(function(products) {
 			this.totalItems = products;
-			let perPage = Container.Pagination.settings.per_page; 
-			Container.Pagination.settings.total_items = products.length;
-			
-			if (chunkedProducts.length == 0) {
-				chunkedProducts = Common.array_chunk(products, perPage);
-			}
 
-			let pages = chunkedProducts;
+			let pages = this.calculateClientPages(products);
+
 			this.currentItems = pages[pageNumber-1];
 
 			for (var i = 0; i < this.currentItems.length; i++) {
@@ -194,6 +189,29 @@ class Products
 		});
 
 		return request;
+	}
+
+	/**
+	 * Calculates the amount of pages for the client.
+	 *
+	 * @param array | products
+	 * @return array
+	 */
+	calculateClientPages(products)
+	{	
+		// We are using pagination so we need to update it too.
+		Container.Pagination.settings.total_items = products.length;
+		
+		let perPage = Container.Pagination.settings.per_page; 
+
+		// We need to calculate the pages on full http request 
+		// only once. so we check to see if we have results in our cache.
+		if (chunkedProducts.length != 0) {
+			return chunkedProducts;
+		}
+
+		chunkedProducts = Common.array_chunk(products, perPage);
+		return chunkedProducts;
 	}
 
 	/**
