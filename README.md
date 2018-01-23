@@ -10,7 +10,7 @@ Import the script demo/bundle.min.js to your files project.
 or
 
 1) run in the command line: ```npm install turbo-ecommerce```
-2) run ```./node_modules/bin/turbo-ecommerce publish```
+2) run ```./node_modules/.bin/turbo-ecommerce publish``` use the --help flag for more information.
 
 ### Configuration
 

@@ -4,7 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const date = new Date;
-const rootFolder = path.resolve(__dirname, '../../');
+const rootFolder = path.resolve(__dirname);
+const UserRootFolder = path.resolve(__dirname, '../../');
 
 let destination;
 let hasErrors = 0;
@@ -30,6 +31,7 @@ process.argv.slice(2).forEach(function(argument) {
 					break;
 				default:
 					showInfo('Unknowen option you can always use --help');
+					hasErrors = 1;
 					break;
 			}
 		}
@@ -43,7 +45,8 @@ process.argv.slice(2).forEach(function(argument) {
 					publishFiles();
 					break;
 				default:
-					showInfo('Unknowen command, please refer to help using --help');			
+					showInfo('Unknowen command, please refer to help using --help');
+					hasErrors = 1;		
 					break;
 			}
 		}
@@ -79,10 +82,13 @@ function publishFiles() {
 	destination = destination || 'bundle.js';
 	destination = (destination[0] == '/') ? destination.substr(1) : destination;
 
-	fs.copyFile('demo/js/bundle.min.js', rootFolder + '/' + destination, (err) => {
-		if (err) throw err;
+	fs.copyFile(rootFolder + '/demo/js/bundle.min.js', UserRootFolder + '/' + destination, (err) => {
+		if (err) {
+			showError(err);
+			return;
+		}
 
-		showSuccess('bundle.js was copied to ' + rootFolder + '/' + destination);
+		showSuccess('bundle.js was copied to ' + UserRootFolder + '/' + destination);
 	});
 }
 
