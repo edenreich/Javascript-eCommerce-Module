@@ -8,6 +8,9 @@
     "type": "git",
     "url": "https://github.com/edenreich/Turbo-eCommerce.git"
   },
+  "bin": {
+    "turbo-ecommerce": "cli.js"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -27,6 +30,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha tests --require babel-register || true"
+    "test": "node_modules/mocha/bin/mocha tests --require babel-register || true",
+    "browser:bundle": "browserify demo/js/bundle.js --outfile dist/bundle.js"
   }
 }

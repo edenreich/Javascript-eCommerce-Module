@@ -9,7 +9,8 @@ Import the script demo/bundle.min.js to your files project.
 
 or
 
-run in the command line: npm install turbo-ecommerce
+1) run in the command line: ```bash npm install turbo-ecommerce -g```
+2) run ```bash turbo-ecommerce publish```
 
 ### Configuration
 
