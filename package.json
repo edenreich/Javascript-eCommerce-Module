@@ -31,6 +31,5 @@
   },
   "scripts": {
     "test": "node_modules/mocha/bin/mocha tests --require babel-register || true",
-    "browser:bundle": "browserify demo/js/bundle.js --outfile dist/bundle.js"
   }
 }
