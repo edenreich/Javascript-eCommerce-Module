@@ -1,6 +1,6 @@
 {
   "name": "turbo-ecommerce",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "demo/js/bundle.js",
   "author": "Eden Reich",
   "license": "MIT",
@@ -30,6 +30,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha tests --require babel-register || true",
+    "test": "node_modules/mocha/bin/mocha tests --require babel-register || true"
   }
 }
