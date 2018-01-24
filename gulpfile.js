@@ -12,20 +12,16 @@ gulp.task('build', () => {
 				'src/**/*.js'
 			])
 			.pipe(plumber())
-			.pipe(sourcemaps.init())
 		   	.pipe(rollup({
-		   		input: './src/TurboeCommerce.js',
-				format: 'iife',
+		   		input: "./src/TurboeCommerce.js",
+				format: "iife",
 				treeshake: false,
-				name: 'TurboeCommerce'
+				name: "TurboeCommerce"
 		   	}))
-		   	.pipe(babel({
-		   		presets: ['es2015']
-		   	}))
-		   	.pipe(sourcemaps.write())
+		   	.pipe(babel())
 		   	.pipe(rename('bundle.js'))
 		   	.pipe(notify({
-	            title: "Javascript Compiled"
+	            title: "bundle.js has been Compiled"
 	        }))
 		   	.pipe(gulp.dest('demo/js/'));
 });
@@ -37,10 +33,10 @@ gulp.task('build-min', () => {
 			.pipe(plumber())
 			.pipe(sourcemaps.init())
 		   	.pipe(rollup({
-		   		input: './src/TurboeCommerce.js',
-				format: 'iife',
+		   		input: "./src/TurboeCommerce.js",
+				format: "iife",
 				treeshake: false,
-				name: 'TurboeCommerce'
+				name: "TurboeCommerce"
 		   	}))
 		   	.pipe(babel({
 		   		presets: ['es2015']
@@ -48,12 +44,57 @@ gulp.task('build-min', () => {
 		   	.pipe(sourcemaps.write())
 		   	.pipe(rename('bundle.min.js'))
 		   	.pipe(notify({
-	            title: "Javascript Compiled"
+	            title: "bundle.min.js has been Compiled"
 	        }))
 	        .pipe(uglify())
 		   	.pipe(gulp.dest('demo/js/'));
 });
 
-gulp.task('default', ['build', 'build-min'], () => {
-	gulp.watch('src/**/*.js', ['build', 'build-min']);
+gulp.task('build-node-module', () => {
+	gulp.src([
+				'src/**/*.js'
+			])
+			.pipe(plumber())
+		   	.pipe(rollup({
+		   		input: "./src/TurboeCommerce.js",
+				format: 'cjs',
+				treeshake: false,
+				name: "TurboeCommerce"
+		   	}))
+		   	.pipe(babel({
+		   		presets: ['es2015']
+		   	}))
+		   	.pipe(rename('node-module.js'))
+		   	.pipe(notify({
+	            title: "node-module.js has been Compiled"
+	        }))
+		   	.pipe(gulp.dest('demo/js/'));
+});
+
+gulp.task('build-node-module-min', () => {
+	gulp.src([
+				'src/**/*.js'
+			])
+			.pipe(plumber())
+			.pipe(sourcemaps.init())
+		   	.pipe(rollup({
+		   		input: "./src/TurboeCommerce.js",
+				format: 'cjs',
+				treeshake: false,
+				name: "TurboeCommerce"
+		   	}))
+		   	.pipe(babel({
+		   		presets: ['es2015']
+		   	}))
+		   	.pipe(sourcemaps.write())
+		   	.pipe(rename('node-module.min.js'))
+		   	.pipe(notify({
+	            title: "node-module.min.js has been Compiled"
+	        }))
+	        .pipe(uglify())
+		   	.pipe(gulp.dest('demo/js/'));
+});
+
+gulp.task('default', ['build', 'build-min', 'build-node-module', 'build-node-module-min'], () => {
+	gulp.watch('src/**/*.js', ['build', 'build-min', 'build-node-module', 'build-node-module-min']);
 });

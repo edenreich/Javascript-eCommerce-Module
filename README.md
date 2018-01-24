@@ -10,7 +10,11 @@ Import the script demo/bundle.min.js to your files project.
 or
 
 1) run in the command line: ```npm install turbo-ecommerce```
-2) run ```./node_modules/.bin/turbo-ecommerce publish``` use the --help flag for more information.
+2) run ```./node_modules/.bin/turbo-ecommerce publish``` 
+   This will copy the browserified file into your project. All that left to do is to embed it.
+   Use the --help flag for further information.
+
+   P.S - of course another option is to require the module using ```const shop = require('turbo-ecommerce').minified``` into your project and then browserify it yourself.
 
 ### Configuration
 
