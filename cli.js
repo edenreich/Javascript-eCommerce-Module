@@ -103,7 +103,7 @@ function showHelp() {
 #\t\tTurbo-eCommerce Help\t\t#
 #################################################
 \x1b[0m
-Turbo-eCommerce version: 2.0.1 date: ${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}
+Turbo-eCommerce version: 2.0.3 date: ${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}
 
 \x1b[32mUsage:\x1b[0m
   turbo-ecommerce [options] [command]

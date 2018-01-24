@@ -11,7 +11,7 @@ import Products from '../src/Components/Products.js';
 import DomEvents from './Helpers/DomEvents.js';
 import Generator from './Helpers/Generator.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
 
@@ -132,7 +132,7 @@ describe.only('CartComponentTest', function() {
 
 	}).timeout(10000);
 
-	it.only('displays the items which were added in the basket', function() {
+	it('displays the items which were added in the basket', function() {
 		let cart = this.container.make('Cart');
 		let products = this.container.make('Products'); 
 
@@ -145,14 +145,15 @@ describe.only('CartComponentTest', function() {
 			cookie_name: 'cart',
 			element: '.cart-icon'
 		});
-
+		console.log(products);
+		console.log(cart);
 		DomEvents.dispatch('DOMContentLoaded');
 
 		products.replaceItems(Generator.products(5));
 
-		let product1 = DOM.element('#addToCart')[0];
-		let product2 = DOM.element('#addToCart')[4];
-		let cartIcon = DOM.element('.cart-icon');
+		let product1 = DOM.find('#addToCart')[0];
+		let product2 = DOM.find('#addToCart')[4];
+		let cartIcon = DOM.find('.cart-icon');
 		let preview = DOM.find('#preview', cartIcon);
 
 		product1.click();

@@ -136,6 +136,11 @@ class Container
 		return instance;
 	}
 
+	flush()
+	{
+		instances = [];
+	}
+
 	/**
 	 * Retrieve all instances.
 	 *

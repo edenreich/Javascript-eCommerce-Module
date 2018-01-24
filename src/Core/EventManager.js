@@ -8,15 +8,18 @@ import BadEventCallException from '../Exceptions/BadEventCallException';
  * Handles subscripions and publishing of events.
  */
 
-/**
- * Stores the events callbacks.
- * 
- * @var array
- */
-let events = {};
-
 class EventManager
 {
+	/**
+	 * Stores the events callbacks.
+	 * 
+	 * @var array
+	 */
+	constructor()
+	{
+		this.events = {};
+	}
+
 	/**
 	 * Subscribing to an event.
 	 *
@@ -30,11 +33,11 @@ class EventManager
 			throw new InvalidArgumentException;
 		}
 
-		if (typeof events[name] == 'undefined') {
-			events[name] = [];
+		if (typeof this.events[name] == 'undefined') {
+			this.events[name] = [];
 		}
 
-		events[name].push(callback);
+		this.events[name].push(callback);
 	}
 
 	/**
@@ -49,13 +52,13 @@ class EventManager
 		data = data || null;
 
 		// If there are no subscribers simply ignore that event.
-		if (typeof events[name] == 'undefined') {
+		if (typeof this.events[name] == 'undefined') {
 			return;
 		}
 
-		events[name].forEach(function(callback) {
+		this.events[name].forEach(function(callback) {
 			if(typeof callback != 'function') {
-				throw new InvalidArgumentException('listen() should recieve callback as second parameter, but '+ typeof callback +' was passed');
+				throw new InvalidArgumentException('subscribe() should recieve callback as second parameter, but '+ typeof callback +' was passed');
 			}
 			
 			return callback(...data);

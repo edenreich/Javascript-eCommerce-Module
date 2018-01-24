@@ -1,6 +1,6 @@
 {
   "name": "turbo-ecommerce",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "demo/js/bundle.js",
   "author": "Eden Reich",
   "license": "MIT",
