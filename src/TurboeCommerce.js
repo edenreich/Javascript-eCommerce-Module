@@ -199,11 +199,12 @@ function bindComponentsDependencies(components) {
 /**
  * Attaches a loader to the top of the screen
  * and hides the content.
+ * Stops automatically after 20% reached.
  *
  * @return void 
  */
 function startLoading() {
-	let div = DOM.createElement('div', {
+	let loader = DOM.createElement('div', {
 		class: 'loading-progress-bar'
 	});
 
@@ -211,30 +212,25 @@ function startLoading() {
 		class: 'loading-progress-fill'
 	});
 
-	div.appendChild(fill);
-	document.body.appendChild(div);
+	loader.appendChild(fill);
+	document.body.appendChild(loader);
 
 
 	let progress = document.documentElement.clientWidth;
+	let maxSize = document.documentElement.clientWidth * 0.80;
 
 	window.requestAnimationFrame(progressDraw)
 
 	let content = this.wrapper;
-	let opacity = 0;
 
-	content.style.opacity = "0";
+	content.style.display = 'none';
 	
 	function progressDraw() {
 		fill.style.transform = 'translateX(-' + progress + 'px)';
 		progress -= 3;
 
-		if (progress < document.documentElement.clientWidth * 0.80) {
+		if (progress < maxSize) {
 			done();
-			return;
-		}
-		
-
-		if (progress <= 0) {
 			return;
 		}
 
@@ -247,15 +243,11 @@ function startLoading() {
 	
 		progress -= 15;
 
-		if (progress < 100) {
-			content.style.opacity = opacity;
-			opacity += 0.2;
-		}
-
 		if (progress <= 0) {
-
-			if (typeof div != 'undefined') {
-				div.parentNode.removeChild(div);
+			content.style.display = 'block';
+			
+			if (typeof loader != 'undefined') {
+				DOM.remove(loader);
 			}
 
 			return;

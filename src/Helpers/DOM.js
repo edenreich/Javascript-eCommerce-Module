@@ -96,6 +96,17 @@ class DOM
 	}
 
 	/**
+	 * Removes an element from the DOM.
+	 *
+	 * @param HTMLElement
+	 * @return void
+	 */
+	static remove(element)
+	{
+		element.parentNode.removeChild(element);
+	}
+
+	/**
 	 * Adds style tag with given id and css to the DOM.
 	 * 
 	 * @param string | id

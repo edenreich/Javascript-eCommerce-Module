@@ -418,7 +418,7 @@ class Products
 				background: rgba(0, 0, 0, 0.45);
 				transform: translateX(0px);
 				opacity: 1;
-				transition: 1s all;
+				transition: 0.5s all;
 			}
 
 			.product > img {

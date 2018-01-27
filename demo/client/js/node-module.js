@@ -277,6 +277,19 @@ var DOM = function () {
 		}
 
 		/**
+   * Removes an element from the DOM.
+   *
+   * @param HTMLElement
+   * @return void
+   */
+
+	}, {
+		key: 'remove',
+		value: function remove(element) {
+			element.parentNode.removeChild(element);
+		}
+
+		/**
    * Adds style tag with given id and css to the DOM.
    * 
    * @param string | id
@@ -2220,7 +2233,7 @@ var Products = function () {
 			var minWidth = this.settings.min_width || '200px';
 			var maxWidth = this.settings.max_width || '250px';
 
-			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 1s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > #favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
+			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > #favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Products', css);
 		}
@@ -2884,11 +2897,12 @@ function bindComponentsDependencies(components) {
 /**
  * Attaches a loader to the top of the screen
  * and hides the content.
+ * Stops automatically after 20% reached.
  *
  * @return void 
  */
 function startLoading() {
-	var div = DOM.createElement('div', {
+	var loader = DOM.createElement('div', {
 		class: 'loading-progress-bar'
 	});
 
@@ -2896,28 +2910,24 @@ function startLoading() {
 		class: 'loading-progress-fill'
 	});
 
-	div.appendChild(fill);
-	document.body.appendChild(div);
+	loader.appendChild(fill);
+	document.body.appendChild(loader);
 
 	var progress = document.documentElement.clientWidth;
+	var maxSize = document.documentElement.clientWidth * 0.80;
 
 	window.requestAnimationFrame(progressDraw);
 
 	var content = this.wrapper;
-	var opacity = 0;
 
-	content.style.opacity = "0";
+	content.style.display = 'none';
 
 	function progressDraw() {
 		fill.style.transform = 'translateX(-' + progress + 'px)';
 		progress -= 3;
 
-		if (progress < document.documentElement.clientWidth * 0.80) {
+		if (progress < maxSize) {
 			done();
-			return;
-		}
-
-		if (progress <= 0) {
 			return;
 		}
 
@@ -2930,15 +2940,11 @@ function startLoading() {
 
 		progress -= 15;
 
-		if (progress < 100) {
-			content.style.opacity = opacity;
-			opacity += 0.2;
-		}
-
 		if (progress <= 0) {
+			content.style.display = 'block';
 
-			if (typeof div != 'undefined') {
-				div.parentNode.removeChild(div);
+			if (typeof loader != 'undefined') {
+				DOM.remove(loader);
 			}
 
 			return;
