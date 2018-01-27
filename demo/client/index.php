@@ -6,15 +6,16 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<h2 class="col-xs-offset-1"><a href="/">Turbo-eCommerce</a></h2>
+<h2 class="col-xs-offset-1"><a href="/client/">Turbo-eCommerce</a></h2>
 <hr>
-<div class="container">
+
 <div class="turbo-ecommerce">
 	<div class="cart"></div>
 	<div class="filter"></div>
 	<div class="products"></div>
 	<nav class="pagination-links"></nav>
-</div></div>
+</div>
+
 <script type="text/javascript">
 	(function(TurboShop) {
 
@@ -23,7 +24,8 @@
 			class: 'col-xs-12',
 			element: '.turbo-ecommerce',
 			inject_libraries: ['bootstrap'],
-			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination']
+			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination'],
+			loading_animation: true
 		});
 
 		shop.Products.setup({

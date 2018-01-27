@@ -20,7 +20,8 @@ let defaultSettings = {
 	debug_level: 'error',
 	element: 'body',
 	inject_libraries: [],
-	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
+	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart'],
+	loading_animation: true,
 };
 
 let externalLibraries = {
@@ -33,7 +34,7 @@ class TurboEcommerce
 {
 	constructor(settings)
 	{
-		if(typeof settings != 'object') {
+		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
@@ -44,7 +45,12 @@ class TurboEcommerce
 
 		document.addEventListener('DOMContentLoaded', function() {
 			this.setElement(this.settings.element);
-			this.addStyleTag();	
+			
+			if (this.settings.loading_animation) {
+				startLoading.call(this);
+			}
+
+			this.addStyleTag();
 		}.bind(this));
 
 		debugLevel = this.settings.debug_level;
@@ -111,6 +117,25 @@ class TurboEcommerce
 				position: relative;
 				clear: both;
 			}
+
+			.loading-progress-bar {
+				position: fixed;
+				top: 0;
+				left: 0;
+				height: 5px;
+				width: 100%;
+				-webkit-box-shadow: 0px 0px 5px 1px rgba(168,168,168,1);
+				-moz-box-shadow: 0px 0px 5px 1px rgba(168,168,168,1);
+				box-shadow: 0px 0px 5px 1px rgba(168,168,168,1);
+			}
+
+			.loading-progress-bar > .loading-progress-fill {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				background-color: #9dd2ff;
+				transform: translateX(-${document.documentElement.clientWidth}px);
+			}
 		`;
 	    
 	    DOM.addStyle('Turbo-eCommerce', css);
@@ -169,6 +194,75 @@ function bindComponentsDependencies(components) {
 	this.container.Products.booted = false;
 	this.container.Pagination.booted = false;
 	this.container.Cart.booted = false;
+}
+
+/**
+ * Attaches a loader to the top of the screen
+ * and hides the content.
+ *
+ * @return void 
+ */
+function startLoading() {
+	let div = DOM.createElement('div', {
+		class: 'loading-progress-bar'
+	});
+
+	let fill = DOM.createElement('span', {
+		class: 'loading-progress-fill'
+	});
+
+	div.appendChild(fill);
+	document.body.appendChild(div);
+
+
+	let progress = document.documentElement.clientWidth;
+
+	window.requestAnimationFrame(progressDraw)
+
+	let content = this.wrapper;
+	let opacity = 0;
+
+	content.style.opacity = "0";
+	
+	function progressDraw() {
+		fill.style.transform = 'translateX(-' + progress + 'px)';
+		progress -= 3;
+
+		if (progress < document.documentElement.clientWidth * 0.80) {
+			done();
+			return;
+		}
+		
+
+		if (progress <= 0) {
+			return;
+		}
+
+		window.requestAnimationFrame(progressDraw);
+	}
+
+	function done() {
+		fill.style.opacity = progress / 1000;
+		fill.style.transform = 'translateX(-' + progress + 'px)';
+	
+		progress -= 15;
+
+		if (progress < 100) {
+			content.style.opacity = opacity;
+			opacity += 0.2;
+		}
+
+		if (progress <= 0) {
+
+			if (typeof div != 'undefined') {
+				div.parentNode.removeChild(div);
+			}
+
+			return;
+		}
+
+		window.requestAnimationFrame(done);
+	}
 }
 
 export default TurboEcommerce; 

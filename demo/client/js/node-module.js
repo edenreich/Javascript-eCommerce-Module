@@ -2717,7 +2717,8 @@ var defaultSettings = {
 	debug_level: 'error',
 	element: 'body',
 	inject_libraries: [],
-	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart']
+	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart'],
+	loading_animation: true
 };
 
 var externalLibraries = {
@@ -2741,6 +2742,11 @@ var TurboEcommerce$1 = function () {
 
 		document.addEventListener('DOMContentLoaded', function () {
 			this.setElement(this.settings.element);
+
+			if (this.settings.loading_animation) {
+				startLoading.call(this);
+			}
+
 			this.addStyleTag();
 		}.bind(this));
 
@@ -2810,7 +2816,7 @@ var TurboEcommerce$1 = function () {
 				return;
 			}
 
-			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: relative;\n\t\t\t\tclear: both;\n\t\t\t}\n\t\t';
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: relative;\n\t\t\t\tclear: both;\n\t\t\t}\n\n\t\t\t.loading-progress-bar {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\theight: 5px;\n\t\t\t\twidth: 100%;\n\t\t\t\t-webkit-box-shadow: 0px 0px 5px 1px rgba(168,168,168,1);\n\t\t\t\t-moz-box-shadow: 0px 0px 5px 1px rgba(168,168,168,1);\n\t\t\t\tbox-shadow: 0px 0px 5px 1px rgba(168,168,168,1);\n\t\t\t}\n\n\t\t\t.loading-progress-bar > .loading-progress-fill {\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tposition: absolute;\n\t\t\t\tbackground-color: #9dd2ff;\n\t\t\t\ttransform: translateX(-' + document.documentElement.clientWidth + 'px);\n\t\t\t}\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce', css);
 		}
@@ -2873,6 +2879,73 @@ function bindComponentsDependencies(components) {
 	this.container.Products.booted = false;
 	this.container.Pagination.booted = false;
 	this.container.Cart.booted = false;
+}
+
+/**
+ * Attaches a loader to the top of the screen
+ * and hides the content.
+ *
+ * @return void 
+ */
+function startLoading() {
+	var div = DOM.createElement('div', {
+		class: 'loading-progress-bar'
+	});
+
+	var fill = DOM.createElement('span', {
+		class: 'loading-progress-fill'
+	});
+
+	div.appendChild(fill);
+	document.body.appendChild(div);
+
+	var progress = document.documentElement.clientWidth;
+
+	window.requestAnimationFrame(progressDraw);
+
+	var content = this.wrapper;
+	var opacity = 0;
+
+	content.style.opacity = "0";
+
+	function progressDraw() {
+		fill.style.transform = 'translateX(-' + progress + 'px)';
+		progress -= 3;
+
+		if (progress < document.documentElement.clientWidth * 0.80) {
+			done();
+			return;
+		}
+
+		if (progress <= 0) {
+			return;
+		}
+
+		window.requestAnimationFrame(progressDraw);
+	}
+
+	function done() {
+		fill.style.opacity = progress / 1000;
+		fill.style.transform = 'translateX(-' + progress + 'px)';
+
+		progress -= 15;
+
+		if (progress < 100) {
+			content.style.opacity = opacity;
+			opacity += 0.2;
+		}
+
+		if (progress <= 0) {
+
+			if (typeof div != 'undefined') {
+				div.parentNode.removeChild(div);
+			}
+
+			return;
+		}
+
+		window.requestAnimationFrame(done);
+	}
 }
 
 module.exports = TurboEcommerce$1;
