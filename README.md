@@ -12,7 +12,7 @@ or
 1) run in the command line: ```npm install turbo-ecommerce```
 2) run ```./node_modules/.bin/turbo-ecommerce publish``` 
    This will copy the browserified file into your project. All that left to do is to embed it.
-   Use the --help flag for further information.
+   Use the --help flag for further information. you may also publish with demo files to get a basic idea.
 
    P.S - of course another option is to require the module using ```const shop = require('turbo-ecommerce').minified``` into your project and then browserify it yourself.
 
