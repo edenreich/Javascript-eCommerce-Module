@@ -99,7 +99,7 @@ var ExceptionHandler = function () {
 		value: function stackTrace(error, message) {
 			this.customActions(error, message);
 
-			var debugLevel = TurboeCommerce.debugLevel();
+			var debugLevel = TurboEcommerce.debugLevel();
 
 			if (debugLevel == 'error') {
 				this.handleErrors(error, message);
@@ -2634,9 +2634,9 @@ var externalLibraries = {
 
 var _debugLevel = void 0;
 
-var TurboeCommerce$1 = function () {
-	function TurboeCommerce$1(settings) {
-		_classCallCheck(this, TurboeCommerce$1);
+var TurboEcommerce$1 = function () {
+	function TurboEcommerce$1(settings) {
+		_classCallCheck(this, TurboEcommerce$1);
 
 		if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
 			throw new InvalidArgumentException$1();
@@ -2675,7 +2675,7 @@ var TurboeCommerce$1 = function () {
 		});
 	}
 
-	_createClass(TurboeCommerce$1, [{
+	_createClass(TurboEcommerce$1, [{
 		key: 'loadExternalLibraries',
 		value: function loadExternalLibraries() {
 			var i = void 0;
@@ -2729,7 +2729,7 @@ var TurboeCommerce$1 = function () {
 		}
 	}]);
 
-	return TurboeCommerce$1;
+	return TurboEcommerce$1;
 }();
 
 /**
@@ -2783,4 +2783,4 @@ function bindComponentsDependencies(components) {
 	this.container.Cart.booted = false;
 }
 
-module.exports = TurboeCommerce$1;
+module.exports = TurboEcommerce$1;

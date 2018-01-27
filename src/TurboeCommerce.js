@@ -29,7 +29,7 @@ let externalLibraries = {
 
 let debugLevel;
 
-class TurboeCommerce
+class TurboEcommerce
 {
 	constructor(settings)
 	{
@@ -171,4 +171,4 @@ function bindComponentsDependencies(components) {
 	this.container.Cart.booted = false;
 }
 
-export default TurboeCommerce; 
+export default TurboEcommerce; 

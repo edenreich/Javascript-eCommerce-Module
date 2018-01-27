@@ -14,7 +14,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var TurboeCommerce = function () {
+var TurboEcommerce = function () {
 	'use strict';
 
 	/**
@@ -102,7 +102,7 @@ var TurboeCommerce = function () {
 			value: function stackTrace(error, message) {
 				this.customActions(error, message);
 
-				var debugLevel = TurboeCommerce.debugLevel();
+				var debugLevel = TurboEcommerce.debugLevel();
 
 				if (debugLevel == 'error') {
 					this.handleErrors(error, message);
@@ -2637,9 +2637,9 @@ var TurboeCommerce = function () {
 
 	var _debugLevel = void 0;
 
-	var TurboeCommerce$1 = function () {
-		function TurboeCommerce$1(settings) {
-			_classCallCheck(this, TurboeCommerce$1);
+	var TurboEcommerce$1 = function () {
+		function TurboEcommerce$1(settings) {
+			_classCallCheck(this, TurboEcommerce$1);
 
 			if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
 				throw new InvalidArgumentException$1();
@@ -2678,7 +2678,7 @@ var TurboeCommerce = function () {
 			});
 		}
 
-		_createClass(TurboeCommerce$1, [{
+		_createClass(TurboEcommerce$1, [{
 			key: 'loadExternalLibraries',
 			value: function loadExternalLibraries() {
 				var i = void 0;
@@ -2732,7 +2732,7 @@ var TurboeCommerce = function () {
 			}
 		}]);
 
-		return TurboeCommerce$1;
+		return TurboEcommerce$1;
 	}();
 
 	/**
@@ -2786,5 +2786,5 @@ var TurboeCommerce = function () {
 		this.container.Cart.booted = false;
 	}
 
-	return TurboeCommerce$1;
+	return TurboEcommerce$1;
 }();

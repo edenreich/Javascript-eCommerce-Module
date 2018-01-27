@@ -38,6 +38,10 @@
     "xmlhttprequest": "^1.8.0"
   },
   "main": "index.js",
+  "files": [
+    "LICENSE",
+    "index.js"
+  ],
   "bin": {
     "turbo-ecommerce": "cli.js"
   },

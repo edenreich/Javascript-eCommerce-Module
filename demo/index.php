@@ -16,9 +16,9 @@
 	<nav class="pagination-links"></nav>
 </div></div>
 <script type="text/javascript">
-	(function(TurboeCommerce) {
+	(function(TurboShop) {
 
-		var shop = new TurboeCommerce({
+		var shop = new TurboShop({
 			debug_level: 'error',
 			class: 'col-xs-12',
 			element: '.turbo-ecommerce',
@@ -67,7 +67,7 @@
 			hover_color: 'orange'
 		});
 
-	})(TurboeCommerce);
+	})(TurboEcommerce);
 </script>
 </body>
 </html>

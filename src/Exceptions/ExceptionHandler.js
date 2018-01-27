@@ -15,7 +15,7 @@ class ExceptionHandler
 	{
 		this.customActions(error, message);
 
-		let debugLevel = TurboeCommerce.debugLevel();
+		let debugLevel = TurboEcommerce.debugLevel();
 
 		if (debugLevel == 'error') {
     		this.handleErrors(error, message);

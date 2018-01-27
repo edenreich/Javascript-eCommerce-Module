@@ -13,10 +13,10 @@ gulp.task('build', () => {
 			])
 			.pipe(plumber())
 		   	.pipe(rollup({
-		   		input: "./src/TurboeCommerce.js",
+		   		input: "./src/TurboEcommerce.js",
 				format: "iife",
 				treeshake: false,
-				name: "TurboeCommerce"
+				name: "TurboEcommerce"
 		   	}))
 		   	.pipe(babel())
 		   	.pipe(rename('bundle.js'))
@@ -33,10 +33,10 @@ gulp.task('build-min', () => {
 			.pipe(plumber())
 			.pipe(sourcemaps.init())
 		   	.pipe(rollup({
-		   		input: "./src/TurboeCommerce.js",
+		   		input: "./src/TurboEcommerce.js",
 				format: "iife",
 				treeshake: false,
-				name: "TurboeCommerce"
+				name: "TurboEcommerce"
 		   	}))
 		   	.pipe(babel({
 		   		presets: ['es2015']
@@ -56,10 +56,10 @@ gulp.task('build-node-module', () => {
 			])
 			.pipe(plumber())
 		   	.pipe(rollup({
-		   		input: "./src/TurboeCommerce.js",
+		   		input: "./src/TurboEcommerce.js",
 				format: 'cjs',
 				treeshake: false,
-				name: "TurboeCommerce"
+				name: "TurboEcommerce"
 		   	}))
 		   	.pipe(babel({
 		   		presets: ['es2015']
@@ -78,10 +78,10 @@ gulp.task('build-node-module-min', () => {
 			.pipe(plumber())
 			.pipe(sourcemaps.init())
 		   	.pipe(rollup({
-		   		input: "./src/TurboeCommerce.js",
+		   		input: "./src/TurboEcommerce.js",
 				format: 'cjs',
 				treeshake: false,
-				name: "TurboeCommerce"
+				name: "TurboEcommerce"
 		   	}))
 		   	.pipe(babel({
 		   		presets: ['es2015']
