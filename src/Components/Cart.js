@@ -22,7 +22,7 @@ let defaultSettings = {
 	element: '.cart',
 	cookie_name: 'cart',
 	preview_class: '',
-	loader: '/images/icons/spinner.svg',
+	loader: '',
 	class: '',
 	width: '60px',
 	height: '60px',
@@ -182,24 +182,40 @@ class Cart
 	{
 		itemsDiv.innerHTML = '';
 
-		for (let i = 0; i < items.length; i++) {
+		let table = DOM.createElement('table');
 
-			let li = DOM.createElement('li', {
-					class: 'item'
-				});
+		DOM.addClass(table, 'preview-table')
+
+		for (let i = 0; i < items.length; i++) {
 
 			let attributes = items[i];
 
-			for(let attribute in attributes) {
-				let span = DOM.createElement('span', {
-					text: attributes[attribute]
-				});
+			let tr = DOM.createElement('tr', {
+				class: 'item'
+			});	
 
-				li.appendChild(span);
+			for(let attribute in attributes) {
+				let td = DOM.createElement('td');
+
+				if (attribute == 'image') {
+					let image = DOM.createElement('img', {
+						src: attributes[attribute],
+						width: '50px',
+						height: '50px'
+					});
+
+					td.appendChild(image);
+				} else {
+					td.innerHTML = attributes[attribute];
+				}				
+			
+				tr.appendChild(td);
 			}
 
-			itemsDiv.appendChild(li);
+			table.appendChild(tr);
 		}
+
+		itemsDiv.appendChild(table);
 	}
 
 	/**
@@ -308,10 +324,14 @@ class Cart
 				transform: translateX(60px);
 			}
 
-			${this.settings.element} > #preview > ul.items,
-			${this.settings.element} > #preview > ul.items > li.item {
+			${this.settings.element} #preview > ul.items {
+				padding: 0;
 				color: #000000;
 				list-style-type: none;
+			}
+
+			${this.settings.element} #preview > ul.items > .preview-table td {
+				padding: 3px;
 			}
 
 			${this.settings.element} .items.loading {
@@ -359,10 +379,16 @@ class Cart
 			return loadingOverlay;
 		}
 
-		let loader = DOM.createElement('img', {
-			src: this.settings.loader,
-			class: 'cart-loader'
-		});
+		let loader;
+
+		if (this.settings.loader) {
+			loader = DOM.createElement('img', {
+				src: this.settings.loader,
+				class: 'cart-loader'
+			});
+		} else {
+			loader = createLoader();
+		}
 
 		loadingOverlay = DOM.createElement('div', {
 			class: 'cart-loader-overlay'
@@ -493,6 +519,76 @@ function createIcon() {
 	svg.appendChild(g);
 
 	return svg;
+}
+
+/**
+ * Creates the cart loader icon.
+ *
+ * @return SVGSVGElement
+ */
+function createLoader() {
+	let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	let count = 12;
+	let groups = [];
+	let rectangels = [];
+	let animations = [];
+
+	svg.setAttribute('class', 'lds-spinner');
+	svg.setAttribute('width', '200px');
+	svg.setAttribute('height', '200px');
+	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+	svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+	svg.setAttribute('viewBox', '0 0 100 100');
+	svg.setAttribute('preserveAspectRatio', 'xMidYMid');
+	svg.setAttribute('style', 'background: none;');
+	
+	var rotation = 0;
+
+	for (var i = 0; i < count; i++) {
+		let group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		group.setAttribute('transform', 'rotate(' + rotation + ' 50 50)');
+		rotation += 30;
+		groups.push(group);
+	}
+
+	for (var i = 0; i < count; i++) {
+		let rectangel = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rectangel.setAttribute('x', '47');
+		rectangel.setAttribute('y', '24');
+		rectangel.setAttribute('rx', '9.4');
+		rectangel.setAttribute('ry', '4.8');
+		rectangel.setAttribute('width', '6');
+		rectangel.setAttribute('height', '12');
+		rectangel.setAttribute('fill', '#4658ac');
+		rectangels.push(rectangel);
+	}
+
+	var begin = 0.09 * 11;
+
+	for (var i = 0; i < count; i++) {
+		let animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+		animate.setAttribute('attributeName', 'opacity');
+		animate.setAttribute('values', '1;0');
+		animate.setAttribute('times', '0;1');
+		animate.setAttribute('dur', '1s');
+		animate.setAttribute('begin', begin.toFixed(8) + 's');
+		animate.setAttribute('repeatCount', 'indefinite');
+		animations.push(animate);
+		begin -= 0.09;
+	}
+
+	for (var i = 0; i < groups.length; i++) {
+		let group = groups[i];		
+		let rectangel = rectangels[i];
+		let animate = animations[i];
+		rectangel.appendChild(animate);
+		group.appendChild(rectangel);
+		svg.appendChild(group);
+	}
+
+	DOM.addClass(svg, 'cart-loader');
+
+	return svg;	
 }
 
 export default Cart;

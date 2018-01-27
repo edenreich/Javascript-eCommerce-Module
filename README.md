@@ -5,7 +5,7 @@ A super fast Webshop built with Vanila-Javascript(everything is loaded with Ajax
 
 
 ### Install
-Import the script demo/bundle.min.js to your files project.
+Copy the script in demo/client/js/bundle.min.js to your files project.
 
 or
 

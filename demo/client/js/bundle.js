@@ -1200,7 +1200,7 @@ var TurboEcommerce = function () {
 		element: '.cart',
 		cookie_name: 'cart',
 		preview_class: '',
-		loader: '/images/icons/spinner.svg',
+		loader: '',
 		class: '',
 		width: '60px',
 		height: '60px',
@@ -1373,24 +1373,40 @@ var TurboEcommerce = function () {
 			value: function addToPreview(items) {
 				itemsDiv.innerHTML = '';
 
-				for (var i = 0; i < items.length; i++) {
+				var table = DOM.createElement('table');
 
-					var li = DOM.createElement('li', {
-						class: 'item'
-					});
+				DOM.addClass(table, 'preview-table');
+
+				for (var i = 0; i < items.length; i++) {
 
 					var attributes = items[i];
 
-					for (var attribute in attributes) {
-						var span = DOM.createElement('span', {
-							text: attributes[attribute]
-						});
+					var tr = DOM.createElement('tr', {
+						class: 'item'
+					});
 
-						li.appendChild(span);
+					for (var attribute in attributes) {
+						var td = DOM.createElement('td');
+
+						if (attribute == 'image') {
+							var image = DOM.createElement('img', {
+								src: attributes[attribute],
+								width: '50px',
+								height: '50px'
+							});
+
+							td.appendChild(image);
+						} else {
+							td.innerHTML = attributes[attribute];
+						}
+
+						tr.appendChild(td);
 					}
 
-					itemsDiv.appendChild(li);
+					table.appendChild(tr);
 				}
+
+				itemsDiv.appendChild(table);
 			}
 
 			/**
@@ -1450,7 +1466,7 @@ var TurboEcommerce = function () {
 
 				var position = this.settings.fixed ? 'fixed' : 'absolute';
 
-				var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview > ul.items,\n\t\t\t' + this.settings.element + ' > #preview > ul.items > li.item {\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
+				var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items {\n\t\t\t\tpadding: 0;\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table td {\n\t\t\t\tpadding: 3px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
 
 				DOM.addStyle('Turbo-eCommerce-Cart', css);
 			}
@@ -1468,10 +1484,16 @@ var TurboEcommerce = function () {
 					return _loadingOverlay;
 				}
 
-				var loader = DOM.createElement('img', {
-					src: this.settings.loader,
-					class: 'cart-loader'
-				});
+				var loader = void 0;
+
+				if (this.settings.loader) {
+					loader = DOM.createElement('img', {
+						src: this.settings.loader,
+						class: 'cart-loader'
+					});
+				} else {
+					loader = createLoader();
+				}
 
 				_loadingOverlay = DOM.createElement('div', {
 					class: 'cart-loader-overlay'
@@ -1615,6 +1637,76 @@ var TurboEcommerce = function () {
 
 		g.appendChild(path);
 		svg.appendChild(g);
+
+		return svg;
+	}
+
+	/**
+  * Creates the cart loader icon.
+  *
+  * @return SVGSVGElement
+  */
+	function createLoader() {
+		var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		var count = 12;
+		var groups = [];
+		var rectangels = [];
+		var animations = [];
+
+		svg.setAttribute('class', 'lds-spinner');
+		svg.setAttribute('width', '200px');
+		svg.setAttribute('height', '200px');
+		svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+		svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+		svg.setAttribute('viewBox', '0 0 100 100');
+		svg.setAttribute('preserveAspectRatio', 'xMidYMid');
+		svg.setAttribute('style', 'background: none;');
+
+		var rotation = 0;
+
+		for (var i = 0; i < count; i++) {
+			var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+			group.setAttribute('transform', 'rotate(' + rotation + ' 50 50)');
+			rotation += 30;
+			groups.push(group);
+		}
+
+		for (var i = 0; i < count; i++) {
+			var rectangel = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+			rectangel.setAttribute('x', '47');
+			rectangel.setAttribute('y', '24');
+			rectangel.setAttribute('rx', '9.4');
+			rectangel.setAttribute('ry', '4.8');
+			rectangel.setAttribute('width', '6');
+			rectangel.setAttribute('height', '12');
+			rectangel.setAttribute('fill', '#4658ac');
+			rectangels.push(rectangel);
+		}
+
+		var begin = 0.09 * 11;
+
+		for (var i = 0; i < count; i++) {
+			var animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+			animate.setAttribute('attributeName', 'opacity');
+			animate.setAttribute('values', '1;0');
+			animate.setAttribute('times', '0;1');
+			animate.setAttribute('dur', '1s');
+			animate.setAttribute('begin', begin.toFixed(8) + 's');
+			animate.setAttribute('repeatCount', 'indefinite');
+			animations.push(animate);
+			begin -= 0.09;
+		}
+
+		for (var i = 0; i < groups.length; i++) {
+			var _group = groups[i];
+			var _rectangel = rectangels[i];
+			var _animate = animations[i];
+			_rectangel.appendChild(_animate);
+			_group.appendChild(_rectangel);
+			svg.appendChild(_group);
+		}
+
+		DOM.addClass(svg, 'cart-loader');
 
 		return svg;
 	}

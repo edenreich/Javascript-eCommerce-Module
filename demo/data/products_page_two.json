@@ -1,0 +1,32 @@
+[
+	{
+		"image" :"images/6.jpg",
+		"name": "Example Product 6", 
+		"price": "100.00", 
+		"deliveryTime":  "5 days"
+	},
+	{
+		"image" :"images/7.jpg",
+		"name": "Example Product 7", 
+		"price": "120.00", 
+		"deliveryTime":  "5 days"
+	},
+	{
+		"image" :"images/8.jpg",
+		"name": "Example Product 8", 
+		"price": "100.00", 
+		"deliveryTime":  "5 days"
+	},
+	{
+		"image" :"images/9.jpg",
+		"name": "Example Product 9", 
+		"price": "100.00", 
+		"deliveryTime":  "5 days"
+	},
+	{
+		"image" :"images/10.jpg",
+		"name": "Example Product 10", 
+		"price": "100.00", 
+		"deliveryTime":  "5 days"
+	}
+]

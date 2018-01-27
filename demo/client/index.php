@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Turbo-eCommerce Module</title>
-	<script type="text/javascript" src="/js/bundle.js"></script>
+	<script type="text/javascript" src="js/bundle.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
@@ -35,8 +35,8 @@
 			min_width: '200px',
 			max_width: '300px',
 			height: '280px',
-			attributes: ['name', 'price', 'deliveryTime', 'image'],
-			url: 'products.php',
+			attributes: ['image', 'name', 'price', 'deliveryTime'],
+			url: '../server/products.php',
 		});
 
 		shop.Pagination.setup({
