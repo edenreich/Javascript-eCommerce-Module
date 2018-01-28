@@ -2356,7 +2356,7 @@ var defaultSettings$5 = {
 	proccessing: 'client-side',
 	class: '',
 	per_page: 5,
-	total_items: 10
+	total_items: 5
 };
 
 /**
@@ -2373,6 +2373,13 @@ var Container$5 = void 0;
  */
 var Products$2 = void 0;
 
+/**
+ * Stores the container object.
+ * 
+ * @var \Core\EventManager
+ */
+var EventManager$4 = void 0;
+
 var Pagination = function () {
 	/**
   * - Initialize the container object.
@@ -2382,12 +2389,13 @@ var Pagination = function () {
   * @param \Components\Products | products
   * @return void
   */
-	function Pagination(container, products) {
+	function Pagination(container, products, events) {
 		_classCallCheck(this, Pagination);
 
 		this.setCurrent(1);
 		Container$5 = container;
 		Products$2 = products;
+		EventManager$4 = events;
 	}
 
 	/**
@@ -2407,12 +2415,33 @@ var Pagination = function () {
 
 			this.settings = Common.extend(defaultSettings$5, settings);
 
-			this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
-
 			this.setElement(this.settings.element);
+
+			// Listen to when products are being loaded and update the pagination
+			// with the actual items count.
+			EventManager$4.subscribe('products.loaded', function (products) {
+				this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
+				this.buildPagination();
+			}.bind(this));
+
+			// As a fallback choose the user's settings for the total items count.
+			this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
+			this.buildPagination();
+		}
+
+		/**
+   * Builds the pagination.
+   *
+   * @param 
+   * @return 
+   */
+
+	}, {
+		key: 'buildPagination',
+		value: function buildPagination() {
 			this.links = this.createLinks();
-			this.bindEventListeners(this.links);
 			this.replaceLinks(this.links);
+			this.bindEventListeners(this.links);
 		}
 
 		/**

@@ -111,7 +111,7 @@ describe('ProductsComponentTest', function() {
 		let products = this.container.make('Products');
 
 		products.setup({
-			url: baseUrl + '/demo/products.php'
+			url: baseUrl + '/demo/server/products.php'
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');

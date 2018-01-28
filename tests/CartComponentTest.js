@@ -22,7 +22,7 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
 	const baseUrl = 'http://dev.javascript-ecommerce-module.com/client/index.php';
 

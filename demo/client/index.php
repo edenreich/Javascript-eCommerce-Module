@@ -41,11 +41,13 @@
 			url: '../server/products.php',
 		});
 
+
+
 		shop.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-2 col-xs-10 col-md-offset-4 col-md-8',
 			per_page: 5,
-			total_items: 15,
+			total_items: 5,
 			proccessing: 'client-side',
 		});
 

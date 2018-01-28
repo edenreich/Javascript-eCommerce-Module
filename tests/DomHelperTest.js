@@ -12,9 +12,9 @@ describe('DomHelperTest', function() {
 	});
 	
 	it('should fetch an element from the DOM', function() {
-		let element1 = DOM.element('.test-class');
-		let element2 = DOM.element('.none-existing-element');
-		let element3 = DOM.element('#testId');
+		let element1 = DOM.find('.test-class');
+		let element2 = DOM.find('.none-existing-element');
+		let element3 = DOM.find('#testId');
 
 		assert.instanceOf(element1, window.HTMLDivElement);
 		assert.isNull(element2);
@@ -77,7 +77,7 @@ describe('DomHelperTest', function() {
 	});
 
 	it('should find a nested element', function() {
-		let element = DOM.element('#testId');
+		let element = DOM.find('#testId');
 		let nestedElement = DOM.find('#nestedElement', element);
 		let nestedNestedElement = DOM.find('#nestedNestedElement', element);
 
