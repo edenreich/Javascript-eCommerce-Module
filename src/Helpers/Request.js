@@ -33,7 +33,6 @@ class Request
 	 */
 	constructor(settings)
 	{
-		this.xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");
 		this.settings = Common.extend(defaultSettings, settings);
 		this.setDefaultRequestHeader();
 	}
@@ -133,7 +132,7 @@ class Request
 	 */
 	get(options)
 	{
-		let xhr = this.xhr;
+		let xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");			
 
 		if(options.hasOwnProperty('before') && typeof options.before == 'function') {
 			options.before.call(this);
@@ -155,12 +154,19 @@ class Request
 			xhr.responseType = options.dataType || 'json';
 			xhr.timeout = options.timeout || 3000;
 
+			if (xhr.responseType == 'json') {
+				xhr.setRequestHeader('Content-Type', 'application/json');
+				xhr.setRequestHeader('Accept', 'application/json');
+			}
+			
 			xhr.onreadystatechange = function() {
 			    if(this.readyState != 4 || this.status != 200) {
 			    	return;
 			    }
-	       	
-       			resolve(this.response);
+
+			    let response = this.response || this.responseText; 
+			    response = (xhr.responseType == 'json' && typeof response != 'object') ? JSON.parse(response) : response;
+			    resolve(response);	
        			
        			if(options.hasOwnProperty('after') && typeof options.after == 'function') {
 					options.after.call(this);

@@ -104,9 +104,9 @@ class Products
 	 * Loads the products for the page.
 	 * 
 	 * @param number | pageNumber
-	 * @param bool | all
+	 * @return void
 	 */
-	loadProducts(pageNumber = 1, all)
+	loadProducts(pageNumber = 1)
 	{
 		if (Container.Pagination && Container.Pagination.booted) {
 

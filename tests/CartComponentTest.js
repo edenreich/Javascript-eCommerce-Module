@@ -24,7 +24,7 @@ import Request from '../src/Helpers/Request.js';
 
 describe('CartComponentTest', function() {
 
-	const baseUrl = 'http://dev.javascript-ecommerce-module.com/client/index.php';
+	const baseUrl = 'http://dev.turbo-ecommerce.com';
 
 	beforeEach(function() {	
 		global.window = new Window;
@@ -124,12 +124,12 @@ describe('CartComponentTest', function() {
 		assert.equal(0, Cookie.get('cart').items.indexOf('somethingelse'));
 	});
 
-	it('adds a product to the cart when clicking on plus button', function() {
+	it('adds a product to the cart when clicking on plus button', function(done) {
 		let cart = this.container.make('Cart');
 		let products = this.container.make('Products'); 
 
 		products.setup({
-			url: baseUrl + '/demo/products.php',
+			url: baseUrl + '/server/products.php',
 			element: '.products'
 		});
 
@@ -140,17 +140,20 @@ describe('CartComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(5));
+		setTimeout(function() { 
+			let domElements = DOM.find('.product'); 
 
-		let addToCart = DOM.find('#addToCart')[0];
+			let addToCart = DOM.find('#addToCart')[0];
 
-		addToCart.click();
-		addToCart.click();
-	
-		let items = Cookie.get('cart').items;
+			addToCart.click();
+			addToCart.click();
+		
+			let items = Cookie.get('cart').items;
 
-		assert.isNotEmpty(items);
-		assert.lengthOf(items, 2);
+			assert.isNotEmpty(items);
+			assert.lengthOf(items, 2);
+			done();
+		}, 3000);
 
 	}).timeout(10000);
 

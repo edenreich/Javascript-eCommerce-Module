@@ -2,16 +2,26 @@
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
-import DOM from '../src/Helpers/DOM.js';
+
+// Core
 import Container from '../src/Core/Container.js';
+import EventManager from '../src/Core/EventManager.js';
+
+// Components
 import Pagination from '../src/Components/Pagination.js';
 import Products from '../src/Components/Products.js';
+
+// Helpers
+import DOM from '../src/Helpers/DOM.js';
+import Request from '../src/Helpers/Request.js';
+
+// Test Helpers
 import Generator from './Helpers/Generator.js';
 import DomEvents from './Helpers/DomEvents.js';
 
 describe('ProductsComponentTest', function() {
 
-	const baseUrl = 'http://dev.javascript-ecommerce-module.com';
+	const host = 'http://dev.turbo-ecommerce.com';
 
 	beforeEach(function(done) {	
 		global.window = new Window;
@@ -23,12 +33,16 @@ describe('ProductsComponentTest', function() {
 
 		this.container = new Container;
 
+		this.container.setInstance('Events', new EventManager);
+
+		this.container.setInstance('Request', new Request);
+
 		this.container.bind('Pagination', function(container) {
-			return new Pagination(container, container.make('Products'));
+			return new Pagination(container, container.make('Products'), container.Events);
 		});
 
 		this.container.bind('Products', function(container) {
-			return new Products(container);
+			return new Products(container, container.Request, container.Events);
 		});
 
 		done();
@@ -60,7 +74,7 @@ describe('ProductsComponentTest', function() {
 
 		products.replaceItems(Generator.products(3));
 
-		let productNodeElements = DOM.element('.product');
+		let productNodeElements = DOM.find('.product');
 
 		assert.lengthOf(productNodeElements, 3);
 		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
@@ -76,7 +90,7 @@ describe('ProductsComponentTest', function() {
 
 		products.replaceItems(Generator.products(3));
 		
-		let buttons = DOM.element('.action-buttons')[0];
+		let buttons = DOM.find('.action-buttons')[0];
 		let favoriteButton = DOM.find('#favorite', buttons);
 		let addToCartButton = DOM.find('#addToCart', buttons);
 
@@ -97,7 +111,7 @@ describe('ProductsComponentTest', function() {
 
 		products.replaceItems(Generator.products(3));
 
-		let productElements = DOM.element('.product');
+		let productElements = DOM.find('.product');
 		let buttons = DOM.find('.action-buttons', productElements[0]);
 		let addToCartButton = buttons.childNodes[0];
 		let favoriteButton = buttons.childNodes[1];
@@ -111,12 +125,12 @@ describe('ProductsComponentTest', function() {
 		let products = this.container.make('Products');
 
 		products.setup({
-			url: baseUrl + '/demo/server/products.php'
+			url: host + '/server/products.php'
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		let request = products.getProductsByPage(1);
+		let request = products.loadPageProductsByServer(1);
 
 		request.then(function(items) {
 			assert.lengthOf(items, 5);

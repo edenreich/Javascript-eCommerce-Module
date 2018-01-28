@@ -116,7 +116,7 @@ class Container
 	{
 		let instance = {};
 		let key;
-
+		
 		if (this.instanceExist(object)) {
 			return this.getInstance(object);
 		}

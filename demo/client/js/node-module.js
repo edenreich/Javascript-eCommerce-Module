@@ -716,7 +716,6 @@ var Request = function () {
 	function Request(settings) {
 		_classCallCheck(this, Request);
 
-		this.xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");
 		this.settings = Common.extend(defaultSettings$1, settings);
 		this.setDefaultRequestHeader();
 	}
@@ -822,7 +821,7 @@ var Request = function () {
 	}, {
 		key: 'get',
 		value: function get(options) {
-			var xhr = this.xhr;
+			var xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");
 
 			if (options.hasOwnProperty('before') && typeof options.before == 'function') {
 				options.before.call(this);
@@ -844,12 +843,19 @@ var Request = function () {
 				xhr.responseType = options.dataType || 'json';
 				xhr.timeout = options.timeout || 3000;
 
+				if (xhr.responseType == 'json') {
+					xhr.setRequestHeader('Content-Type', 'application/json');
+					xhr.setRequestHeader('Accept', 'application/json');
+				}
+
 				xhr.onreadystatechange = function () {
 					if (this.readyState != 4 || this.status != 200) {
 						return;
 					}
 
-					resolve(this.response);
+					var response = this.response || this.responseText;
+					response = xhr.responseType == 'json' && (typeof response === 'undefined' ? 'undefined' : _typeof(response)) != 'object' ? JSON.parse(response) : response;
+					resolve(response);
 
 					if (options.hasOwnProperty('after') && typeof options.after == 'function') {
 						options.after.call(this);
@@ -1991,14 +1997,13 @@ var Products = function () {
    * Loads the products for the page.
    * 
    * @param number | pageNumber
-   * @param bool | all
+   * @return void
    */
 
 	}, {
 		key: 'loadProducts',
 		value: function loadProducts() {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-			var all = arguments[1];
 
 			if (Container$4.Pagination && Container$4.Pagination.booted) {
 
