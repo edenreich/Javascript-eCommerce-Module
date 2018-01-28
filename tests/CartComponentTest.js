@@ -180,7 +180,7 @@ describe.only('CartComponentTest', function() {
 
 		product1.click();
 		product2.click();
-		product2.click();
+		product3.click();
 
 		cartIcon.click();
 
