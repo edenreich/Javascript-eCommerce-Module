@@ -81,20 +81,27 @@ var TurboEcommerce = function () {
 		return Str;
 	}();
 
-	var context = void 0;
+	/**
+  * Stores the debug level.
+  *
+  * @var string 
+  */
+
+
+	var debugLevel$1 = void 0;
 
 	var ExceptionHandler = function () {
 		_createClass(ExceptionHandler, null, [{
-			key: 'scope',
+			key: 'setDebugLevel',
 
 			/**
-    * Setter for the scope.
+    * Setter for the debug level.
     *
-    * @param object | scope
+    * @param string | level
     * @return void
     */
-			set: function set(scope) {
-				context = scope;
+			set: function set(level) {
+				debugLevel$1 = level;
 			}
 
 			/**
@@ -128,9 +135,7 @@ var TurboEcommerce = function () {
 			value: function stackTrace(error, message) {
 				this.customActions(error, message);
 
-				var debugLevel = context.debugLevel;
-
-				switch (debugLevel) {
+				switch (debugLevel$1) {
 					case 'error':
 						this.handleErrors(error, message);break;
 					case 'warning':
@@ -791,7 +796,10 @@ var TurboEcommerce = function () {
 					};
 
 					xhr.onerror = function (message) {
-						options.error(message);
+						if (options.hasOwnProperty('error') && typeof options.error == 'function') {
+							options.error(message);
+						}
+
 						reject(message);
 					};
 
@@ -852,7 +860,10 @@ var TurboEcommerce = function () {
 					};
 
 					xhr.onerror = function (message) {
-						options.error(message);
+						if (options.hasOwnProperty('error') && typeof options.error == 'function') {
+							options.error(message);
+						}
+
 						reject(message);
 					};
 
@@ -1041,6 +1052,13 @@ var TurboEcommerce = function () {
 
 				return instance;
 			}
+
+			/**
+    * Remove all existing instances.
+    *
+    * @return void 
+    */
+
 		}, {
 			key: 'flush',
 			value: function flush() {
@@ -2821,8 +2839,6 @@ var TurboEcommerce = function () {
 		function TurboEcommerce(settings) {
 			_classCallCheck(this, TurboEcommerce);
 
-			ExceptionHandler.scope = this;
-
 			if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
 				throw new InvalidArgumentException$1();
 			}
@@ -2843,6 +2859,8 @@ var TurboEcommerce = function () {
 			}.bind(this));
 
 			debugLevel = this.settings.debug_level;
+
+			ExceptionHandler.setDebugLevel = debugLevel;
 
 			if (debugLevel == 'warning' || debugLevel == 'info') {
 				window.onerror = function () {
@@ -3007,7 +3025,7 @@ var TurboEcommerce = function () {
 
 		function progressDraw() {
 			fill.style.transform = 'translateX(-' + progress + 'px)';
-			progress -= 3;
+			progress -= 7;
 
 			if (progress < maxSize) {
 				done();

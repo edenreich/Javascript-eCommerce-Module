@@ -56,8 +56,6 @@ class TurboEcommerce
 	 */
 	constructor(settings)
 	{
-		ExceptionHandler.scope = this;
-
 		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -78,6 +76,8 @@ class TurboEcommerce
 		}.bind(this));
 
 		debugLevel = this.settings.debug_level;
+
+		ExceptionHandler.setDebugLevel = debugLevel;
 		
 		if (debugLevel == 'warning' || debugLevel == 'info') {
 			window.onerror = function() { return true; };
@@ -253,7 +253,7 @@ function startLoading() {
 	
 	function progressDraw() {
 		fill.style.transform = 'translateX(-' + progress + 'px)';
-		progress -= 3;
+		progress -= 7;
 
 		if (progress < maxSize) {
 			done();

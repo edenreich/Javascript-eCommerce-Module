@@ -105,7 +105,10 @@ class Request
 			};
 
 			xhr.onerror = function(message) {
-				options.error(message);
+				if(options.hasOwnProperty('error') && typeof options.error == 'function') {
+					options.error(message);
+				}
+
 				reject(message);
 			};
 
@@ -165,7 +168,10 @@ class Request
 			};
 
 			xhr.onerror = function(message) {
-				options.error(message);
+				if(options.hasOwnProperty('error') && typeof options.error == 'function') {
+					options.error(message);
+				}
+
 				reject(message);
 			};
 

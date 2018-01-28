@@ -1,17 +1,22 @@
 
-let context;
+/**
+ * Stores the debug level.
+ *
+ * @var string 
+ */
+let debugLevel;
 
 class ExceptionHandler
 {
 	/**
-	 * Setter for the scope.
+	 * Setter for the debug level.
 	 *
-	 * @param object | scope
+	 * @param string | level
 	 * @return void
 	 */
-	static set scope(scope)
+	static set setDebugLevel(level)
 	{
-		context = scope;
+		debugLevel = level;
 	}
 
 	/**
@@ -37,8 +42,6 @@ class ExceptionHandler
 	stackTrace(error, message) 
 	{
 		this.customActions(error, message);
-
-		let debugLevel = context.debugLevel;
 
 		switch(debugLevel)
 		{
