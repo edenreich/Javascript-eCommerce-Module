@@ -81,10 +81,32 @@ var TurboEcommerce = function () {
 		return Str;
 	}();
 
-	var ExceptionHandler = function () {
-		function ExceptionHandler() {
-			var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+	var context = void 0;
 
+	var ExceptionHandler = function () {
+		_createClass(ExceptionHandler, null, [{
+			key: 'scope',
+
+			/**
+    * Setter for the scope.
+    *
+    * @param object | scope
+    * @return void
+    */
+			set: function set(scope) {
+				context = scope;
+			}
+
+			/**
+    * Extended constructor, captures the
+    * stack trace.
+    *
+    * @return void
+    */
+
+		}]);
+
+		function ExceptionHandler() {
 			_classCallCheck(this, ExceptionHandler);
 
 			if (Error.captureStackTrace) {
@@ -93,7 +115,11 @@ var TurboEcommerce = function () {
 		}
 
 		/**
-   * Handle all the errors
+   * Handles all exceptions.
+   *
+   * @param object | error | Throwen Exception Object
+   * @param string | message
+   * @return void
    */
 
 
@@ -102,31 +128,28 @@ var TurboEcommerce = function () {
 			value: function stackTrace(error, message) {
 				this.customActions(error, message);
 
-				var debugLevel = TurboEcommerce.debugLevel();
+				var debugLevel = context.debugLevel;
 
-				if (debugLevel == 'error') {
-					this.handleErrors(error, message);
-				} else if (debugLevel == 'warning') {
-					this.handleWarnings(error, message);
-				} else if (debugLevel == 'info') {
-					this.handleInfos(error, message);
+				switch (debugLevel) {
+					case 'error':
+						this.handleErrors(error, message);break;
+					case 'warning':
+						this.handleWarnings(error, message);break;
+					case 'info':
+						this.handleInfos(error, message);break;
+					default:
+						this.handleInfos(error, message);break;
 				}
 			}
-		}, {
-			key: 'handleErrors',
-			value: function handleErrors(error, message) {
-				console.error(error.constructor.name + ': ' + message);
-			}
-		}, {
-			key: 'handleWarnings',
-			value: function handleWarnings(error, message) {
-				console.warn(error.constructor.name + ': ' + message);
-			}
-		}, {
-			key: 'handleInfos',
-			value: function handleInfos(error, message) {
-				console.info(error.constructor.name + ': ' + message);
-			}
+
+			/**
+    * Take action for specific Exceptions.
+    *
+    * @param object | error | Throwen Exception Object
+    * @param string | message
+    * @return bool
+    */
+
 		}, {
 			key: 'customActions',
 			value: function customActions(error, message) {
@@ -147,6 +170,21 @@ var TurboEcommerce = function () {
 				}
 
 				return false;
+			}
+		}, {
+			key: 'handleErrors',
+			value: function handleErrors(error, message) {
+				console.error(error.constructor.name + ': ' + message);
+			}
+		}, {
+			key: 'handleWarnings',
+			value: function handleWarnings(error, message) {
+				console.warn(error.constructor.name + ': ' + message);
+			}
+		}, {
+			key: 'handleInfos',
+			value: function handleInfos(error, message) {
+				console.info(error.constructor.name + ': ' + message);
 			}
 		}]);
 
@@ -430,6 +468,10 @@ var TurboEcommerce = function () {
 
 
 	function queryElement(selector, parentElement) {
+		if (typeof selector != 'string') {
+			throw new InvalidArgumentException$1('queryElement() expects first parameter to be a string, but ' + (typeof selector === 'undefined' ? 'undefined' : _typeof(selector)) + ' was passed instead.');
+		}
+
 		var element = parentElement.querySelectorAll(selector);
 
 		if (element.length == 0) {
@@ -1399,18 +1441,23 @@ var TurboEcommerce = function () {
 					});
 
 					for (var attribute in attributes) {
+
 						var td = DOM.createElement('td');
 
-						if (attribute == 'image') {
-							var image = DOM.createElement('img', {
-								src: attributes[attribute],
-								width: '50px',
-								height: '50px'
-							});
+						switch (attribute) {
+							case 'image':
+								var image = DOM.createElement('img', {
+									src: attributes[attribute],
+									width: '50px',
+									height: '50px'
+								});
 
-							td.appendChild(image);
-						} else {
-							td.innerHTML = attributes[attribute];
+								td.appendChild(image);
+								break;
+							case 'name':
+							case 'price':
+								td.innerHTML = attributes[attribute];
+								break;
 						}
 
 						tr.appendChild(td);
@@ -2417,7 +2464,7 @@ var TurboEcommerce = function () {
 					var requestedPage = instance.current + 1;
 
 					if (instance.notInPageRange(requestedPage)) {
-						throw new NotInPageRangeException();
+						throw new NotInPageRangeException('The page you requesting does not exists');
 					}
 
 					Products$2.loadProducts(requestedPage).then(function (products) {
@@ -2431,7 +2478,7 @@ var TurboEcommerce = function () {
 					var requestedPage = instance.current - 1;
 
 					if (instance.notInPageRange(requestedPage)) {
-						throw new NotInPageRangeException();
+						throw new NotInPageRangeException('The page you requesting does not exists');
 					}
 
 					Products$2.loadProducts(requestedPage).then(function (products) {
@@ -2741,11 +2788,40 @@ var TurboEcommerce = function () {
 		bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
 	};
 
-	var _debugLevel = void 0;
+	var debugLevel = void 0;
 
-	var TurboEcommerce$1 = function () {
-		function TurboEcommerce$1(settings) {
-			_classCallCheck(this, TurboEcommerce$1);
+	var TurboEcommerce = function () {
+		_createClass(TurboEcommerce, [{
+			key: 'debugLevel',
+
+			/**
+    * Retrieve the debug level.
+    *
+    * @return string
+    */
+			get: function get() {
+				return debugLevel;
+			}
+
+			/**
+    * The entery for the shop.
+    * - Setting the exception handler.
+    * - Setting the ioc container.
+    * - Extending the user settings.
+    * - Setting the element.
+    * - Disabling default errors.
+    * - Passing calls via proxy to the components.
+    *
+    * @param object | settings
+    * @return Proxy
+    */
+
+		}]);
+
+		function TurboEcommerce(settings) {
+			_classCallCheck(this, TurboEcommerce);
+
+			ExceptionHandler.scope = this;
 
 			if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
 				throw new InvalidArgumentException$1();
@@ -2766,9 +2842,9 @@ var TurboEcommerce = function () {
 				this.addStyleTag();
 			}.bind(this));
 
-			_debugLevel = this.settings.debug_level;
+			debugLevel = this.settings.debug_level;
 
-			if (_debugLevel == 'warning' || _debugLevel == 'info') {
+			if (debugLevel == 'warning' || debugLevel == 'info') {
 				window.onerror = function () {
 					return true;
 				};
@@ -2789,7 +2865,14 @@ var TurboEcommerce = function () {
 			});
 		}
 
-		_createClass(TurboEcommerce$1, [{
+		/**
+   * Loads the external libraries which was specified.
+   * 
+   * @return void
+   */
+
+
+		_createClass(TurboEcommerce, [{
 			key: 'loadExternalLibraries',
 			value: function loadExternalLibraries() {
 				var i = void 0;
@@ -2823,6 +2906,8 @@ var TurboEcommerce = function () {
 
 			/**
     * Add the eCommerce style tags to the DOM.
+    *
+    * @return void
     */
 
 		}, {
@@ -2836,14 +2921,9 @@ var TurboEcommerce = function () {
 
 				DOM.addStyle('Turbo-eCommerce', css);
 			}
-		}], [{
-			key: 'debugLevel',
-			value: function debugLevel() {
-				return _debugLevel;
-			}
 		}]);
 
-		return TurboEcommerce$1;
+		return TurboEcommerce;
 	}();
 
 	/**
@@ -2957,5 +3037,5 @@ var TurboEcommerce = function () {
 		}
 	}
 
-	return TurboEcommerce$1;
+	return TurboEcommerce;
 }();

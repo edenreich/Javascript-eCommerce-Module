@@ -1,7 +1,26 @@
 
+let context;
+
 class ExceptionHandler
 {
-	constructor(message = null)
+	/**
+	 * Setter for the scope.
+	 *
+	 * @param object | scope
+	 * @return void
+	 */
+	static set scope(scope)
+	{
+		context = scope;
+	}
+
+	/**
+	 * Extended constructor, captures the
+	 * stack trace.
+	 *
+	 * @return void
+	 */
+	constructor()
 	{
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor.name);
@@ -9,38 +28,34 @@ class ExceptionHandler
 	}
 
 	/**
-	 * Handle all the errors
+	 * Handles all exceptions.
+	 *
+	 * @param object | error | Throwen Exception Object
+	 * @param string | message
+	 * @return void
 	 */
 	stackTrace(error, message) 
 	{
 		this.customActions(error, message);
 
-		let debugLevel = TurboEcommerce.debugLevel();
+		let debugLevel = context.debugLevel;
 
-		if (debugLevel == 'error') {
-    		this.handleErrors(error, message);
-    	} else if (debugLevel == 'warning') {
-    		this.handleWarnings(error, message);	
-    	} else if (debugLevel == 'info') {
-    		this.handleInfos(error, message);
-    	}
+		switch(debugLevel)
+		{
+			case 'error': this.handleErrors(error, message); break;
+			case 'warning': this.handleWarnings(error, message); break;
+			case 'info': this.handleInfos(error, message); break;
+			default: this.handleInfos(error, message); break;
+		}
 	}
 
-	handleErrors(error, message)
-	{
-		console.error(error.constructor.name + ': ' + message);
-	}
-
-	handleWarnings(error, message)
-	{
-		console.warn(error.constructor.name + ': ' + message);
-	}
-
-	handleInfos(error, message)
-	{
-		console.info(error.constructor.name + ': ' + message);
-	}
-
+	/**
+	 * Take action for specific Exceptions.
+	 *
+	 * @param object | error | Throwen Exception Object
+	 * @param string | message
+	 * @return bool
+	 */
 	customActions(error, message)
 	{
 		if (error.constructor.name == 'InvalidArgumentException') {
@@ -60,6 +75,21 @@ class ExceptionHandler
 		}
 
 		return false;
+	}
+
+	handleErrors(error, message)
+	{
+		console.error(error.constructor.name + ': ' + message);
+	}
+
+	handleWarnings(error, message)
+	{
+		console.warn(error.constructor.name + ': ' + message);
+	}
+
+	handleInfos(error, message)
+	{
+		console.info(error.constructor.name + ': ' + message);
 	}
 }
 

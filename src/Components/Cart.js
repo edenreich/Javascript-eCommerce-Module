@@ -195,19 +195,25 @@ class Cart
 			});	
 
 			for(let attribute in attributes) {
+
 				let td = DOM.createElement('td');
 
-				if (attribute == 'image') {
-					let image = DOM.createElement('img', {
-						src: attributes[attribute],
-						width: '50px',
-						height: '50px'
-					});
+				switch(attribute)
+				{
+					case 'image':
+						let image = DOM.createElement('img', {
+							src: attributes[attribute],
+							width: '50px',
+							height: '50px'
+						});
 
-					td.appendChild(image);
-				} else {
-					td.innerHTML = attributes[attribute];
-				}				
+						td.appendChild(image);
+						break;
+					case 'name':
+					case 'price':
+						td.innerHTML = attributes[attribute];
+						break;
+				}
 			
 				tr.appendChild(td);
 			}

@@ -228,6 +228,10 @@ class DOM
  */
 function queryElement(selector, parentElement) 
 {
+	if (typeof selector != 'string') {
+		throw new InvalidArgumentException('queryElement() expects first parameter to be a string, but ' + typeof selector + ' was passed instead.');
+	}
+
 	let element = parentElement.querySelectorAll(selector);
 
 	if (element.length == 0) {

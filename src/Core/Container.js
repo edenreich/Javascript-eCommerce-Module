@@ -136,6 +136,11 @@ class Container
 		return instance;
 	}
 
+	/**
+	 * Remove all existing instances.
+	 *
+	 * @return void 
+	 */
 	flush()
 	{
 		instances = [];

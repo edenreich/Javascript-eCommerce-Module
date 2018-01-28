@@ -32,8 +32,32 @@ let debugLevel;
 
 class TurboEcommerce
 {
+	/**
+	 * Retrieve the debug level.
+	 *
+	 * @return string
+	 */
+	get debugLevel()
+	{
+		return debugLevel;
+	}
+
+	/**
+	 * The entery for the shop.
+	 * - Setting the exception handler.
+	 * - Setting the ioc container.
+	 * - Extending the user settings.
+	 * - Setting the element.
+	 * - Disabling default errors.
+	 * - Passing calls via proxy to the components.
+	 *
+	 * @param object | settings
+	 * @return Proxy
+	 */
 	constructor(settings)
 	{
+		ExceptionHandler.scope = this;
+
 		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
@@ -74,6 +98,11 @@ class TurboEcommerce
 		});
 	}
 
+	/**
+	 * Loads the external libraries which was specified.
+	 * 
+	 * @return void
+	 */
 	loadExternalLibraries()
 	{
 		let i;
@@ -105,6 +134,8 @@ class TurboEcommerce
 
 	/**
 	 * Add the eCommerce style tags to the DOM.
+	 *
+	 * @return void
 	 */
 	addStyleTag() 
 	{
@@ -139,11 +170,6 @@ class TurboEcommerce
 		`;
 	    
 	    DOM.addStyle('Turbo-eCommerce', css);
-	}
-
-	static debugLevel()
-	{
-		return debugLevel;
 	}
 }
 

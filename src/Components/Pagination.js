@@ -134,7 +134,7 @@ class Pagination
 			let requestedPage = instance.current+1;
 
 			if (instance.notInPageRange(requestedPage)) {
-				throw new NotInPageRangeException;
+				throw new NotInPageRangeException('The page you requesting does not exists');
 			}
 
 			Products.loadProducts(requestedPage).then(function(products) {
@@ -148,7 +148,7 @@ class Pagination
 			let requestedPage = instance.current-1;
 
 			if(instance.notInPageRange(requestedPage)) {
-				throw new NotInPageRangeException;
+				throw new NotInPageRangeException('The page you requesting does not exists');
 			}
 			
 			Products.loadProducts(requestedPage).then(function(products) {

@@ -43,7 +43,7 @@
 
 		shop.Pagination.setup({
 			element: '.pagination-links',
-			class: 'col-xs-offset-4 col-xs-8',
+			class: 'col-xs-offset-2 col-xs-10 col-md-offset-4 col-md-8',
 			per_page: 5,
 			total_items: 15,
 			proccessing: 'client-side',
