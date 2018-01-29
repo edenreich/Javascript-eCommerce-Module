@@ -291,6 +291,28 @@ var DOM = function () {
 		}
 
 		/**
+   * Checks if an element has a class.
+   *
+   * @param HTMLElement | element
+   * @param string | className
+   * @return bool
+   */
+
+	}, {
+		key: 'hasClass',
+		value: function hasClass(element, className) {
+			if (element === null) {
+				throw new InvalidArgumentException$1('hasClass() expects the first argument to be an HTMLElement but null was passed.');
+			}
+
+			if (!className || className == '' || typeof className == 'undefined') {
+				return;
+			}
+
+			return element.className.indexOf(className) != -1;
+		}
+
+		/**
    * Removes class from a given element.
    * 
    * @param object | element
@@ -1668,17 +1690,47 @@ var Cart = function () {
 
 			this.svgIcon.onclick = function (e) {
 				e.preventDefault();
-				var opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
-
-				if (opening) {
-					this.reloadCartPreview();
-				}
+				this.toggleCartPreview();
 			}.bind(this);
 
 			EventManager$2.subscribe('cart.products.added', function (attributes) {
+				this.openCartPreview();
 				this.addItem(attributes);
 				this.reloadCartPreview();
 			}.bind(this));
+		}
+
+		/**
+   * Opens the cart preview.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'openCartPreview',
+		value: function openCartPreview() {
+			if (DOM.hasClass(this.previewElement, 'opened')) {
+				this.reloadCartPreview();
+			}
+
+			DOM.switchClasses(this.previewElement, 'closed', 'opened');
+			this.reloadCartPreview();
+		}
+
+		/**
+   * Toggles the opening closing of the cart preview.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'toggleCartPreview',
+		value: function toggleCartPreview() {
+			var opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
+
+			if (opening) {
+				this.reloadCartPreview();
+			}
 		}
 
 		/**

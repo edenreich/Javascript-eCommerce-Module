@@ -69,6 +69,26 @@ class DOM
 	}
 
 	/**
+	 * Checks if an element has a class.
+	 *
+	 * @param HTMLElement | element
+	 * @param string | className
+	 * @return bool
+	 */
+	static hasClass(element, className)
+	{
+		if (element === null) {
+			throw new InvalidArgumentException('hasClass() expects the first argument to be an HTMLElement but null was passed.');
+		}
+
+		if (! className || className == '' || typeof className == 'undefined') {
+			return;
+		}
+
+		return element.className.indexOf(className) != -1;
+	}
+
+	/**
 	 * Removes class from a given element.
 	 * 
 	 * @param object | element

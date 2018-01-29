@@ -484,17 +484,43 @@ class Cart
 
 		this.svgIcon.onclick = function(e) {
 			e.preventDefault();
-			let opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
-			
-			if (opening) {
-				this.reloadCartPreview();	
-			}
+			this.toggleCartPreview();
 		}.bind(this);
 		
 		EventManager.subscribe('cart.products.added', function(attributes) {
+			this.openCartPreview();
 			this.addItem(attributes);
 			this.reloadCartPreview();
 		}.bind(this));
+	}
+
+	/**
+	 * Opens the cart preview.
+	 *
+	 * @return void 
+	 */
+	openCartPreview()
+	{
+		if (DOM.hasClass(this.previewElement, 'opened')) {
+			this.reloadCartPreview();
+		}
+
+		DOM.switchClasses(this.previewElement, 'closed', 'opened');
+		this.reloadCartPreview();
+	}
+
+	/**
+	 * Toggles the opening closing of the cart preview.
+	 *
+	 * @return void 
+	 */
+	toggleCartPreview()
+	{
+		let opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
+			
+		if (opening) {
+			this.reloadCartPreview();	
+		}
 	}
 
 	/**
