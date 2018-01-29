@@ -12,6 +12,7 @@ gulp.task('build', () => {
 				'src/**/*.js'
 			])
 			.pipe(plumber())
+			.pipe(sourcemaps.init())
 		   	.pipe(rollup({
 		   		input: "./src/TurboEcommerce.js",
 				format: "iife",
@@ -19,6 +20,7 @@ gulp.task('build', () => {
 				name: "TurboEcommerce"
 		   	}))
 		   	.pipe(babel())
+		   	.pipe(sourcemaps.write())
 		   	.pipe(rename('bundle.js'))
 		   	.pipe(notify({
 	            title: "bundle.js has been Compiled"

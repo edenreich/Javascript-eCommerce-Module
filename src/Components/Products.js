@@ -109,13 +109,16 @@ class Products
 	loadProducts(pageNumber = 1)
 	{
 		if (Container.Pagination && Container.Pagination.booted) {
-
-			if (Container.Pagination.settings.proccessing == 'client-side') {
-				return this.loadPageProductsByClient(pageNumber);
-			} else if (Container.Pagination.settings.proccessing == 'server-side') {
-				return this.loadPageProductsByServer(pageNumber);
-			} else {
-				throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
+			switch(Container.Pagination.settings.proccessing) 
+			{
+				case 'client-side':
+					return this.loadPageProductsByClient(pageNumber);
+					break;
+				case 'server-side':
+					return this.loadPageProductsByServer(pageNumber);
+					break;
+				default:
+					throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
 			}
 		} else {
 			this.loadPageProductsByServer();
@@ -342,23 +345,28 @@ class Products
 		}
 
 		let tag = DOM.createElement('div', {
-			id: 'actionButtons',
 			class: 'action-buttons'
 		});
 
 		let addToCart = DOM.createElement('button', {
-			id: 'addToCart',
-			class: this.settings.add_button_class,
+			class: 'add-to-cart',
 			type: 'button',
 			text: '+',
 		});
 
 		let favorite = DOM.createElement('button', {
-			id: 'favorite',
-			class: this.settings.favorite_button_class,
+			class: 'favorite',
 			type: 'button',
 			text: '&hearts;'
 		});
+
+		if (this.settings.add_button_class) {
+			DOM.addClass(addToCart, this.settings.add_button_class);
+		}
+
+		if (this.settings.favorite_button_class) {
+			DOM.addClass(favorite, this.settings.favorite_button_class);
+		}
 
 		tag.appendChild(addToCart);
 		tag.appendChild(favorite);
@@ -451,7 +459,7 @@ class Products
 				text-align: center;
 			}
 
-			.product > .product-overlay > .action-buttons > #favorite {
+			.product > .product-overlay > .action-buttons > .favorite {
 				margin-left: 10px;
 			}
 

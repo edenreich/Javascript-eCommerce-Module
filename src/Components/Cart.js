@@ -112,8 +112,7 @@ class Cart
 		this.addStyleTag();
 
 		if(this.isEmpty(Cookie.get(this.settings.cookie_name))) {
-			this.cart = {};
-			this.setCart(this.cart);
+			this.setupCart();
 		}
 	}
 
@@ -134,12 +133,13 @@ class Cart
 	 * @param object | cart
 	 * @return void
 	 */
-	setCart(cart)
+	setupCart()
 	{
+		this.cart = {};
 		this.cart.id = Str.random(10);
 		this.cart.items = [];
 		this.cart.favorites = [];
-		Cookie.set(this.settings.cookie_name, cart, 2);
+		Cookie.set(this.settings.cookie_name, this.cart, 2);
 	}
 
 	/**
@@ -152,7 +152,23 @@ class Cart
 	{
 		this.cart = Cookie.get(this.settings.cookie_name);
 
-		this.cart.items.push(item);
+		if (!item.hasOwnProperty('quantity')) {
+			item.quantity = 1;
+		}
+
+		let wasAdded = false;
+		let i;
+
+		for (i = 0; i < this.cart.items.length; i++) {
+			if (this.cart.items[i].name == item.name) {
+				this.cart.items[i].quantity++;
+				wasAdded = true;
+			}
+		}
+
+		if (!wasAdded) {
+			this.cart.items.push(item);
+		}
 
 		Cookie.set(this.settings.cookie_name, this.cart, 2);
 	}
@@ -192,15 +208,18 @@ class Cart
 
 			let tr = DOM.createElement('tr', {
 				class: 'item'
-			});	
+			});
 
+			// Quantity always at the start of an item.
+			let td = DOM.createElement('td');
+			td.innerHTML = attributes.quantity +'x';
+			tr.appendChild(td);
+			
 			for(let attribute in attributes) {
-
-				let td = DOM.createElement('td');
-
 				switch(attribute)
 				{
 					case 'image':
+						td = DOM.createElement('td');
 						let image = DOM.createElement('img', {
 							src: attributes[attribute],
 							width: '50px',
@@ -211,6 +230,7 @@ class Cart
 						break;
 					case 'name':
 					case 'price':
+						td = DOM.createElement('td');
 						td.innerHTML = attributes[attribute];
 						break;
 				}
@@ -336,8 +356,12 @@ class Cart
 				list-style-type: none;
 			}
 
+			${this.settings.element} #preview > ul.items > .preview-table {
+				width: 100%;
+			}
+
 			${this.settings.element} #preview > ul.items > .preview-table td {
-				padding: 3px;
+				padding: 4px;
 			}
 
 			${this.settings.element} .items.loading {
@@ -468,9 +492,7 @@ class Cart
 		}.bind(this);
 		
 		EventManager.subscribe('cart.products.added', function(attributes) {
-			let cart = Cookie.get(this.settings.cookie_name);
-			cart.items.push(attributes);
-			Cookie.set(this.settings.cookie_name, cart);
+			this.addItem(attributes);
 			this.reloadCartPreview();
 		}.bind(this));
 	}

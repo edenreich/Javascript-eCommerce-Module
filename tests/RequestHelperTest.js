@@ -10,7 +10,7 @@ import Container from '../src/Core/Container.js';
 import DOM from '../src/Helpers/DOM.js';
 import Request from '../src/Helpers/Request.js';
 
-describe.only('RequestHelperTest', function() {
+describe('RequestHelperTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
 	const testEndPoint = 'server/products.php';

@@ -1,6 +1,6 @@
 
 import Window from 'window';
-import {assert} from 'chai';
+import {assert, expect} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
 
 // Exceptions
@@ -22,9 +22,11 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe('CartComponentTest', function() {
+describe.only('CartComponentTest', function() {
 
-	const baseUrl = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://dev.turbo-ecommerce.com';
+
+	const productsEndPoint = 'server/products.php';
 
 	beforeEach(function() {	
 		global.window = new Window;
@@ -67,7 +69,7 @@ describe('CartComponentTest', function() {
 		let cart = this.container.make('Cart');
 
 		cart.setup({
-			element: '.cart-icon',
+			element: ".cart-icon",
 		});
 
 		let icon = DOM.find('.cart-icon');
@@ -83,7 +85,7 @@ describe('CartComponentTest', function() {
 		let cart = this.container.make('Cart');
 
 		cart.setup({
-			element: '.cart-icon',
+			element: ".cart-icon",
 		});
 
 		let icon = DOM.find('.cart-icon');
@@ -96,8 +98,8 @@ describe('CartComponentTest', function() {
 		let cart = this.container.make('Cart');
 
 		cart.setup({
-			cookie_name: 'cart',
-			element: '.cart-icon',
+			cookie_name: "cart",
+			element: ".cart-icon",
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
@@ -111,8 +113,8 @@ describe('CartComponentTest', function() {
 		let cart = this.container.make('Cart');
 
 		cart.setup({
-			cookie_name: 'cart',
-			element: '.cart-icon'
+			cookie_name: "cart",
+			element: ".cart-icon"
 		});
 
 		cart.addItem('something');
@@ -129,18 +131,19 @@ describe('CartComponentTest', function() {
 		let products = this.container.make('Products'); 
 
 		products.setup({
-			url: baseUrl + '/server/products.php',
-			element: '.products'
+			url: host + '/' + productsEndPoint,
+			element: ".products"
 		});
 
 		cart.setup({
-			cookie_name: 'cart',
-			element: '.cart-icon'
+			cookie_name: "cart",
+			element: ".cart-icon"
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		setTimeout(function() { 
+		// wait 2 seconds for products to load.
+		wait(2).then(function() { 
 			let domElements = DOM.find('.product'); 
 
 			let addToCart = DOM.find('#addToCart')[0];
@@ -153,7 +156,7 @@ describe('CartComponentTest', function() {
 			assert.isNotEmpty(items);
 			assert.lengthOf(items, 2);
 			done();
-		}, 3000);
+		});
 
 	}).timeout(10000);
 
@@ -162,32 +165,30 @@ describe('CartComponentTest', function() {
 		let products = this.container.make('Products'); 
 
 		products.setup({
-			url: baseUrl + '/demo/products.php',
-			element: '.products'
+			url: host + '/' + productsEndPoint,
+			element: ".products"
 		});
 
 		cart.setup({
-			cookie_name: 'cart',
-			element: '.cart-icon'
+			cookie_name: "cart",
+			element: ".cart-icon"
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(5));
-
-		let product1 = DOM.find('#addToCart')[0];
-		let product2 = DOM.find('#addToCart')[4];
-		let product3 = DOM.find('#addToCart')[3];
-		let cartIcon = DOM.find('.cart-icon');
-		let preview = DOM.find('#preview', cartIcon);
-
-		product1.click();
-		product2.click();
-		product3.click();
-
-		cartIcon.click();
-
+		// wait 2 seconds for products to load.
 		wait(2).then(function() {
+			let product1 = DOM.find('#addToCart')[0];
+			let product2 = DOM.find('#addToCart')[4];
+			let product3 = DOM.find('#addToCart')[3];
+			let cartIcon = DOM.find('.cart-icon');
+			let preview = DOM.find('#preview', cartIcon);
+
+			product1.click();
+			product2.click();
+			product3.click();
+
+			cartIcon.click();
 			
 			var items = DOM.find('.item', preview);
 			
@@ -195,6 +196,43 @@ describe('CartComponentTest', function() {
 			done();
 		});
 	}).timeout(10000);
+
+	it.only('adds existing product to the cart again increments the quantity', function(done) {
+		let cart = this.container.make('Cart');
+		let products = this.container.make('Products');
+
+		cart.setup({
+			cookie_name: "cart",
+			element: ".cart-icon",
+		}); 
+
+
+		products.setup({
+			url: host + '/' + productsEndPoint,
+			element: ".products"
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+		
+		waitFor(1, function() {
+			let products = DOM.find('.product');
+			let addToCartFirstProduct = DOM.find('.add-to-cart', products[0]);
+			let addToCartSecondProduct = DOM.find('.add-to-cart', products[1]);
+			
+			// clicking same product twice.
+			addToCartFirstProduct.click();
+			addToCartFirstProduct.click();
+
+			addToCartSecondProduct.click();
+
+			let items = Cookie.get('cart').items;
+
+			assert.lengthOf(items, 2);
+			expect(items[0]).to.have.property('quantity');
+			done();
+		});
+	}).timeout(10000);
+
 
 	/**
 	 * Simple helper, for async operations.
@@ -208,6 +246,19 @@ describe('CartComponentTest', function() {
 				resolve();
 			}, time * 1000);
 		});
+	}
+
+	/**
+	 * Simple helper, for async operations.
+	 *
+	 * @param number | time | in seconds
+	 * @return void
+	 */
+	function waitFor(time, callback) {
+		setTimeout(function() {
+			callback.call();
+		}, time * 1000);
+		
 	}
 
 });

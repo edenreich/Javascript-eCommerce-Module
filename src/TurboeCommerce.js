@@ -181,9 +181,8 @@ class TurboEcommerce
  */
 function bindComponentsDependencies(components) {
 
+	this.container.setInstance('Request', new Request);
 	this.container.setInstance('Events', new EventManager);
-
-	let request = this.container.make(new Request);
 
 	this.container.bind('Filter', function(container) {
 		let component = new Filter(container);
@@ -198,7 +197,7 @@ function bindComponentsDependencies(components) {
 	});
 
 	this.container.bind('Products', function(container) {
-		let component = new Products(container, request, container.Events);
+		let component = new Products(container, container.Request, container.Events);
 		component.booted = true;
 		return component;
 	});
@@ -210,7 +209,7 @@ function bindComponentsDependencies(components) {
 	});
 
 	this.container.bind('Cart', function(container) {
-		let component = new Cart(container, request, container.Events);
+		let component = new Cart(container, container.Request, container.Events);
 		component.booted = true;
 		return component;
 	});

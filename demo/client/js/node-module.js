@@ -85,7 +85,7 @@ var Str = function () {
  */
 
 
-var debugLevel$1 = void 0;
+var debugLevel = void 0;
 
 var ExceptionHandler = function () {
 	_createClass(ExceptionHandler, null, [{
@@ -98,7 +98,7 @@ var ExceptionHandler = function () {
    * @return void
    */
 		set: function set(level) {
-			debugLevel$1 = level;
+			debugLevel = level;
 		}
 
 		/**
@@ -132,7 +132,7 @@ var ExceptionHandler = function () {
 		value: function stackTrace(error, message) {
 			this.customActions(error, message);
 
-			switch (debugLevel$1) {
+			switch (debugLevel) {
 				case 'error':
 					this.handleErrors(error, message);break;
 				case 'warning':
@@ -698,7 +698,7 @@ var InvalidDataStructureException = function (_ExceptionHandler2) {
  * @var object
  */
 
-var defaultSettings$1 = {
+var defaultSettings = {
 	headers: {
 		'Content-Type': 'application/json'
 	},
@@ -716,7 +716,7 @@ var Request = function () {
 	function Request(settings) {
 		_classCallCheck(this, Request);
 
-		this.settings = Common.extend(defaultSettings$1, settings);
+		this.settings = Common.extend(defaultSettings, settings);
 		this.setDefaultRequestHeader();
 	}
 
@@ -1272,7 +1272,7 @@ var Cookie = function () {
  */
 
 
-var defaultSettings$2 = {
+var defaultSettings$1 = {
 	element: '.cart',
 	cookie_name: 'cart',
 	preview_class: '',
@@ -1358,7 +1358,7 @@ var Cart = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$2, settings);
+			this.settings = Common.extend(defaultSettings$1, settings);
 
 			this.setElement(this.settings.element);
 
@@ -1369,8 +1369,7 @@ var Cart = function () {
 			this.addStyleTag();
 
 			if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
-				this.cart = {};
-				this.setCart(this.cart);
+				this.setupCart();
 			}
 		}
 
@@ -1395,12 +1394,13 @@ var Cart = function () {
    */
 
 	}, {
-		key: 'setCart',
-		value: function setCart(cart) {
+		key: 'setupCart',
+		value: function setupCart() {
+			this.cart = {};
 			this.cart.id = Str.random(10);
 			this.cart.items = [];
 			this.cart.favorites = [];
-			Cookie.set(this.settings.cookie_name, cart, 2);
+			Cookie.set(this.settings.cookie_name, this.cart, 2);
 		}
 
 		/**
@@ -1415,7 +1415,23 @@ var Cart = function () {
 		value: function addItem(item) {
 			this.cart = Cookie.get(this.settings.cookie_name);
 
-			this.cart.items.push(item);
+			if (!item.hasOwnProperty('quantity')) {
+				item.quantity = 1;
+			}
+
+			var wasAdded = false;
+			var i = void 0;
+
+			for (i = 0; i < this.cart.items.length; i++) {
+				if (this.cart.items[i].name == item.name) {
+					this.cart.items[i].quantity++;
+					wasAdded = true;
+				}
+			}
+
+			if (!wasAdded) {
+				this.cart.items.push(item);
+			}
 
 			Cookie.set(this.settings.cookie_name, this.cart, 2);
 		}
@@ -1461,12 +1477,15 @@ var Cart = function () {
 					class: 'item'
 				});
 
+				// Quantity always at the start of an item.
+				var td = DOM.createElement('td');
+				td.innerHTML = attributes.quantity + 'x';
+				tr.appendChild(td);
+
 				for (var attribute in attributes) {
-
-					var td = DOM.createElement('td');
-
 					switch (attribute) {
 						case 'image':
+							td = DOM.createElement('td');
 							var image = DOM.createElement('img', {
 								src: attributes[attribute],
 								width: '50px',
@@ -1477,6 +1496,7 @@ var Cart = function () {
 							break;
 						case 'name':
 						case 'price':
+							td = DOM.createElement('td');
 							td.innerHTML = attributes[attribute];
 							break;
 					}
@@ -1547,7 +1567,7 @@ var Cart = function () {
 
 			var position = this.settings.fixed ? 'fixed' : 'absolute';
 
-			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items {\n\t\t\t\tpadding: 0;\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table td {\n\t\t\t\tpadding: 3px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items {\n\t\t\t\tpadding: 0;\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table {\n\t\t\t\twidth: 100%;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table td {\n\t\t\t\tpadding: 4px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Cart', css);
 		}
@@ -1656,9 +1676,7 @@ var Cart = function () {
 			}.bind(this);
 
 			EventManager$2.subscribe('cart.products.added', function (attributes) {
-				var cart = Cookie.get(this.settings.cookie_name);
-				cart.items.push(attributes);
-				Cookie.set(this.settings.cookie_name, cart);
+				this.addItem(attributes);
 				this.reloadCartPreview();
 			}.bind(this));
 		}
@@ -1802,7 +1820,7 @@ function createLoader() {
 /**
  * The default settings of the filter.
  */
-var defaultSettings$3 = {
+var defaultSettings$2 = {
 	element: '.filter',
 	class: '',
 	width: '',
@@ -1844,7 +1862,7 @@ var Filter = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$3, settings);
+			this.settings = Common.extend(defaultSettings$2, settings);
 
 			document.addEventListener('DOMContentLoaded', function () {
 
@@ -1907,7 +1925,7 @@ var Filter = function () {
  */
 
 
-var defaultSettings$4 = {
+var defaultSettings$3 = {
 	element: '.products',
 	class: '',
 	item_class: '',
@@ -1980,7 +1998,7 @@ var Products = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$4, settings);
+			this.settings = Common.extend(defaultSettings$3, settings);
 			this.totalItems = null;
 
 			document.addEventListener('DOMContentLoaded', function () {
@@ -2006,13 +2024,15 @@ var Products = function () {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
 			if (Container$4.Pagination && Container$4.Pagination.booted) {
-
-				if (Container$4.Pagination.settings.proccessing == 'client-side') {
-					return this.loadPageProductsByClient(pageNumber);
-				} else if (Container$4.Pagination.settings.proccessing == 'server-side') {
-					return this.loadPageProductsByServer(pageNumber);
-				} else {
-					throw new InvalidArgumentException$1('for proccessing you can choose \'server-side\' or \'client-side\' options.');
+				switch (Container$4.Pagination.settings.proccessing) {
+					case 'client-side':
+						return this.loadPageProductsByClient(pageNumber);
+						break;
+					case 'server-side':
+						return this.loadPageProductsByServer(pageNumber);
+						break;
+					default:
+						throw new InvalidArgumentException$1('for proccessing you can choose \'server-side\' or \'client-side\' options.');
 				}
 			} else {
 				this.loadPageProductsByServer();
@@ -2256,23 +2276,28 @@ var Products = function () {
 			}
 
 			var tag = DOM.createElement('div', {
-				id: 'actionButtons',
 				class: 'action-buttons'
 			});
 
 			var addToCart = DOM.createElement('button', {
-				id: 'addToCart',
-				class: this.settings.add_button_class,
+				class: 'add-to-cart',
 				type: 'button',
 				text: '+'
 			});
 
 			var favorite = DOM.createElement('button', {
-				id: 'favorite',
-				class: this.settings.favorite_button_class,
+				class: 'favorite',
 				type: 'button',
 				text: '&hearts;'
 			});
+
+			if (this.settings.add_button_class) {
+				DOM.addClass(addToCart, this.settings.add_button_class);
+			}
+
+			if (this.settings.favorite_button_class) {
+				DOM.addClass(favorite, this.settings.favorite_button_class);
+			}
 
 			tag.appendChild(addToCart);
 			tag.appendChild(favorite);
@@ -2303,7 +2328,7 @@ var Products = function () {
 			var minWidth = this.settings.min_width || '200px';
 			var maxWidth = this.settings.max_width || '250px';
 
-			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > #favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
+			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > .favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Products', css);
 		}
@@ -2356,7 +2381,7 @@ var NotInPageRangeException = function (_ExceptionHandler5) {
  */
 
 
-var defaultSettings$5 = {
+var defaultSettings$4 = {
 	element: '.pagination-links',
 	proccessing: 'client-side',
 	class: '',
@@ -2418,7 +2443,7 @@ var Pagination = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$5, settings);
+			this.settings = Common.extend(defaultSettings$4, settings);
 
 			this.setElement(this.settings.element);
 
@@ -2825,7 +2850,7 @@ var ComponentNotRegisteredException = function (_ExceptionHandler6) {
 	return ComponentNotRegisteredException;
 }(ExceptionHandler);
 
-var defaultSettings = {
+var defaultSettings$5 = {
 	debug_level: 'error',
 	element: 'body',
 	inject_libraries: [],
@@ -2837,7 +2862,7 @@ var externalLibraries = {
 	bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
 };
 
-var debugLevel = void 0;
+var debugLevel$1 = void 0;
 
 var TurboEcommerce = function () {
 	_createClass(TurboEcommerce, [{
@@ -2849,7 +2874,7 @@ var TurboEcommerce = function () {
    * @return string
    */
 		get: function get() {
-			return debugLevel;
+			return debugLevel$1;
 		}
 
 		/**
@@ -2875,7 +2900,7 @@ var TurboEcommerce = function () {
 		}
 
 		this.container = new Container();
-		this.settings = Common.extend(defaultSettings, settings);
+		this.settings = Common.extend(defaultSettings$5, settings);
 
 		this.loadExternalLibraries();
 
@@ -2889,11 +2914,11 @@ var TurboEcommerce = function () {
 			this.addStyleTag();
 		}.bind(this));
 
-		debugLevel = this.settings.debug_level;
+		debugLevel$1 = this.settings.debug_level;
 
-		ExceptionHandler.setDebugLevel = debugLevel;
+		ExceptionHandler.setDebugLevel = debugLevel$1;
 
-		if (debugLevel == 'warning' || debugLevel == 'info') {
+		if (debugLevel$1 == 'warning' || debugLevel$1 == 'info') {
 			window.onerror = function () {
 				return true;
 			};
@@ -2985,9 +3010,8 @@ var TurboEcommerce = function () {
 
 function bindComponentsDependencies(components) {
 
+	this.container.setInstance('Request', new Request());
 	this.container.setInstance('Events', new EventManager());
-
-	var request = this.container.make(new Request());
 
 	this.container.bind('Filter', function (container) {
 		var component = new Filter(container);
@@ -3002,7 +3026,7 @@ function bindComponentsDependencies(components) {
 	});
 
 	this.container.bind('Products', function (container) {
-		var component = new Products(container, request, container.Events);
+		var component = new Products(container, container.Request, container.Events);
 		component.booted = true;
 		return component;
 	});
@@ -3014,7 +3038,7 @@ function bindComponentsDependencies(components) {
 	});
 
 	this.container.bind('Cart', function (container) {
-		var component = new Cart(container, request, container.Events);
+		var component = new Cart(container, container.Request, container.Events);
 		component.booted = true;
 		return component;
 	});
