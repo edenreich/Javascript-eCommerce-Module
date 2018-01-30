@@ -167,8 +167,34 @@ class Cart
 			}
 		}
 
-		if (!wasAdded) {
+		if (! wasAdded) {
 			this.cart.items.push(item);
+		}
+
+		Cookie.set(this.settings.cookie_name, this.cart, 2);
+	}
+
+	/**
+	 * Adds an item to the favorites list.
+	 *
+	 * @param object | item
+	 * @return void
+	 */
+	favoriteItem(item)
+	{
+		this.cart = Cookie.get(this.settings.cookie_name);
+
+		let i;
+		let wasFavorited = false;
+
+		for (i = 0; i < this.cart.favorites.length; i++) {
+			if (this.cart.favorites[i].name == item.name) {
+				wasFavorited = true;
+			}
+		}
+
+		if (! wasFavorited) {
+			this.cart.favorites.push(item);
 		}
 
 		Cookie.set(this.settings.cookie_name, this.cart, 2);
@@ -492,10 +518,14 @@ class Cart
 			this.toggleCartPreview();
 		}.bind(this);
 		
-		EventManager.subscribe('cart.products.added', function(attributes) {
+		EventManager.subscribe('cart.product.added', function(attributes) {
 			this.openCartPreview();
 			this.addItem(attributes);
 			this.reloadCartPreview();
+		}.bind(this));
+
+		EventManager.subscribe('cart.product.favorited', function(attributes) {
+			this.favoriteItem(attributes);
 		}.bind(this));
 	}
 

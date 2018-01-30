@@ -1460,6 +1460,34 @@ var Cart = function () {
 		}
 
 		/**
+   * Adds an item to the favorites list.
+   *
+   * @param object | item
+   * @return void
+   */
+
+	}, {
+		key: 'favoriteItem',
+		value: function favoriteItem(item) {
+			this.cart = Cookie.get(this.settings.cookie_name);
+
+			var i = void 0;
+			var wasFavorited = false;
+
+			for (i = 0; i < this.cart.favorites.length; i++) {
+				if (this.cart.favorites[i].name == item.name) {
+					wasFavorited = true;
+				}
+			}
+
+			if (!wasFavorited) {
+				this.cart.favorites.push(item);
+			}
+
+			Cookie.set(this.settings.cookie_name, this.cart, 2);
+		}
+
+		/**
    * Removes an item from the cart.
    *
    * @param object | item
@@ -1698,10 +1726,14 @@ var Cart = function () {
 				this.toggleCartPreview();
 			}.bind(this);
 
-			EventManager$2.subscribe('cart.products.added', function (attributes) {
+			EventManager$2.subscribe('cart.product.added', function (attributes) {
 				this.openCartPreview();
 				this.addItem(attributes);
 				this.reloadCartPreview();
+			}.bind(this));
+
+			EventManager$2.subscribe('cart.product.favorited', function (attributes) {
+				this.favoriteItem(attributes);
 			}.bind(this));
 		}
 
@@ -2367,7 +2399,13 @@ var Products = function () {
 
 			addToCart.addEventListener('click', function (e) {
 				e.preventDefault();
-				EventManager$3.publish('cart.products.added', attributes);
+				EventManager$3.publish('cart.product.added', attributes);
+			});
+
+			favorite.addEventListener('click', function (e) {
+				e.preventDefault();
+				this.innerHTML = '&#x2713;';
+				EventManager$3.publish('cart.product.favorited', attributes);
 			});
 
 			overlay.appendChild(tag);

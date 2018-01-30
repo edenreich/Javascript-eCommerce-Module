@@ -374,7 +374,13 @@ class Products
 
 		addToCart.addEventListener('click', function(e) {
 			e.preventDefault();
-			EventManager.publish('cart.products.added', attributes);
+			EventManager.publish('cart.product.added', attributes);
+		});
+
+		favorite.addEventListener('click', function(e) {
+			e.preventDefault();
+			this.innerHTML = '&#x2713;';
+			EventManager.publish('cart.product.favorited', attributes);
 		});
 
 		overlay.appendChild(tag);

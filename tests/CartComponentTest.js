@@ -197,7 +197,7 @@ describe.only('CartComponentTest', function() {
 		});
 	}).timeout(10000);
 
-	it.only('adds existing product to the cart again increments the quantity', function(done) {
+	it('adds existing product to the cart again increments the quantity', function(done) {
 		let cart = this.container.make('Cart');
 		let products = this.container.make('Products');
 
@@ -215,9 +215,9 @@ describe.only('CartComponentTest', function() {
 		DomEvents.dispatch('DOMContentLoaded');
 		
 		waitFor(1, function() {
-			let products = DOM.find('.product');
-			let addToCartFirstProduct = DOM.find('.add-to-cart', products[0]);
-			let addToCartSecondProduct = DOM.find('.add-to-cart', products[1]);
+			let productElements = DOM.find('.product');
+			let addToCartFirstProduct = DOM.find('.add-to-cart', productElements[0]);
+			let addToCartSecondProduct = DOM.find('.add-to-cart', productElements[1]);
 			
 			// clicking same product twice.
 			addToCartFirstProduct.click();
@@ -232,6 +232,37 @@ describe.only('CartComponentTest', function() {
 			done();
 		});
 	}).timeout(10000);
+
+	it.only('favorites a product by clicking favorite button adds it to the cookie', function(done) {
+		let cart = this.container.make('Cart');
+		let products = this.container.make('Products');
+
+		cart.setup({
+			cookie_name: "cart",
+			element: ".cart-icon"
+		});
+
+		products.setup({
+			url: host + '/' + productsEndPoint,
+			element: ".products"
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		waitFor(1, function() {
+			let productElements = DOM.find('.product');
+			let favorite = DOM.find('.favorite', productElements[0]);
+
+			favorite.click();
+			favorite.click(); // Click it twice on purpose just to make sure we have only one record inserted.
+
+			let favorites = Cookie.get('cart').favorites;
+
+			assert.lengthOf(favorites, 1);
+
+			done();
+		});
+	});
 
 
 	/**
@@ -250,8 +281,10 @@ describe.only('CartComponentTest', function() {
 
 	/**
 	 * Simple helper, for async operations.
+	 * synonym for wait function only with callback instead.
 	 *
 	 * @param number | time | in seconds
+	 * @param function | callback
 	 * @return void
 	 */
 	function waitFor(time, callback) {
