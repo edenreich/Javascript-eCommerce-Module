@@ -1304,7 +1304,8 @@ var defaultSettings$1 = {
 	height: '60px',
 	placement: 'right-top',
 	fixed: true,
-	hover_color: 'orange'
+	hover_color: 'orange',
+	no_css: false
 };
 
 /**
@@ -1584,6 +1585,10 @@ var Cart = function () {
 		key: 'addStyleTag',
 		value: function addStyleTag() {
 			if (DOM.find('#eCommerce-Cart')) {
+				return;
+			}
+
+			if (this.settings.no_css) {
 				return;
 			}
 
@@ -1986,7 +1991,8 @@ var defaultSettings$3 = {
 	width: '200px',
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
-	url: 'products.php'
+	url: 'products.php',
+	no_css: false
 };
 
 /**
@@ -2372,6 +2378,10 @@ var Products = function () {
 		key: 'addStyleTag',
 		value: function addStyleTag() {
 			if (DOM.find('#Turbo-eCommerce-Products')) {
+				return;
+			}
+
+			if (this.settings.no_css) {
 				return;
 			}
 

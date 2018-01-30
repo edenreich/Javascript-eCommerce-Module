@@ -25,7 +25,8 @@
 			element: '.turbo-ecommerce',
 			inject_libraries: ['bootstrap'],
 			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination'],
-			loading_animation: true
+			loading_animation: true,
+			no_css: false,
 		});
 
 		shop.Products.setup({
@@ -39,9 +40,8 @@
 			height: '280px',
 			attributes: ['image', 'name', 'price', 'deliveryTime'],
 			url: '../server/products.php',
+			no_css: false,
 		});
-
-
 
 		shop.Pagination.setup({
 			element: '.pagination-links',
@@ -62,13 +62,15 @@
 		shop.Filter.setup({
 			element: '.filter',
 			class: 'col-xs-12 col-md-3',
+			no_css: false,
 		});
 
 		shop.Cart.setup({
 			element: '.cart',
 			cookie_name: 'cart',
 			placement: 'right-top',
-			hover_color: 'orange'
+			hover_color: 'orange',
+			no_css: false,
 		});
 
 	})(TurboEcommerce);

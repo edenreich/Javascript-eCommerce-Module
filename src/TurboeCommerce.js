@@ -21,7 +21,7 @@ let defaultSettings = {
 	element: 'body',
 	inject_libraries: [],
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart'],
-	loading_animation: true,
+	loading_animation: true
 };
 
 let externalLibraries = {
@@ -139,7 +139,7 @@ class TurboEcommerce
 	 */
 	addStyleTag() 
 	{
-		if(DOM.find('#Turboe-Commerce')) {
+		if (DOM.find('#Turboe-Commerce')) {
 			return;
 		}
 

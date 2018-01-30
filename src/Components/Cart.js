@@ -28,7 +28,8 @@ let defaultSettings = {
 	height: '60px',
 	placement: 'right-top',
 	fixed: true,
-	hover_color: 'orange'
+	hover_color: 'orange',
+	no_css: false,
 };
 
 /**
@@ -289,7 +290,11 @@ class Cart
 	 */
 	addStyleTag() 
 	{
-		if(DOM.find('#eCommerce-Cart')) {
+		if (DOM.find('#eCommerce-Cart')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 

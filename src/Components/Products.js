@@ -27,6 +27,7 @@ let defaultSettings = {
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
+	no_css: false,
 };
 
 /**
@@ -386,7 +387,11 @@ class Products
 	 */
 	addStyleTag() 
 	{
-		if(DOM.find('#Turbo-eCommerce-Products')) {
+		if (DOM.find('#Turbo-eCommerce-Products')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 
@@ -394,7 +399,6 @@ class Products
 		let height = this.settings.height || '200px';
 		let minWidth = this.settings.min_width || '200px';
 		let maxWidth = this.settings.max_width || '250px';
-	
 
 		let css = `
 			.product {
