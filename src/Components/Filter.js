@@ -19,6 +19,7 @@ let defaultSettings = {
 	class: '',
 	width: '',
 	height: '',
+	no_css: false,
 };
 
 /**
@@ -82,6 +83,10 @@ class Filter
 	addStyleTag() 
 	{
 		if (DOM.find('#Turbo-eCommerce-Filter')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 

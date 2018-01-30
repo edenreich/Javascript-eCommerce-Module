@@ -1881,7 +1881,8 @@ var defaultSettings$2 = {
 	element: '.filter',
 	class: '',
 	width: '',
-	height: ''
+	height: '',
+	no_css: false
 };
 
 /**
@@ -1952,6 +1953,10 @@ var Filter = function () {
 		key: 'addStyleTag',
 		value: function addStyleTag() {
 			if (DOM.find('#Turbo-eCommerce-Filter')) {
+				return;
+			}
+
+			if (this.settings.no_css) {
 				return;
 			}
 
