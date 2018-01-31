@@ -81,7 +81,7 @@ describe('ProductsComponentTest', function() {
 		done();
 	});
 
-	it('should have for each product a button with id #favorite and button with id #addToCart', function(done) {
+	it('checks that each product have .add-to-cart and .favorite classes', function(done) {
 		let products = this.container.make('Products');
 
 		products.setup({});
@@ -91,15 +91,15 @@ describe('ProductsComponentTest', function() {
 		products.replaceItems(Generator.products(3));
 		
 		let buttons = DOM.find('.action-buttons')[0];
-		let favoriteButton = DOM.find('#favorite', buttons);
-		let addToCartButton = DOM.find('#addToCart', buttons);
+		let favoriteButton = DOM.find('.favorite', buttons);
+		let addToCartButton = DOM.find('.add-to-cart', buttons);
 
 		assert.isNotNull(favoriteButton);
 		assert.isNotNull(addToCartButton);
 		done();
 	});
 
-	it('should let the developer override the default buttons classes', function(done) {
+	it('should let the developer to add css class to the buttons', function(done) {
 		let products = this.container.make('Products');
 
 		products.setup({
@@ -116,8 +116,8 @@ describe('ProductsComponentTest', function() {
 		let addToCartButton = buttons.childNodes[0];
 		let favoriteButton = buttons.childNodes[1];
 
-		assert.equal(addToCartButton.className, 'test-class');
-		assert.equal(favoriteButton.className, 'second-test-class');
+		assert.isOk(DOM.hasClass(addToCartButton, 'test-class'));
+		assert.isOk(DOM.hasClass(favoriteButton, 'second-test-class'));
 		done();
 	});
 

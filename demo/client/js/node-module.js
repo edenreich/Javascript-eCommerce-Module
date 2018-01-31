@@ -477,6 +477,20 @@ var DOM = function () {
 
 			return queryElement(selector, context);
 		}
+
+		/**
+   * Inserts an element after an element.
+   *
+   * @param HTMLElement | element
+   * @param HTMLElement | context
+   * @return void
+   */
+
+	}, {
+		key: 'insertAfter',
+		value: function insertAfter(context, element) {
+			context.parentNode.insertBefore(element, context.nextSibling);
+		}
 	}]);
 
 	return DOM;
@@ -494,6 +508,10 @@ var DOM = function () {
 function queryElement(selector, parentElement) {
 	if (typeof selector != 'string') {
 		throw new InvalidArgumentException$1('queryElement() expects first parameter to be a string, but ' + (typeof selector === 'undefined' ? 'undefined' : _typeof(selector)) + ' was passed instead.');
+	}
+
+	if (parentElement === null) {
+		throw new InvalidArgumentException$1('queryElement() expects second parameter to be of type HTMLElement, but null was passed instead.');
 	}
 
 	var element = parentElement.querySelectorAll(selector);
@@ -1363,7 +1381,7 @@ var Cart = function () {
 		EventManager$2 = eventManager;
 
 		this.previewElement = this.createPreviewElement();
-		this.svgIcon = createIcon.call(this);
+		this.icon = createIcon.call(this);
 	}
 
 	/**
@@ -1436,23 +1454,28 @@ var Cart = function () {
 	}, {
 		key: 'addItem',
 		value: function addItem(item) {
+			if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) != 'object') {
+				throw InvalidArgumentException$1('addItem() expect the first parameter to be an object, but ' + (typeof item === 'undefined' ? 'undefined' : _typeof(item)) + ' was passed instead');
+			}
+
 			this.cart = Cookie.get(this.settings.cookie_name);
 
 			if (!item.hasOwnProperty('quantity')) {
 				item.quantity = 1;
 			}
 
-			var wasAdded = false;
 			var i = void 0;
+			var incremented = false;
 
 			for (i = 0; i < this.cart.items.length; i++) {
-				if (this.cart.items[i].name == item.name) {
+				if (item.hasOwnProperty('id') && this.cart.items[i].id == item.id) {
 					this.cart.items[i].quantity++;
-					wasAdded = true;
+					incremented = true;
+					break;
 				}
 			}
 
-			if (!wasAdded) {
+			if (!incremented) {
 				this.cart.items.push(item);
 			}
 
@@ -1472,15 +1495,16 @@ var Cart = function () {
 			this.cart = Cookie.get(this.settings.cookie_name);
 
 			var i = void 0;
-			var wasFavorited = false;
+			var alreadyFavorited = false;
 
 			for (i = 0; i < this.cart.favorites.length; i++) {
-				if (this.cart.favorites[i].name == item.name) {
-					wasFavorited = true;
+				if (item.hasOwnProperty('id') && this.cart.favorites[i].id == item.id) {
+					alreadyFavorited = true;
+					break;
 				}
 			}
 
-			if (!wasFavorited) {
+			if (!alreadyFavorited) {
 				this.cart.favorites.push(item);
 			}
 
@@ -1499,7 +1523,14 @@ var Cart = function () {
 		value: function removeItem(item) {
 			this.cart = Cookie.get(this.settings.cookie_name);
 
-			this.cart.items.splice(this.cart.items.indexOf(item), 1);
+			var i = void 0;
+
+			for (i = 0; i < this.cart.items.length; i++) {
+				if (item.hasOwnProperty('id') && this.cart.items[i].name == item.name) {
+					this.cart.items.splice(i, 1);
+					break;
+				}
+			}
 
 			Cookie.set(this.settings.cookie_name, this.cart, 2);
 		}
@@ -1524,39 +1555,56 @@ var Cart = function () {
 
 				var attributes = items[i];
 
-				var tr = DOM.createElement('tr', {
+				var _tr = DOM.createElement('tr', {
 					class: 'item'
 				});
 
 				// Quantity always at the start of an item.
-				var td = DOM.createElement('td');
-				td.innerHTML = attributes.quantity + 'x';
-				tr.appendChild(td);
+				var _td = DOM.createElement('td');
+
+				_td.innerHTML = attributes.quantity + 'x';
+				_tr.appendChild(_td);
 
 				for (var attribute in attributes) {
 					switch (attribute) {
 						case 'image':
-							td = DOM.createElement('td');
+							_td = DOM.createElement('td');
 							var image = DOM.createElement('img', {
 								src: attributes[attribute],
 								width: '50px',
 								height: '50px'
 							});
 
-							td.appendChild(image);
+							_td.appendChild(image);
 							break;
 						case 'name':
 						case 'price':
-							td = DOM.createElement('td');
-							td.innerHTML = attributes[attribute];
+							_td = DOM.createElement('td');
+							_td.innerHTML = attributes[attribute];
 							break;
 					}
 
-					tr.appendChild(td);
+					_tr.appendChild(_td);
 				}
 
-				table.appendChild(tr);
+				table.appendChild(_tr);
 			}
+
+			// create checkout button at the buttom
+			var tr = DOM.createElement('tr');
+			var td = DOM.createElement('td', {
+				colspan: '4'
+			});
+
+			var checkout = DOM.createElement('a', {
+				class: 'btn btn-primary',
+				text: 'Checkout'
+			});
+
+			td.appendChild(checkout);
+			tr.appendChild(td);
+
+			table.appendChild(tr);
 
 			itemsDiv.appendChild(table);
 		}
@@ -1571,13 +1619,13 @@ var Cart = function () {
 	}, {
 		key: 'setElement',
 		value: function setElement(selector) {
-			this.icon = DOM.find(selector);
+			this.element = DOM.find(selector);
 
-			if (this.icon) {
-				DOM.addClass(this.icon, this.settings.class);
-				DOM.addClass(this.icon, this.settings.placement);
-				this.icon.appendChild(this.svgIcon);
-				this.icon.appendChild(this.previewElement);
+			if (this.element) {
+				DOM.addClass(this.element, this.settings.class);
+				DOM.addClass(this.element, this.settings.placement);
+				this.element.appendChild(this.icon);
+				this.element.appendChild(this.previewElement);
 			}
 		}
 
@@ -1622,7 +1670,7 @@ var Cart = function () {
 
 			var position = this.settings.fixed ? 'fixed' : 'absolute';
 
-			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items {\n\t\t\t\tpadding: 0;\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table {\n\t\t\t\twidth: 100%;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table td {\n\t\t\t\tpadding: 4px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\tz-index: 998;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' svg {\n\t\t\t\twidth: ' + this.settings.width + ';\n\t\t\t\theight: ' + this.settings.height + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' svg:hover {\n\t\t\t\tfill: ' + this.settings.hover_color + ';\n\t\t\t\ttransition: fill 0.3s;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.top-right,\n\t\t\t' + this.settings.element + '.right-top {\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + '.left-top,\n\t\t\t' + this.settings.element + '.top-left {\n\t\t\t\tleft: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview {\n\t\t\t\tposition: ' + position + ';\n\t\t\t\tz-index: 9999;\n\t\t\t\ttop: calc(10px + ' + this.settings.height + ');\n\t\t\t\ttransform: translateX(60px);\n\t\t\t\theight: 400px;\n\t\t\t\twidth: 300px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\ttransition: transform 1s, visibility 1s;\n\t\t\t\tcursor: default;\n\t\t\t\toverflow-Y: scroll;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.opened {\n\t\t\t\tvisibility: visible;\n\t\t\t\ttransform: translateX(-240px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' > #preview.closed {\n\t\t\t\tvisibility: hidden;\n\t\t\t\ttransform: translateX(60px);\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items {\n\t\t\t\tpadding: 0;\n\t\t\t\tcolor: #000000;\n\t\t\t\tlist-style-type: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table {\n\t\t\t\twidth: 100%;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' #preview > ul.items > .preview-table td {\n\t\t\t\tpadding: 4px;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .items.loading {\n\t\t\t\tdisplay: none;\n\t\t\t\toverflow-Y: none;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay {\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 0; \n\t\t\t    left: 0;\n\t\t\t    right: 0;\n\t\t\t    bottom: 0;\n\t\t\t\tbackground: #ffffff;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\toverflow: auto;\n\t\t\t}\n\n\t\t\t' + this.settings.element + ' .cart-loader-overlay .cart-loader {\n\t\t\t\tposition: absolute;\n\t\t\t\twidth: 50px;\n\t\t\t\theight: 50px;\n\t\t\t\tmargin-left: -25px;\n\t\t\t\tmargin-top: -25px;\n\t\t\t\tleft: 50%;\n\t\t\t\tright: 50%;\n\t\t\t\ttop: 50%;\n\t\t\t\tbottom: 50%;\n\t\t\t}\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Cart', css);
 		}
@@ -1717,11 +1765,11 @@ var Cart = function () {
 	}, {
 		key: 'bindEventListeners',
 		value: function bindEventListeners() {
-			if (this.svgIcon == null) {
+			if (this.icon == null) {
 				return;
 			}
 
-			this.svgIcon.onclick = function (e) {
+			this.icon.onclick = function (e) {
 				e.preventDefault();
 				this.toggleCartPreview();
 			}.bind(this);
@@ -1815,8 +1863,8 @@ function createIcon() {
 	svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 	svg.setAttribute('x', '0px');
 	svg.setAttribute('y', '0px');
-	svg.setAttribute('width', '446.843px');
-	svg.setAttribute('height', '446.843px');
+	svg.setAttribute('width', '40px');
+	svg.setAttribute('height', '40px');
 	svg.setAttribute('viewBox', '0 0 446.843 446.843');
 	svg.setAttribute('style', 'enable-background:new 0 0 446.843 446.843;');
 	svg.setAttribute('xml:space', 'preserve');
@@ -1826,7 +1874,13 @@ function createIcon() {
 	g.appendChild(path);
 	svg.appendChild(g);
 
-	return svg;
+	var div = DOM.createElement('div', {
+		id: 'cartIcon'
+	});
+
+	div.appendChild(svg);
+
+	return div;
 }
 
 /**

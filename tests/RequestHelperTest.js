@@ -40,7 +40,7 @@ describe('RequestHelperTest', function() {
 		request.get({
 			url: host + '/' + testEndPoint,
 		}).then(function(response) {
-			assert.lengthOf(response, 15);
+			assert.lengthOf(response, 30);
 			done();
 		});
 

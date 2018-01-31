@@ -98,7 +98,8 @@ describe('PaginationComponentTest', function() {
 
 			let links = DOM.find('li.page-item');
 			
-			assert.lengthOf(links, 5); // including next and prev buttons
+			// 30 records / 5 = 6 // including the next and prev buttons should give 8
+			assert.lengthOf(links, 8); 
 			done();
 		}, 5000);
 	}).timeout(15000);

@@ -87,7 +87,7 @@ class Cart
 		EventManager = eventManager;
 		
 		this.previewElement = this.createPreviewElement();
-		this.svgIcon = createIcon.call(this);
+		this.icon = createIcon.call(this);
 	}
 
 	/**
@@ -151,23 +151,28 @@ class Cart
 	 */
 	addItem(item)
 	{
+		if (typeof item != 'object') {
+			throw InvalidArgumentException('addItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
 		this.cart = Cookie.get(this.settings.cookie_name);
 
 		if (!item.hasOwnProperty('quantity')) {
 			item.quantity = 1;
 		}
 
-		let wasAdded = false;
 		let i;
+		let incremented = false;
 
 		for (i = 0; i < this.cart.items.length; i++) {
-			if (this.cart.items[i].name == item.name) {
+			if (item.hasOwnProperty('id') && this.cart.items[i].id == item.id) {
 				this.cart.items[i].quantity++;
-				wasAdded = true;
+				incremented = true;
+				break;	
 			}
 		}
 
-		if (! wasAdded) {
+		if (! incremented) {
 			this.cart.items.push(item);
 		}
 
@@ -185,15 +190,16 @@ class Cart
 		this.cart = Cookie.get(this.settings.cookie_name);
 
 		let i;
-		let wasFavorited = false;
+		let alreadyFavorited = false;
 
 		for (i = 0; i < this.cart.favorites.length; i++) {
-			if (this.cart.favorites[i].name == item.name) {
-				wasFavorited = true;
+			if (item.hasOwnProperty('id') && this.cart.favorites[i].id == item.id) {
+				alreadyFavorited = true;
+				break;
 			}
 		}
 
-		if (! wasFavorited) {
+		if (! alreadyFavorited) {
 			this.cart.favorites.push(item);
 		}
 
@@ -210,7 +216,14 @@ class Cart
 	{
  		this.cart = Cookie.get(this.settings.cookie_name);
 
- 		this.cart.items.splice(this.cart.items.indexOf(item), 1);
+ 		let i;
+
+ 		for (i = 0; i < this.cart.items.length; i++) {
+ 			if (item.hasOwnProperty('id') && this.cart.items[i].name == item.name) {
+ 				this.cart.items.splice(i, 1);
+ 				break;
+ 			}
+ 		}
 
  		Cookie.set(this.settings.cookie_name, this.cart, 2);
 	}
@@ -239,6 +252,7 @@ class Cart
 
 			// Quantity always at the start of an item.
 			let td = DOM.createElement('td');
+
 			td.innerHTML = attributes.quantity +'x';
 			tr.appendChild(td);
 			
@@ -268,6 +282,22 @@ class Cart
 			table.appendChild(tr);
 		}
 
+		// create checkout button at the buttom
+		let tr = DOM.createElement('tr');
+		let td = DOM.createElement('td', {
+			colspan: '4',
+		});
+
+		let checkout = DOM.createElement('a', {
+			class: 'btn btn-primary',
+			text: 'Checkout'
+		});
+
+		td.appendChild(checkout);
+		tr.appendChild(td);
+
+		table.appendChild(tr);
+
 		itemsDiv.appendChild(table);
 	}
 
@@ -279,13 +309,13 @@ class Cart
 	 */
 	setElement(selector)
 	{
-		this.icon = DOM.find(selector);
+		this.element = DOM.find(selector);
 
-		if (this.icon) {
-			DOM.addClass(this.icon, this.settings.class);
-			DOM.addClass(this.icon, this.settings.placement);
-			this.icon.appendChild(this.svgIcon);
-			this.icon.appendChild(this.previewElement);
+		if (this.element) {
+			DOM.addClass(this.element, this.settings.class);
+			DOM.addClass(this.element, this.settings.placement);
+			this.element.appendChild(this.icon);
+			this.element.appendChild(this.previewElement);
 		}
 	}
 
@@ -334,13 +364,13 @@ class Cart
 				z-index: 998;
 			}
 
-			${this.settings.element} > svg {
+			${this.settings.element} svg {
 				width: ${this.settings.width};
 				height: ${this.settings.height};
 				transition: fill 0.3s;
 			}
 
-			${this.settings.element} > svg:hover {
+			${this.settings.element} svg:hover {
 				fill: ${this.settings.hover_color};
 				transition: fill 0.3s;
 			}
@@ -509,11 +539,11 @@ class Cart
 	 */
 	bindEventListeners()
 	{
-		if(this.svgIcon == null) {
+		if(this.icon == null) {
 			return;
 		}
 
-		this.svgIcon.onclick = function(e) {
+		this.icon.onclick = function(e) {
 			e.preventDefault();
 			this.toggleCartPreview();
 		}.bind(this);
@@ -596,8 +626,8 @@ function createIcon() {
 	svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 	svg.setAttribute('x', '0px');
 	svg.setAttribute('y', '0px');
-	svg.setAttribute('width', '446.843px');
-	svg.setAttribute('height', '446.843px');
+	svg.setAttribute('width', '40px');
+	svg.setAttribute('height', '40px');
 	svg.setAttribute('viewBox', '0 0 446.843 446.843');
 	svg.setAttribute('style', 'enable-background:new 0 0 446.843 446.843;');
 	svg.setAttribute('xml:space', 'preserve');
@@ -607,7 +637,13 @@ function createIcon() {
 	g.appendChild(path);
 	svg.appendChild(g);
 
-	return svg;
+	let  div = DOM.createElement('div', {
+		id: 'cartIcon',
+	});
+
+	div.appendChild(svg);
+
+	return div;
 }
 
 /**
