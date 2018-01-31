@@ -10,6 +10,7 @@
 <hr>
 
 <div class="turbo-ecommerce">
+	<div class="checkout"></div>
 	<div class="cart"></div>
 	<div class="filter"></div>
 	<div class="products"></div>
@@ -24,7 +25,7 @@
 			class: 'col-xs-12',
 			element: '.turbo-ecommerce',
 			inject_libraries: ['bootstrap'],
-			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination'],
+			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination', 'Checkout'],
 			loading_animation: true,
 			no_css: false,
 		});
@@ -71,6 +72,10 @@
 			placement: 'right-top',
 			hover_color: 'orange',
 			no_css: false,
+		});
+
+		shop.Checkout.setup({
+			element: '.checkout'
 		});
 
 	})(TurboEcommerce);

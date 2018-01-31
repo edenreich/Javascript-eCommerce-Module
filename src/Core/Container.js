@@ -1,6 +1,8 @@
 
+// Helpers
 import Common from '../Helpers/Common.js';
 
+// Exceptions
 import InvalidBindingException from '../Exceptions/InvalidBindingException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
@@ -63,7 +65,6 @@ class Container
 		}
 
 		instances[key] = instance;
-		instances[alias] = instance;
 		this[key] = instance;
 	}
 

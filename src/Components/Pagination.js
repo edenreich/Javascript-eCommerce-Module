@@ -18,7 +18,7 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  * @var object
  */
 let defaultSettings = {
-	element: '.pagination-links',
+	element: '.pagination',
 	proccessing: 'client-side',
 	class: '',
 	per_page: 5,
@@ -106,28 +106,28 @@ class Pagination
 	}
 
 	/**
-	 * Sets the wrapper element.
+	 * Sets the element.
 	 *
 	 * @param string | selector
 	 * @return void
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 		
-		DOM.addClass(this.wrapper, this.settings.class);
+		DOM.addClass(this.element, this.settings.class);
 	}
 
 	/**
-	 * Replaces the links in the wrapper.
+	 * Replaces the links in the element.
 	 *
 	 * @param HTMLUListElement | links
 	 * @return void
 	 */
 	replaceLinks(links)
 	{
-		this.wrapper.innerHTML = '';
-		this.wrapper.appendChild(links);
+		this.element.innerHTML = '';
+		this.element.appendChild(links);
 	}
 
 	/**
@@ -423,6 +423,16 @@ class Pagination
 	{
 		this.setCurrent(1);
 		this.changeUrl(1);
+	}
+
+	/**
+	 * Hides the component from the DOM.
+	 *
+	 * @return void 
+	 */
+	hide()
+	{
+		this.element.style.display = 'none';
 	}
 }
 

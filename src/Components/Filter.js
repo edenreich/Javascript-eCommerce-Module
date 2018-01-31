@@ -72,9 +72,9 @@ class Filter
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 		
-		DOM.addClass(this.wrapper, this.settings.class);
+		DOM.addClass(this.element, this.settings.class);
 	}
 
 	/**
@@ -110,6 +110,16 @@ class Filter
 		`;
 	    
 	    DOM.addStyle('Turbo-eCommerce-Filter', css);
+	}
+
+	/**
+	 * Hides the component from the DOM.
+	 *
+	 * @return void 
+	 */
+	hide()
+	{
+		this.element.style.display = 'none';
 	}
 }
 

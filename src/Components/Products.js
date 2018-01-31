@@ -227,10 +227,10 @@ class Products
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 
-		if (this.wrapper) {
-			DOM.addClass(this.wrapper, this.settings.class);
+		if (this.element) {
+			DOM.addClass(this.element, this.settings.class);
 		}
 	}
 
@@ -249,9 +249,9 @@ class Products
 
 		let products = this.buildProducts(items, this.settings.item_class, 'div');
 
-		this.wrapper.innerHTML = '';
+		this.element.innerHTML = '';
 		products.forEach(function(product) {
-			this.wrapper.appendChild(product);
+			this.element.appendChild(product);
 		}.bind(this));
 
 		return items;
@@ -476,6 +476,16 @@ class Products
 		`;
 	    
 	    DOM.addStyle('Turbo-eCommerce-Products', css);
+	}
+
+	/**
+	 * Hides the component from the DOM.
+	 *
+	 * @return void 
+	 */
+	hide()
+	{
+		this.element.style.display = 'none';
 	}
 }
 

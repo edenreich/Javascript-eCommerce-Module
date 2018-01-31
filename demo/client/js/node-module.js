@@ -98,6 +98,13 @@ var ExceptionHandler = function () {
    * @return void
    */
 		set: function set(level) {
+			// Suppress errors depends on the debug level.
+			if (level == 'warning' || level == 'info') {
+				window.onerror = function () {
+					return true;
+				};
+			}
+
 			debugLevel = level;
 		}
 
@@ -193,7 +200,7 @@ var ExceptionHandler = function () {
 	return ExceptionHandler;
 }();
 
-var defaultMessage = 'an invalid argument was passed.';
+var defaultMessage = 'An invalid argument was passed.';
 
 var InvalidArgumentException$1 = function (_ExceptionHandler) {
 	_inherits(InvalidArgumentException$1, _ExceptionHandler);
@@ -908,7 +915,7 @@ var Request = function () {
 	return Request;
 }();
 
-var defaultMessage$2 = 'trying to bind an already existing bound.';
+var defaultMessage$2 = 'Trying to bind an already existing bound.';
 
 var InvalidBindingException = function (_ExceptionHandler3) {
 	_inherits(InvalidBindingException, _ExceptionHandler3);
@@ -929,6 +936,8 @@ var InvalidBindingException = function (_ExceptionHandler3) {
 	return InvalidBindingException;
 }(ExceptionHandler);
 
+// Helpers
+// Exceptions
 /**
  * @file 
  * Container class.
@@ -999,7 +1008,6 @@ var Container = function () {
 			}
 
 			_instances[key] = instance;
-			_instances[alias] = instance;
 			this[key] = instance;
 		}
 
@@ -1411,8 +1419,8 @@ var Cart = function () {
 			DOM.addClass(this.previewElement, 'closed');
 			DOM.addClass(this.previewElement, this.settings.preview_class);
 
-			this.bindEventListeners();
 			this.addStyleTag();
+			this.bindEventListeners();
 
 			if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
 				this.setupCart();
@@ -1626,6 +1634,11 @@ var Cart = function () {
 				text: 'Checkout'
 			});
 
+			checkout.onclick = function (e) {
+				e.preventDefault();
+				EventManager$2.publish('cart.checkout');
+			}.bind(this);
+
 			td.appendChild(checkout);
 			tr.appendChild(td);
 
@@ -1685,7 +1698,7 @@ var Cart = function () {
 	}, {
 		key: 'addStyleTag',
 		value: function addStyleTag() {
-			if (DOM.find('#eCommerce-Cart')) {
+			if (DOM.find('#Turbo-eCommerce-Cart')) {
 				return;
 			}
 
@@ -1790,10 +1803,6 @@ var Cart = function () {
 	}, {
 		key: 'bindEventListeners',
 		value: function bindEventListeners() {
-			if (this.icon == null) {
-				return;
-			}
-
 			this.icon.onclick = function (e) {
 				e.preventDefault();
 				this.toggleCartPreview();
@@ -1855,6 +1864,18 @@ var Cart = function () {
 			var cart = Cookie.get(this.settings.cookie_name);
 
 			return cart ? cart.items : [];
+		}
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hide',
+		value: function hide() {
+			this.element.style.display = 'none';
 		}
 	}]);
 
@@ -2051,9 +2072,9 @@ var Filter = function () {
 	}, {
 		key: 'setElement',
 		value: function setElement(selector) {
-			this.wrapper = DOM.find(selector);
+			this.element = DOM.find(selector);
 
-			DOM.addClass(this.wrapper, this.settings.class);
+			DOM.addClass(this.element, this.settings.class);
 		}
 
 		/**
@@ -2079,9 +2100,183 @@ var Filter = function () {
 
 			DOM.addStyle('Turbo-eCommerce-Filter', css);
 		}
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hide',
+		value: function hide() {
+			this.element.style.display = 'none';
+		}
 	}]);
 
 	return Filter;
+}();
+
+// Helpers
+// Exceptions
+/**
+ * @file 
+ * Cart class.
+ *
+ * Handles adding, removing etc... of items.
+ */
+
+/**
+ * The default settings of the cart.
+ *
+ * @var object
+ */
+
+
+var defaultSettings$3 = {
+	element: '.checkout',
+	no_css: false
+};
+
+/**
+ * Stores the container object.
+ *
+ * @var \Core\Container
+ */
+var Container$4 = void 0;
+
+/**
+ * Stores the event manager object.
+ *
+ * @var \Core\EventManager
+ */
+var EventManager$3 = void 0;
+
+/**
+ * Stores the request object.
+ *
+ * @var \Helpers\Request
+ */
+var Http$1 = void 0;
+
+var Checkout = function () {
+	/**
+  * - Initialize the IoC container
+  * - Initialize the Request
+  * - Initialize the EventManager
+  * - Listen to checkout event.
+  *
+  * @param \Core\Container | container
+  * @param \Helpers\Request | http
+  * @param \Core\EventManager | eventManager
+  * @return void
+  */
+	function Checkout(container, http, eventManager) {
+		_classCallCheck(this, Checkout);
+
+		Container$4 = container;
+		Http$1 = http;
+		EventManager$3 = eventManager;
+
+		EventManager$3.subscribe('cart.checkout', function () {
+			this.hideAll();
+			this.show();
+		}.bind(this));
+	}
+
+	/**
+  * Sets the object by the users setting.
+  *
+  * @param object | settings
+  * @return void
+  */
+
+
+	_createClass(Checkout, [{
+		key: 'setup',
+		value: function setup(settings) {
+			if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
+				throw new InvalidArgumentException$1();
+			}
+
+			this.settings = Common.extend(defaultSettings$3, settings);
+
+			document.addEventListener('DOMContentLoaded', function () {
+
+				this.setElement(this.settings.element);
+
+				this.addStyleTag();
+			}.bind(this));
+		}
+
+		/**
+   * Binds everthing to the element.
+   *
+   * @param string | selector
+   * @return void
+   */
+
+	}, {
+		key: 'setElement',
+		value: function setElement(selector) {
+			this.element = DOM.find(selector);
+
+			if (this.element) {
+				DOM.addClass(this.element, this.settings.class);
+			}
+		}
+
+		/**
+   * Add the eCommerce style tags to the DOM.
+   *
+   * @return void
+   */
+
+	}, {
+		key: 'addStyleTag',
+		value: function addStyleTag() {
+			if (DOM.find('#Turbo-eCommerce-Checkout')) {
+				return;
+			}
+
+			if (this.settings.no_css) {
+				return;
+			}
+
+			var position = this.settings.fixed ? 'fixed' : 'absolute';
+
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\t\n\t\t\t}\n\t\t';
+
+			DOM.addStyle('Turbo-eCommerce-Checkout', css);
+		}
+
+		/**
+   * Hides all irrelevant elements from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hideAll',
+		value: function hideAll() {
+			console.log(this);
+			console.log(Container$4.instances());
+		}
+
+		/**
+   * Shows the element on the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'show',
+		value: function show() {
+			this.element.style.display = 'block';
+		}
+	}]);
+
+	return Checkout;
 }();
 
 /**
@@ -2098,7 +2293,7 @@ var Filter = function () {
  */
 
 
-var defaultSettings$3 = {
+var defaultSettings$4 = {
 	element: '.products',
 	class: '',
 	item_class: '',
@@ -2116,21 +2311,21 @@ var defaultSettings$3 = {
  * 
  * @var \Core\Container
  */
-var Container$4 = void 0;
+var Container$5 = void 0;
 
 /**
  * Stores the container object.
  * 
  * @var \Core\EventManager
  */
-var EventManager$3 = void 0;
+var EventManager$4 = void 0;
 
 /**
  * Stores the request object.
  * 
  * @var \Helper\Request 
  */
-var Http$1 = void 0;
+var Http$2 = void 0;
 
 /**
  * Stores the chunked per 
@@ -2151,9 +2346,9 @@ var Products = function () {
 	function Products(container, http, eventManager) {
 		_classCallCheck(this, Products);
 
-		Container$4 = container;
-		Http$1 = http;
-		EventManager$3 = eventManager;
+		Container$5 = container;
+		Http$2 = http;
+		EventManager$4 = eventManager;
 		chunkedProducts = [];
 	}
 
@@ -2172,7 +2367,7 @@ var Products = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$3, settings);
+			this.settings = Common.extend(defaultSettings$4, settings);
 			this.totalItems = null;
 
 			document.addEventListener('DOMContentLoaded', function () {
@@ -2197,8 +2392,8 @@ var Products = function () {
 		value: function loadProducts() {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
-			if (Container$4.Pagination && Container$4.Pagination.booted) {
-				switch (Container$4.Pagination.settings.proccessing) {
+			if (Container$5.Pagination && Container$5.Pagination.booted) {
+				switch (Container$5.Pagination.settings.proccessing) {
 					case 'client-side':
 						return this.loadPageProductsByClient(pageNumber);
 						break;
@@ -2234,10 +2429,10 @@ var Products = function () {
 
 				for (var i = 0; i < this.currentItems.length; i++) {
 					var product = this.currentItems[i];
-					EventManager$3.publish('products.loading', product);
+					EventManager$4.publish('products.loading', product);
 				}
 
-				EventManager$3.publish('products.loaded', products);
+				EventManager$4.publish('products.loaded', products);
 				this.replaceItems(products);
 				resolve();
 			}.bind(this)).catch(function (error) {});
@@ -2274,10 +2469,10 @@ var Products = function () {
 
 				for (var i = 0; i < this.currentItems.length; i++) {
 					var product = this.currentItems[i];
-					EventManager$3.publish('products.loading', product);
+					EventManager$4.publish('products.loading', product);
 				}
 
-				EventManager$3.publish('products.loaded', products);
+				EventManager$4.publish('products.loaded', products);
 				this.replaceItems(this.currentItems);
 				Promise.resolve(this.currentItems);
 			}.bind(this)).catch(function (error) {});
@@ -2296,9 +2491,9 @@ var Products = function () {
 		key: 'calculateClientPages',
 		value: function calculateClientPages(products) {
 			// We are using pagination so we need to update it too.
-			Container$4.Pagination.settings.total_items = products.length;
+			Container$5.Pagination.settings.total_items = products.length;
 
-			var perPage = Container$4.Pagination.settings.per_page;
+			var perPage = Container$5.Pagination.settings.per_page;
 
 			// We need to calculate the pages on full http request 
 			// only once. so we check to see if we have results in our cache.
@@ -2321,10 +2516,10 @@ var Products = function () {
 	}, {
 		key: 'setElement',
 		value: function setElement(selector) {
-			this.wrapper = DOM.find(selector);
+			this.element = DOM.find(selector);
 
-			if (this.wrapper) {
-				DOM.addClass(this.wrapper, this.settings.class);
+			if (this.element) {
+				DOM.addClass(this.element, this.settings.class);
 			}
 		}
 
@@ -2345,9 +2540,9 @@ var Products = function () {
 
 			var products = this.buildProducts(items, this.settings.item_class, 'div');
 
-			this.wrapper.innerHTML = '';
+			this.element.innerHTML = '';
 			products.forEach(function (product) {
-				this.wrapper.appendChild(product);
+				this.element.appendChild(product);
 			}.bind(this));
 
 			return items;
@@ -2368,7 +2563,7 @@ var Products = function () {
 
 			var action = pageNumber ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 
-			return Http$1.get({
+			return Http$2.get({
 				url: action
 			});
 		}
@@ -2478,13 +2673,13 @@ var Products = function () {
 
 			addToCart.addEventListener('click', function (e) {
 				e.preventDefault();
-				EventManager$3.publish('cart.product.added', attributes);
+				EventManager$4.publish('cart.product.added', attributes);
 			});
 
 			favorite.addEventListener('click', function (e) {
 				e.preventDefault();
 				this.innerHTML = '&#x2713;';
-				EventManager$3.publish('cart.product.favorited', attributes);
+				EventManager$4.publish('cart.product.favorited', attributes);
 			});
 
 			overlay.appendChild(tag);
@@ -2515,6 +2710,18 @@ var Products = function () {
 			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > .favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Products', css);
+		}
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hide',
+		value: function hide() {
+			this.element.style.display = 'none';
 		}
 	}]);
 
@@ -2565,8 +2772,8 @@ var NotInPageRangeException = function (_ExceptionHandler6) {
  */
 
 
-var defaultSettings$4 = {
-	element: '.pagination-links',
+var defaultSettings$5 = {
+	element: '.pagination',
 	proccessing: 'client-side',
 	class: '',
 	per_page: 5,
@@ -2578,7 +2785,7 @@ var defaultSettings$4 = {
  *
  * @var \Core\Container
  */
-var Container$5 = void 0;
+var Container$6 = void 0;
 
 /**
  * Stores the products component.
@@ -2592,7 +2799,7 @@ var Products$2 = void 0;
  * 
  * @var \Core\EventManager
  */
-var EventManager$4 = void 0;
+var EventManager$5 = void 0;
 
 var Pagination = function () {
 	/**
@@ -2607,9 +2814,9 @@ var Pagination = function () {
 		_classCallCheck(this, Pagination);
 
 		this.setCurrent(1);
-		Container$5 = container;
+		Container$6 = container;
 		Products$2 = products;
-		EventManager$4 = events;
+		EventManager$5 = events;
 	}
 
 	/**
@@ -2627,13 +2834,13 @@ var Pagination = function () {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$4, settings);
+			this.settings = Common.extend(defaultSettings$5, settings);
 
 			this.setElement(this.settings.element);
 
 			// Listen to when products are being loaded and update the pagination
 			// with the actual items count.
-			EventManager$4.subscribe('products.loaded', function (products) {
+			EventManager$5.subscribe('products.loaded', function (products) {
 				this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
 				this.buildPagination();
 			}.bind(this));
@@ -2659,7 +2866,7 @@ var Pagination = function () {
 		}
 
 		/**
-   * Sets the wrapper element.
+   * Sets the element.
    *
    * @param string | selector
    * @return void
@@ -2668,13 +2875,13 @@ var Pagination = function () {
 	}, {
 		key: 'setElement',
 		value: function setElement(selector) {
-			this.wrapper = DOM.find(selector);
+			this.element = DOM.find(selector);
 
-			DOM.addClass(this.wrapper, this.settings.class);
+			DOM.addClass(this.element, this.settings.class);
 		}
 
 		/**
-   * Replaces the links in the wrapper.
+   * Replaces the links in the element.
    *
    * @param HTMLUListElement | links
    * @return void
@@ -2683,8 +2890,8 @@ var Pagination = function () {
 	}, {
 		key: 'replaceLinks',
 		value: function replaceLinks(links) {
-			this.wrapper.innerHTML = '';
-			this.wrapper.appendChild(links);
+			this.element.innerHTML = '';
+			this.element.appendChild(links);
 		}
 
 		/**
@@ -3008,6 +3215,18 @@ var Pagination = function () {
 			this.setCurrent(1);
 			this.changeUrl(1);
 		}
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hide',
+		value: function hide() {
+			this.element.style.display = 'none';
+		}
 	}]);
 
 	return Pagination;
@@ -3034,7 +3253,18 @@ var ComponentNotRegisteredException = function (_ExceptionHandler7) {
 	return ComponentNotRegisteredException;
 }(ExceptionHandler);
 
-var defaultSettings$5 = {
+// Helpers
+// Core
+// Components
+// Exceptions
+/**
+ * Stores the default settings.
+ *
+ * @var object
+ */
+
+
+var defaultSettings$6 = {
 	debug_level: 'error',
 	element: 'body',
 	inject_libraries: [],
@@ -3042,40 +3272,29 @@ var defaultSettings$5 = {
 	loading_animation: true
 };
 
+/**
+ * Stores the optional, 
+ * injectable external libraries 
+ *
+ * @var object
+ */
 var externalLibraries = {
 	bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
 };
 
-var debugLevel$1 = void 0;
-
 var TurboEcommerce = function () {
-	_createClass(TurboEcommerce, [{
-		key: 'debugLevel',
-
-		/**
-   * Retrieve the debug level.
-   *
-   * @return string
-   */
-		get: function get() {
-			return debugLevel$1;
-		}
-
-		/**
-   * The entery for the shop.
-   * - Setting the exception handler.
-   * - Setting the ioc container.
-   * - Extending the user settings.
-   * - Setting the element.
-   * - Disabling default errors.
-   * - Passing calls via proxy to the components.
-   *
-   * @param object | settings
-   * @return Proxy
-   */
-
-	}]);
-
+	/**
+  * The entery for the shop.
+  * - Setting the exception handler.
+  * - Setting the ioc container.
+  * - Extending the user settings.
+  * - Setting the element.
+  * - Disabling default errors.
+  * - Passing calls via proxy to the components.
+  *
+  * @param object | settings
+  * @return Proxy
+  */
 	function TurboEcommerce(settings) {
 		_classCallCheck(this, TurboEcommerce);
 
@@ -3084,8 +3303,9 @@ var TurboEcommerce = function () {
 		}
 
 		this.container = new Container();
-		this.settings = Common.extend(defaultSettings$5, settings);
+		this.settings = Common.extend(defaultSettings$6, settings);
 
+		ExceptionHandler.setDebugLevel = this.settings.debug_level;
 		this.loadExternalLibraries();
 
 		document.addEventListener('DOMContentLoaded', function () {
@@ -3097,16 +3317,6 @@ var TurboEcommerce = function () {
 
 			this.addStyleTag();
 		}.bind(this));
-
-		debugLevel$1 = this.settings.debug_level;
-
-		ExceptionHandler.setDebugLevel = debugLevel$1;
-
-		if (debugLevel$1 == 'warning' || debugLevel$1 == 'info') {
-			window.onerror = function () {
-				return true;
-			};
-		}
 
 		bindComponentsDependencies.call(this, settings.components);
 
@@ -3227,11 +3437,18 @@ function bindComponentsDependencies(components) {
 		return component;
 	});
 
+	this.container.bind('Checkout', function (container) {
+		var component = new Checkout(container, container.Request, container.Events);
+		component.booted = true;
+		return component;
+	});
+
 	this.container.Filter.booted = false;
 	this.container.Services.booted = false;
 	this.container.Products.booted = false;
 	this.container.Pagination.booted = false;
 	this.container.Cart.booted = false;
+	this.container.Checkout.booted = false;
 }
 
 /**

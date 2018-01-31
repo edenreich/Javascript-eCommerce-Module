@@ -1,21 +1,32 @@
 
+// Helpers
 import Str from './Helpers/Str.js';
 import DOM from './Helpers/DOM.js';
 import Common from './Helpers/Common.js';
 import Request from './Helpers/Request.js';
+
+// Core
 import Container from './Core/Container.js';
 import EventManager from './Core/EventManager.js';
-import ExceptionHandler from './Exceptions/ExceptionHandler.js';
 
+// Components
 import Cart from './Components/Cart.js';
 import Filter from './Components/Filter.js';
+import Checkout from './Components/Checkout.js';
 import Products from './Components/Products.js';
 import Services from './Components/Services.js';
 import Pagination from './Components/Pagination.js';
 
+// Exceptions
+import ExceptionHandler from './Exceptions/ExceptionHandler.js';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
 import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
 
+/**
+ * Stores the default settings.
+ *
+ * @var object
+ */
 let defaultSettings = {
 	debug_level: 'error',
 	element: 'body',
@@ -24,24 +35,18 @@ let defaultSettings = {
 	loading_animation: true
 };
 
+/**
+ * Stores the optional, 
+ * injectable external libraries 
+ *
+ * @var object
+ */
 let externalLibraries = {
 	bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
 };
 
-let debugLevel;
-
 class TurboEcommerce
 {
-	/**
-	 * Retrieve the debug level.
-	 *
-	 * @return string
-	 */
-	get debugLevel()
-	{
-		return debugLevel;
-	}
-
 	/**
 	 * The entery for the shop.
 	 * - Setting the exception handler.
@@ -63,6 +68,7 @@ class TurboEcommerce
 		this.container = new Container;
 		this.settings = Common.extend(defaultSettings, settings);
 
+		ExceptionHandler.setDebugLevel = this.settings.debug_level;
 		this.loadExternalLibraries();
 
 		document.addEventListener('DOMContentLoaded', function() {
@@ -74,14 +80,6 @@ class TurboEcommerce
 
 			this.addStyleTag();
 		}.bind(this));
-
-		debugLevel = this.settings.debug_level;
-
-		ExceptionHandler.setDebugLevel = debugLevel;
-		
-		if (debugLevel == 'warning' || debugLevel == 'info') {
-			window.onerror = function() { return true; };
-		}
 
 		bindComponentsDependencies.call(this, settings.components);
 
@@ -214,11 +212,18 @@ function bindComponentsDependencies(components) {
 		return component;
 	});
 
+	this.container.bind('Checkout', function(container) {
+		let component = new Checkout(container, container.Request, container.Events);
+		component.booted = true;
+		return component;
+	});
+
 	this.container.Filter.booted = false;
 	this.container.Services.booted = false;
 	this.container.Products.booted = false;
 	this.container.Pagination.booted = false;
 	this.container.Cart.booted = false;
+	this.container.Checkout.booted = false;
 }
 
 /**

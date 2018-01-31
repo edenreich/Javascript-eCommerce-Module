@@ -101,7 +101,7 @@ class Cart
 	 */
 	setup(settings)
 	{
-		if(typeof settings != 'object') {
+		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
@@ -112,11 +112,12 @@ class Cart
 		DOM.addClass(this.previewElement, 'closed');
 		DOM.addClass(this.previewElement, this.settings.preview_class);
 		
-		this.bindEventListeners();
 		this.addStyleTag();
-
-		if(this.isEmpty(Cookie.get(this.settings.cookie_name))) {
+		this.bindEventListeners();
+		
+		if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
 			this.setupCart();
+			
 		}
 	}
 
@@ -316,7 +317,12 @@ class Cart
 			text: 'Checkout'
 		});
 
-		td.appendChild(checkout);
+		checkout.onclick = function(e) {
+			e.preventDefault();
+			EventManager.publish('cart.checkout');
+		}.bind(this);
+
+		td.appendChild( checkout);
 		tr.appendChild(td);
 
 		table.appendChild(tr);
@@ -369,7 +375,7 @@ class Cart
 	 */
 	addStyleTag() 
 	{
-		if (DOM.find('#eCommerce-Cart')) {
+		if (DOM.find('#Turbo-eCommerce-Cart')) {
 			return;
 		}
 
@@ -562,15 +568,11 @@ class Cart
 	 */
 	bindEventListeners()
 	{
-		if(this.icon == null) {
-			return;
-		}
-
 		this.icon.onclick = function(e) {
 			e.preventDefault();
 			this.toggleCartPreview();
 		}.bind(this);
-		
+
 		EventManager.subscribe('cart.product.added', function(attributes) {
 			this.openCartPreview();
 			this.addItem(attributes);
@@ -621,6 +623,16 @@ class Cart
 		let cart = Cookie.get(this.settings.cookie_name);
 
 		return (cart) ? cart.items : [];
+	}
+
+	/**
+	 * Hides the component from the DOM.
+	 *
+	 * @return void 
+	 */
+	hide()
+	{
+		this.element.style.display = 'none';
 	}
 }
 
