@@ -5,6 +5,7 @@ import {XMLHttpRequest} from 'xmlhttprequest';
 
 // Exceptions
 import ExceptionHandler from '../src/Exceptions/ExceptionHandler.js';
+import InvalidCartItemException from '../src/Exceptions/InvalidCartItemException.js';
 
 // Core
 import Container from '../src/Core/Container.js';
@@ -22,7 +23,7 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe('CartComponentTest', function() {
+describe.only('CartComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
 

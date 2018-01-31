@@ -1,9 +1,12 @@
 
+// Helpers
 import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
 
+// Exceptions
+import InvalidCartItemException from '../Exceptions/InvalidCartItemException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
@@ -152,7 +155,11 @@ class Cart
 	addItem(item)
 	{
 		if (typeof item != 'object') {
-			throw InvalidArgumentException('addItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+			throw new InvalidArgumentException('addItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
 		}
 
 		this.cart = Cookie.get(this.settings.cookie_name);
@@ -165,7 +172,7 @@ class Cart
 		let incremented = false;
 
 		for (i = 0; i < this.cart.items.length; i++) {
-			if (item.hasOwnProperty('id') && this.cart.items[i].id == item.id) {
+			if (this.cart.items[i].id == item.id) {
 				this.cart.items[i].quantity++;
 				incremented = true;
 				break;	
@@ -187,13 +194,21 @@ class Cart
 	 */
 	favoriteItem(item)
 	{
+		if (typeof item != 'object') {
+			throw new InvalidArgumentException('favoriteItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
+		}
+
 		this.cart = Cookie.get(this.settings.cookie_name);
 
 		let i;
 		let alreadyFavorited = false;
 
 		for (i = 0; i < this.cart.favorites.length; i++) {
-			if (item.hasOwnProperty('id') && this.cart.favorites[i].id == item.id) {
+			if (this.cart.favorites[i].id == item.id) {
 				alreadyFavorited = true;
 				break;
 			}
@@ -214,12 +229,20 @@ class Cart
 	 */
 	removeItem(item)
 	{
+		if (typeof item != 'object') {
+			throw new InvalidArgumentException('removeItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
+		}
+
  		this.cart = Cookie.get(this.settings.cookie_name);
 
  		let i;
 
  		for (i = 0; i < this.cart.items.length; i++) {
- 			if (item.hasOwnProperty('id') && this.cart.items[i].name == item.name) {
+ 			if (this.cart.items[i].id == item.id) {
  				this.cart.items.splice(i, 1);
  				break;
  			}

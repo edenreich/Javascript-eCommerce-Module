@@ -477,20 +477,6 @@ var DOM = function () {
 
 			return queryElement(selector, context);
 		}
-
-		/**
-   * Inserts an element after an element.
-   *
-   * @param HTMLElement | element
-   * @param HTMLElement | context
-   * @return void
-   */
-
-	}, {
-		key: 'insertAfter',
-		value: function insertAfter(context, element) {
-			context.parentNode.insertBefore(element, context.nextSibling);
-		}
 	}]);
 
 	return DOM;
@@ -508,10 +494,6 @@ var DOM = function () {
 function queryElement(selector, parentElement) {
 	if (typeof selector != 'string') {
 		throw new InvalidArgumentException$1('queryElement() expects first parameter to be a string, but ' + (typeof selector === 'undefined' ? 'undefined' : _typeof(selector)) + ' was passed instead.');
-	}
-
-	if (parentElement === null) {
-		throw new InvalidArgumentException$1('queryElement() expects second parameter to be of type HTMLElement, but null was passed instead.');
 	}
 
 	var element = parentElement.querySelectorAll(selector);
@@ -1298,6 +1280,29 @@ var Cookie = function () {
 	return Cookie;
 }();
 
+var defaultMessage$4 = 'The item you are trying to add must contain a unique id';
+
+var InvalidCartItemException = function (_ExceptionHandler5) {
+	_inherits(InvalidCartItemException, _ExceptionHandler5);
+
+	function InvalidCartItemException() {
+		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+		_classCallCheck(this, InvalidCartItemException);
+
+		message = message || defaultMessage$4;
+
+		var _this5 = _possibleConstructorReturn(this, (InvalidCartItemException.__proto__ || Object.getPrototypeOf(InvalidCartItemException)).call(this, message));
+
+		_get(InvalidCartItemException.prototype.__proto__ || Object.getPrototypeOf(InvalidCartItemException.prototype), 'stackTrace', _this5).call(_this5, _this5, message);
+		return _this5;
+	}
+
+	return InvalidCartItemException;
+}(ExceptionHandler);
+
+// Helpers
+// Exceptions
 /**
  * @file 
  * Cart class.
@@ -1455,7 +1460,11 @@ var Cart = function () {
 		key: 'addItem',
 		value: function addItem(item) {
 			if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) != 'object') {
-				throw InvalidArgumentException$1('addItem() expect the first parameter to be an object, but ' + (typeof item === 'undefined' ? 'undefined' : _typeof(item)) + ' was passed instead');
+				throw new InvalidArgumentException$1('addItem() expect the first parameter to be an object, but ' + (typeof item === 'undefined' ? 'undefined' : _typeof(item)) + ' was passed instead');
+			}
+
+			if (!item.hasOwnProperty('id')) {
+				throw new InvalidCartItemException();
 			}
 
 			this.cart = Cookie.get(this.settings.cookie_name);
@@ -1468,7 +1477,7 @@ var Cart = function () {
 			var incremented = false;
 
 			for (i = 0; i < this.cart.items.length; i++) {
-				if (item.hasOwnProperty('id') && this.cart.items[i].id == item.id) {
+				if (this.cart.items[i].id == item.id) {
 					this.cart.items[i].quantity++;
 					incremented = true;
 					break;
@@ -1492,13 +1501,21 @@ var Cart = function () {
 	}, {
 		key: 'favoriteItem',
 		value: function favoriteItem(item) {
+			if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) != 'object') {
+				throw new InvalidArgumentException$1('favoriteItem() expect the first parameter to be an object, but ' + (typeof item === 'undefined' ? 'undefined' : _typeof(item)) + ' was passed instead');
+			}
+
+			if (!item.hasOwnProperty('id')) {
+				throw new InvalidCartItemException();
+			}
+
 			this.cart = Cookie.get(this.settings.cookie_name);
 
 			var i = void 0;
 			var alreadyFavorited = false;
 
 			for (i = 0; i < this.cart.favorites.length; i++) {
-				if (item.hasOwnProperty('id') && this.cart.favorites[i].id == item.id) {
+				if (this.cart.favorites[i].id == item.id) {
 					alreadyFavorited = true;
 					break;
 				}
@@ -1521,12 +1538,20 @@ var Cart = function () {
 	}, {
 		key: 'removeItem',
 		value: function removeItem(item) {
+			if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) != 'object') {
+				throw new InvalidArgumentException$1('removeItem() expect the first parameter to be an object, but ' + (typeof item === 'undefined' ? 'undefined' : _typeof(item)) + ' was passed instead');
+			}
+
+			if (!item.hasOwnProperty('id')) {
+				throw new InvalidCartItemException();
+			}
+
 			this.cart = Cookie.get(this.settings.cookie_name);
 
 			var i = void 0;
 
 			for (i = 0; i < this.cart.items.length; i++) {
-				if (item.hasOwnProperty('id') && this.cart.items[i].name == item.name) {
+				if (this.cart.items[i].id == item.id) {
 					this.cart.items.splice(i, 1);
 					break;
 				}
@@ -2505,22 +2530,22 @@ var Services = function Services() {
 	_classCallCheck(this, Services);
 };
 
-var defaultMessage$4 = 'sorry, no more pages.';
+var defaultMessage$5 = 'Sorry, no more pages.';
 
-var NotInPageRangeException = function (_ExceptionHandler5) {
-	_inherits(NotInPageRangeException, _ExceptionHandler5);
+var NotInPageRangeException = function (_ExceptionHandler6) {
+	_inherits(NotInPageRangeException, _ExceptionHandler6);
 
 	function NotInPageRangeException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, NotInPageRangeException);
 
-		message = message || defaultMessage$4;
+		message = message || defaultMessage$5;
 
-		var _this5 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
+		var _this6 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
 
-		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this5).call(_this5, _this5, message);
-		return _this5;
+		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this6).call(_this6, _this6, message);
+		return _this6;
 	}
 
 	return NotInPageRangeException;
@@ -2988,22 +3013,22 @@ var Pagination = function () {
 	return Pagination;
 }();
 
-var defaultMessage$5 = 'In order to use components you must register them with the shop!';
+var defaultMessage$6 = 'In order to use components you must register them with the shop!';
 
-var ComponentNotRegisteredException = function (_ExceptionHandler6) {
-	_inherits(ComponentNotRegisteredException, _ExceptionHandler6);
+var ComponentNotRegisteredException = function (_ExceptionHandler7) {
+	_inherits(ComponentNotRegisteredException, _ExceptionHandler7);
 
 	function ComponentNotRegisteredException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, ComponentNotRegisteredException);
 
-		message = message || defaultMessage$5;
+		message = message || defaultMessage$6;
 
-		var _this6 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
+		var _this7 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
 
-		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this6).call(_this6, _this6, message);
-		return _this6;
+		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this7).call(_this7, _this7, message);
+		return _this7;
 	}
 
 	return ComponentNotRegisteredException;
