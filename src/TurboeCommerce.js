@@ -3,24 +3,13 @@
 import Str from './Helpers/Str.js';
 import DOM from './Helpers/DOM.js';
 import Common from './Helpers/Common.js';
-import Request from './Helpers/Request.js';
 
 // Core
 import Container from './Core/Container.js';
-import EventManager from './Core/EventManager.js';
-
-// Components
-import Cart from './Components/Cart.js';
-import Filter from './Components/Filter.js';
-import Checkout from './Components/Checkout.js';
-import Products from './Components/Products.js';
-import Services from './Components/Services.js';
-import Pagination from './Components/Pagination.js';
 
 // Exceptions
 import ExceptionHandler from './Exceptions/ExceptionHandler.js';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException.js';
-import ComponentNotRegisteredException from './Exceptions/ComponentNotRegisteredException.js';
 
 /**
  * Stores the default settings.
@@ -65,15 +54,20 @@ class TurboEcommerce
 			throw new InvalidArgumentException;
 		}
 
-		this.container = new Container;
 		this.settings = Common.extend(defaultSettings, settings);
 
 		ExceptionHandler.setDebugLevel = this.settings.debug_level;
+		
 		this.loadExternalLibraries();
+		
+		this.container = new Container;
+
+		this.components = this.container.make('Components');
+		this.components.register(this.settings.components);
 
 		document.addEventListener('DOMContentLoaded', function() {
 			this.setElement(this.settings.element);
-			
+
 			if (this.settings.loading_animation) {
 				startLoading.call(this);
 			}
@@ -81,17 +75,15 @@ class TurboEcommerce
 			this.addStyleTag();
 		}.bind(this));
 
-		bindComponentsDependencies.call(this, settings.components);
-
 		return new Proxy(this, {
-			get: function(target, source) {
-				if (Common.in_array(source, settings.components)) {
-					return target.container.make(source);
-				} else if (target.container.instanceExist(source)) {
-					return target.container.getInstance(source);
-				}
+			get: function(shop, source) {
+				if (shop.components.exists(source)) {
+					return shop.components.provide(source);
+				} 
 
-				throw new ComponentNotRegisteredException('components must be registered in order to use them.');
+				if (shop.container.instanceExist(source)) {
+					return shop.container.getInstance(source);
+				}
 			}
 		});
 	}
@@ -125,9 +117,9 @@ class TurboEcommerce
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 		
-		DOM.addClass(this.wrapper, this.settings.class);
+		DOM.addClass(this.element, this.settings.class);
 	}
 
 	/**
@@ -171,60 +163,6 @@ class TurboEcommerce
 	}
 }
 
-/**
- * Binds components dependencies.
- *
- * @param object | components
- * @return void
- */
-function bindComponentsDependencies(components) {
-
-	this.container.setInstance('Request', new Request);
-	this.container.setInstance('Events', new EventManager);
-
-	this.container.bind('Filter', function(container) {
-		let component = new Filter(container);
-		component.booted = true; 
-		return component;
-	});
-	
-	this.container.bind('Services', function(container) { 
-		let component = new Services(container); 
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Products', function(container) {
-		let component = new Products(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Pagination', function(container) {
-		let component = new Pagination(container, container.make('Products'), container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Cart', function(container) {
-		let component = new Cart(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Checkout', function(container) {
-		let component = new Checkout(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.Filter.booted = false;
-	this.container.Services.booted = false;
-	this.container.Products.booted = false;
-	this.container.Pagination.booted = false;
-	this.container.Cart.booted = false;
-	this.container.Checkout.booted = false;
-}
 
 /**
  * Attaches a loader to the top of the screen
@@ -251,7 +189,7 @@ function startLoading() {
 
 	window.requestAnimationFrame(progressDraw)
 
-	let content = this.wrapper;
+	let content = this.element;
 
 	content.style.display = 'none';
 	

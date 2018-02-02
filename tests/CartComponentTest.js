@@ -9,6 +9,7 @@ import InvalidCartItemException from '../src/Exceptions/InvalidCartItemException
 
 // Core
 import Container from '../src/Core/Container.js';
+import ComponentsProvider from '../src/Core/ComponentsProvider.js';
 import EventManager from '../src/Core/EventManager.js';
 
 // Components
@@ -16,6 +17,7 @@ import Cart from '../src/Components/Cart.js';
 import Products from '../src/Components/Products.js';
 
 // Helpers
+import Shop from './Helpers/Shop.js';
 import DomEvents from './Helpers/DomEvents.js';
 import Generator from './Helpers/Generator.js';
 import DOM from '../src/Helpers/DOM.js';
@@ -23,7 +25,7 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
 
@@ -40,18 +42,10 @@ describe.only('CartComponentTest', function() {
 
 		this.container = new Container;
 
-		this.container.setInstance('Events', new EventManager);
-		let request = this.container.make(new Request);
+		this.components = this.container.make('Components');
+		this.components.register(['Cart', 'Products']);
 
 		ExceptionHandler.setDebugLevel = 'error';
-
-		this.container.bind('Products', function(container) {
-			return new Products(container, request, container.Events);
-		});
-
-		this.container.bind('Cart', function(container) {
-			return new Cart(container, request, container.Events);
-		});
 	});
 
 	afterEach(function(done) {
@@ -60,14 +54,14 @@ describe.only('CartComponentTest', function() {
 		done();
 	});
 
-	it('should resolve cart object from the container', function() {
-		let cart = this.container.make('Cart');
+	it('resolves a cart components with components provider', function() {
+		let cart = this.components.provide('Cart');
 
 		assert.instanceOf(cart, Cart);
 	});
 
 	it('should open a window when clicking the cart icon', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			element: ".cart-icon",
@@ -83,7 +77,7 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('should insert an svg icon into as the cart icon', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			element: ".cart-icon",
@@ -96,7 +90,7 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('should have cart stored as a cookie', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -111,7 +105,7 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('removes item from the cart', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -127,8 +121,8 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('adds a product to the cart when clicking on plus button', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products'); 
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products'); 
 
 		products.setup({
 			url: host + '/' + productsEndPoint,
@@ -162,8 +156,8 @@ describe.only('CartComponentTest', function() {
 	}).timeout(10000);
 
 	it('displays the items which were added in the basket', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products'); 
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products'); 
 
 		products.setup({
 			url: host + '/' + productsEndPoint,
@@ -197,8 +191,8 @@ describe.only('CartComponentTest', function() {
 	}).timeout(10000);
 
 	it('adds existing product to the cart again increments the quantity', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products');
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -233,8 +227,8 @@ describe.only('CartComponentTest', function() {
 	}).timeout(10000);
 
 	it('favorites a product by clicking favorite button adds it to the cookie', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products');
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -263,8 +257,8 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('give the possiblity to click checkout inside the cart preview', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products');
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
 
 		cart.setup({
 			cookie_name: "cart",

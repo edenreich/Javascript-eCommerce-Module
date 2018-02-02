@@ -95,8 +95,7 @@ class Pagination
 	/**
 	 * Builds the pagination.
 	 *
-	 * @param 
-	 * @return 
+	 * @return void
 	 */
 	buildPagination()
 	{

@@ -1,4 +1,5 @@
 
+// External Packages
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
@@ -21,7 +22,6 @@ describe('RequestHelperTest', function() {
 		global.XMLHttpRequest = XMLHttpRequest;
 	
 		this.container = new Container;
-		this.container.setInstance('Request', new Request);
 
 		done();
 	});

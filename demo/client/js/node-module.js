@@ -586,8 +586,8 @@ var Common = function () {
 	}, {
 		key: 'in_array',
 		value: function in_array(needle, hystack) {
-			if (hystack.constructor !== Array) {
-				throw new InvalidArgumentException$1();
+			if (typeof hystack == 'undefined' || hystack.constructor !== Array) {
+				throw new InvalidArgumentException$1('Common.in_array() expects the second parameter to be an array, but ' + (typeof hystack === 'undefined' ? 'undefined' : _typeof(hystack)) + ' was passd instead');
 			}
 
 			for (var i = 0; i <= hystack.length; i++) {
@@ -915,221 +915,22 @@ var Request = function () {
 	return Request;
 }();
 
-var defaultMessage$2 = 'Trying to bind an already existing bound.';
+var defaultMessage$2 = 'The event you called does not exists or you supplied wrong argument';
 
-var InvalidBindingException = function (_ExceptionHandler3) {
-	_inherits(InvalidBindingException, _ExceptionHandler3);
-
-	function InvalidBindingException() {
-		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
-		_classCallCheck(this, InvalidBindingException);
-
-		message = message || defaultMessage$2;
-
-		var _this3 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
-
-		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this3).call(_this3, _this3, message);
-		return _this3;
-	}
-
-	return InvalidBindingException;
-}(ExceptionHandler);
-
-// Helpers
-// Exceptions
-/**
- * @file 
- * Container class.
- *
- * Handles/Controls the dependencies of ecommerce.
- */
-
-/**
- * Stores the instances
- *
- * @var array
- */
-
-
-var _instances = [];
-
-var Container = function () {
-	function Container() {
-		_classCallCheck(this, Container);
-	}
-
-	_createClass(Container, [{
-		key: 'bind',
-
-		/**
-   * Binds key to concrete class.
-   *
-   * @param string | key
-   * @param class | concrete
-   * @return void
-   */
-		value: function bind(key, concrete) {
-			if (typeof key != 'string') {
-				throw new InvalidArgumentException$1('bind() expects the first parameter to be string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
-			}
-
-			if (typeof concrete != 'function') {
-				throw new InvalidArgumentException$1('bind() expects the second parameter to be a function, but ' + (typeof concrete === 'undefined' ? 'undefined' : _typeof(concrete)) + ' was passed instead.');
-			}
-
-			if (typeof this[key] != 'undefined') {
-				throw new InvalidBindingException('bind() recieved an already existing bind.');
-			}
-
-			this[key] = concrete.bind(concrete, this);
-		}
-
-		/**
-   * Sets an instance.
-   *
-   * @param string | key
-   * @param object | instance
-   * @param string | alias
-   * @return void
-   */
-
-	}, {
-		key: 'setInstance',
-		value: function setInstance(key, instance) {
-			var alias = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-			if (typeof key != 'string') {
-				throw new InvalidArgumentException$1('setInstace() expects the first parameter to be a string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
-			}
-
-			if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) != 'object') {
-				throw new InvalidArgumentException$1('setInstance() expects the second parameter to be an object, but ' + (typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) + ' was passed instead.');
-			}
-
-			_instances[key] = instance;
-			this[key] = instance;
-		}
-
-		/**
-   * Resolves an instance out of 
-   * the ioc container.
-   * 
-   * @param string | key
-   * @return object
-   */
-
-	}, {
-		key: 'getInstance',
-		value: function getInstance(key) {
-			if (typeof key != 'string') {
-				throw new InvalidArgumentException$1('getInstace() expects the first parameter to be a string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
-			}
-
-			if ((typeof key === 'undefined' ? 'undefined' : _typeof(key)) == 'object') {
-				return _instances[key.constructor.name] || null;
-			}
-
-			return _instances[key] || null;
-		}
-
-		/**
-   * Checks if an instance exist.
-   *
-   * @param mixed | instance
-   * @return bool
-   */
-
-	}, {
-		key: 'instanceExist',
-		value: function instanceExist(instance) {
-			if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) == 'object') {
-				return typeof _instances[instance.constructor.name] !== 'undefined';
-			} else if (typeof instance == 'string') {
-				return typeof _instances[instance] !== 'undefined';
-			}
-
-			throw new InvalidArgumentException$1('instanceExist() expects the first parameter to be string or an object, but ' + (typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) + ' was passed instead.');
-		}
-
-		/**
-   * Retrieve an object, if not exists
-   * will create it, set it in the ioc container
-   * for later use and retrieve it.
-   *
-   * @param mixed | object 
-   * @return object
-   */
-
-	}, {
-		key: 'make',
-		value: function make(object) {
-			var instance = {};
-			var key = void 0;
-
-			if (this.instanceExist(object)) {
-				return this.getInstance(object);
-			}
-
-			if ((typeof object === 'undefined' ? 'undefined' : _typeof(object)) == 'object') {
-				instance = object;
-				key = object.constructor.name;
-				this.setInstance(key, instance);
-			} else if (typeof object == 'string' && this.hasOwnProperty(object)) {
-				instance = new this[object]();
-				key = object;
-				this.setInstance(key, instance);
-			} else {
-				throw new InvalidBindingException('The parameter you passed could not be bounded to the container, parameter: ' + (typeof object === 'undefined' ? 'undefined' : _typeof(object)));
-			}
-
-			return instance;
-		}
-
-		/**
-   * Remove all existing instances.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'flush',
-		value: function flush() {
-			_instances = [];
-		}
-
-		/**
-   * Retrieve all instances.
-   *
-   * @return array
-   */
-
-	}, {
-		key: 'instances',
-		value: function instances() {
-			return _instances;
-		}
-	}]);
-
-	return Container;
-}();
-
-var defaultMessage$3 = 'The event you called does not exists or you supplied wrong argument';
-
-var BadEventCallException = function (_ExceptionHandler4) {
-	_inherits(BadEventCallException, _ExceptionHandler4);
+var BadEventCallException = function (_ExceptionHandler3) {
+	_inherits(BadEventCallException, _ExceptionHandler3);
 
 	function BadEventCallException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, BadEventCallException);
 
-		message = message || defaultMessage$3;
+		message = message || defaultMessage$2;
 
-		var _this4 = _possibleConstructorReturn(this, (BadEventCallException.__proto__ || Object.getPrototypeOf(BadEventCallException)).call(this, message));
+		var _this3 = _possibleConstructorReturn(this, (BadEventCallException.__proto__ || Object.getPrototypeOf(BadEventCallException)).call(this, message));
 
-		_get(BadEventCallException.prototype.__proto__ || Object.getPrototypeOf(BadEventCallException.prototype), 'stackTrace', _this4).call(_this4, _this4, message);
-		return _this4;
+		_get(BadEventCallException.prototype.__proto__ || Object.getPrototypeOf(BadEventCallException.prototype), 'stackTrace', _this3).call(_this3, _this3, message);
+		return _this3;
 	}
 
 	return BadEventCallException;
@@ -1288,22 +1089,22 @@ var Cookie = function () {
 	return Cookie;
 }();
 
-var defaultMessage$4 = 'The item you are trying to add must contain a unique id';
+var defaultMessage$3 = 'The item you are trying to add must contain a unique id';
 
-var InvalidCartItemException = function (_ExceptionHandler5) {
-	_inherits(InvalidCartItemException, _ExceptionHandler5);
+var InvalidCartItemException = function (_ExceptionHandler4) {
+	_inherits(InvalidCartItemException, _ExceptionHandler4);
 
 	function InvalidCartItemException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, InvalidCartItemException);
 
-		message = message || defaultMessage$4;
+		message = message || defaultMessage$3;
 
-		var _this5 = _possibleConstructorReturn(this, (InvalidCartItemException.__proto__ || Object.getPrototypeOf(InvalidCartItemException)).call(this, message));
+		var _this4 = _possibleConstructorReturn(this, (InvalidCartItemException.__proto__ || Object.getPrototypeOf(InvalidCartItemException)).call(this, message));
 
-		_get(InvalidCartItemException.prototype.__proto__ || Object.getPrototypeOf(InvalidCartItemException.prototype), 'stackTrace', _this5).call(_this5, _this5, message);
-		return _this5;
+		_get(InvalidCartItemException.prototype.__proto__ || Object.getPrototypeOf(InvalidCartItemException.prototype), 'stackTrace', _this4).call(_this4, _this4, message);
+		return _this4;
 	}
 
 	return InvalidCartItemException;
@@ -1344,7 +1145,7 @@ var defaultSettings$1 = {
  *
  * @var \Core\Container
  */
-var Container$2 = void 0;
+var Container = void 0;
 
 /**
  * Stores the event manager object.
@@ -1389,7 +1190,7 @@ var Cart = function () {
 	function Cart(container, http, eventManager) {
 		_classCallCheck(this, Cart);
 
-		Container$2 = container;
+		Container = container;
 		Http = http;
 		EventManager$2 = eventManager;
 
@@ -2022,7 +1823,7 @@ var defaultSettings$2 = {
  *
  * @var \Core\Container
  */
-var Container$3 = void 0;
+var Container$1 = void 0;
 
 var Filter = function () {
 	/**
@@ -2034,7 +1835,7 @@ var Filter = function () {
 	function Filter(container) {
 		_classCallCheck(this, Filter);
 
-		Container$3 = container;
+		Container$1 = container;
 	}
 
 	/**
@@ -2143,7 +1944,7 @@ var defaultSettings$3 = {
  *
  * @var \Core\Container
  */
-var Container$4 = void 0;
+var Container$2 = void 0;
 
 /**
  * Stores the event manager object.
@@ -2174,7 +1975,7 @@ var Checkout = function () {
 	function Checkout(container, http, eventManager) {
 		_classCallCheck(this, Checkout);
 
-		Container$4 = container;
+		Container$2 = container;
 		Http$1 = http;
 		EventManager$3 = eventManager;
 
@@ -2204,7 +2005,7 @@ var Checkout = function () {
 			document.addEventListener('DOMContentLoaded', function () {
 
 				this.setElement(this.settings.element);
-
+				this.hide();
 				this.addStyleTag();
 			}.bind(this));
 		}
@@ -2245,7 +2046,7 @@ var Checkout = function () {
 
 			var position = this.settings.fixed ? 'fixed' : 'absolute';
 
-			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\t\n\t\t\t}\n\t\t';
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\twidth: 100%;\n\t\t\t\tmin-height: 400px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t}\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Checkout', css);
 		}
@@ -2259,8 +2060,23 @@ var Checkout = function () {
 	}, {
 		key: 'hideAll',
 		value: function hideAll() {
-			console.log(this);
-			console.log(Container$4.instances());
+			Container$2.Components.booted.forEach(function (component) {
+				if (component.constructor.name != 'Checkout') {
+					component.hide();
+				}
+			});
+		}
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hide',
+		value: function hide() {
+			this.element.style.display = 'none';
 		}
 
 		/**
@@ -2311,7 +2127,7 @@ var defaultSettings$4 = {
  * 
  * @var \Core\Container
  */
-var Container$5 = void 0;
+var Container$3 = void 0;
 
 /**
  * Stores the container object.
@@ -2346,7 +2162,7 @@ var Products = function () {
 	function Products(container, http, eventManager) {
 		_classCallCheck(this, Products);
 
-		Container$5 = container;
+		Container$3 = container;
 		Http$2 = http;
 		EventManager$4 = eventManager;
 		chunkedProducts = [];
@@ -2392,8 +2208,8 @@ var Products = function () {
 		value: function loadProducts() {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
-			if (Container$5.Pagination && Container$5.Pagination.booted) {
-				switch (Container$5.Pagination.settings.proccessing) {
+			if (Container$3.Pagination && Container$3.Pagination.booted) {
+				switch (Container$3.Pagination.settings.proccessing) {
 					case 'client-side':
 						return this.loadPageProductsByClient(pageNumber);
 						break;
@@ -2491,9 +2307,9 @@ var Products = function () {
 		key: 'calculateClientPages',
 		value: function calculateClientPages(products) {
 			// We are using pagination so we need to update it too.
-			Container$5.Pagination.settings.total_items = products.length;
+			Container$3.Pagination.settings.total_items = products.length;
 
-			var perPage = Container$5.Pagination.settings.per_page;
+			var perPage = Container$3.Pagination.settings.per_page;
 
 			// We need to calculate the pages on full http request 
 			// only once. so we check to see if we have results in our cache.
@@ -2737,22 +2553,22 @@ var Services = function Services() {
 	_classCallCheck(this, Services);
 };
 
-var defaultMessage$5 = 'Sorry, no more pages.';
+var defaultMessage$4 = 'Sorry, no more pages.';
 
-var NotInPageRangeException = function (_ExceptionHandler6) {
-	_inherits(NotInPageRangeException, _ExceptionHandler6);
+var NotInPageRangeException = function (_ExceptionHandler5) {
+	_inherits(NotInPageRangeException, _ExceptionHandler5);
 
 	function NotInPageRangeException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, NotInPageRangeException);
 
-		message = message || defaultMessage$5;
+		message = message || defaultMessage$4;
 
-		var _this6 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
+		var _this5 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
 
-		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this6).call(_this6, _this6, message);
-		return _this6;
+		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this5).call(_this5, _this5, message);
+		return _this5;
 	}
 
 	return NotInPageRangeException;
@@ -2785,7 +2601,7 @@ var defaultSettings$5 = {
  *
  * @var \Core\Container
  */
-var Container$6 = void 0;
+var Container$4 = void 0;
 
 /**
  * Stores the products component.
@@ -2814,7 +2630,7 @@ var Pagination = function () {
 		_classCallCheck(this, Pagination);
 
 		this.setCurrent(1);
-		Container$6 = container;
+		Container$4 = container;
 		Products$2 = products;
 		EventManager$5 = events;
 	}
@@ -2853,8 +2669,7 @@ var Pagination = function () {
 		/**
    * Builds the pagination.
    *
-   * @param 
-   * @return 
+   * @return void
    */
 
 	}, {
@@ -3232,30 +3047,380 @@ var Pagination = function () {
 	return Pagination;
 }();
 
-var defaultMessage$6 = 'In order to use components you must register them with the shop!';
+var defaultMessage$5 = 'In order to use components you must register them with the shop!';
 
-var ComponentNotRegisteredException = function (_ExceptionHandler7) {
-	_inherits(ComponentNotRegisteredException, _ExceptionHandler7);
+var ComponentNotRegisteredException = function (_ExceptionHandler6) {
+	_inherits(ComponentNotRegisteredException, _ExceptionHandler6);
 
 	function ComponentNotRegisteredException() {
 		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
 		_classCallCheck(this, ComponentNotRegisteredException);
 
-		message = message || defaultMessage$6;
+		message = message || defaultMessage$5;
 
-		var _this7 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
+		var _this6 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
 
-		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this7).call(_this7, _this7, message);
-		return _this7;
+		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this6).call(_this6, _this6, message);
+		return _this6;
 	}
 
 	return ComponentNotRegisteredException;
 }(ExceptionHandler);
 
+// Components
+// Helpers
+// Exceptions
+
+
+var ComponentsProvider = function () {
+	/**
+  * - Set the container as a member.
+  * - declare the components.
+  *
+  * @param \Core\Container | container
+  * @return void
+  */
+	function ComponentsProvider(container) {
+		_classCallCheck(this, ComponentsProvider);
+
+		this.container = container;
+
+		this.components = {};
+		this.components.Filter = {};
+		this.components.Services = {};
+		this.components.Products = {};
+		this.components.Pagination = {};
+		this.components.Cart = {};
+		this.components.Checkout = {};
+	}
+
+	/**
+ * Registers the components.
+ *
+ * @param object | components
+ * @return void
+ */
+
+
+	_createClass(ComponentsProvider, [{
+		key: 'register',
+		value: function register(components) {
+			this.available = components;
+			this.booted = [];
+			this.components.Filter.booted = false;
+			this.components.Services.booted = false;
+			this.components.Products.booted = false;
+			this.components.Pagination.booted = false;
+			this.components.Cart.booted = false;
+			this.components.Checkout.booted = false;
+
+			var instance = this;
+
+			this.container.bind('Filter', function (container, component) {
+				instance.components[component] = new Filter(container);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Services', function (container, component) {
+				instance.components[component] = new Services(container);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Products', function (container, component) {
+				instance.components[component] = new Products(container, container.Request, container.Events);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Pagination', function (container, component) {
+				instance.components[component] = new Pagination(container, instance.provide('Products'), container.Events);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Cart', function (container, component) {
+				instance.components[component] = new Cart(container, container.Request, container.Events);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Checkout', function (container, component) {
+				instance.components[component] = new Checkout(container, container.Request, container.Events);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+		}
+
+		/**
+   * Provide a registered component.
+   *
+   * @param string | component
+   * @return object
+   */
+
+	}, {
+		key: 'provide',
+		value: function provide(component) {
+			if (Common.in_array(component, this.available)) {
+				return this.container.make(component);
+			}
+
+			throw new ComponentNotRegisteredException('components must be registered in order to use them.');
+		}
+
+		/**
+   * Checks if component exists.
+   *
+   * @param string | name
+   * @return bool
+   */
+
+	}, {
+		key: 'exists',
+		value: function exists(name) {
+			return this.components.hasOwnProperty(name);
+		}
+	}]);
+
+	return ComponentsProvider;
+}();
+
+var defaultMessage$6 = 'Trying to bind an already existing bound.';
+
+var InvalidBindingException = function (_ExceptionHandler7) {
+	_inherits(InvalidBindingException, _ExceptionHandler7);
+
+	function InvalidBindingException() {
+		var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+		_classCallCheck(this, InvalidBindingException);
+
+		message = message || defaultMessage$6;
+
+		var _this7 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
+
+		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this7).call(_this7, _this7, message);
+		return _this7;
+	}
+
+	return InvalidBindingException;
+}(ExceptionHandler);
+
 // Helpers
 // Core
-// Components
+// Exceptions
+/**
+ * @file 
+ * Container class.
+ *
+ * Handles/Controls the dependencies of ecommerce.
+ */
+
+var Container$5 = function () {
+	/**
+  * - Initialize instances member.
+  * - Register bindings.
+  *
+  * @return void
+  */
+	function Container$5() {
+		_classCallCheck(this, Container$5);
+
+		this.instances = [];
+		this.register();
+		this.registerProviders();
+	}
+
+	/**
+  * Binds key to concrete class.
+  *
+  * @param string | key
+  * @param class | concrete
+  * @return void
+  */
+
+
+	_createClass(Container$5, [{
+		key: 'bind',
+		value: function bind(key, concrete) {
+			var namespace = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+			if (typeof key != 'string') {
+				throw new InvalidArgumentException$1('bind() expects the first parameter to be string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
+			}
+
+			if (typeof concrete != 'function') {
+				throw new InvalidArgumentException$1('bind() expects the second parameter to be a function, but ' + (typeof concrete === 'undefined' ? 'undefined' : _typeof(concrete)) + ' was passed instead.');
+			}
+
+			if (namespace) {
+				if (typeof this[namespace] == 'undefined') {
+					this[namespace] = {};
+				}
+
+				this[namespace][key] = concrete.bind(concrete, this, key);
+			} else {
+				this[key] = concrete.bind(concrete, this, key);
+			}
+		}
+
+		/**
+   * Sets an instance.
+   *
+   * @param string | key
+   * @param object | instance
+   * @param string | alias
+   * @return void
+   */
+
+	}, {
+		key: 'setInstance',
+		value: function setInstance(key, instance) {
+			var alias = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+			if (typeof key != 'string') {
+				throw new InvalidArgumentException$1('setInstace() expects the first parameter to be a string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
+			}
+
+			if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) != 'object') {
+				throw new InvalidArgumentException$1('setInstance() expects the second parameter to be an object, but ' + (typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) + ' was passed instead.');
+			}
+
+			this.instances[key] = instance;
+			this[key] = instance;
+		}
+
+		/**
+   * Resolves an instance out of 
+   * the ioc container.
+   * 
+   * @param string | key
+   * @return object
+   */
+
+	}, {
+		key: 'getInstance',
+		value: function getInstance(key) {
+			if (typeof key != 'string' && (typeof key === 'undefined' ? 'undefined' : _typeof(key)) != 'object') {
+				throw new InvalidArgumentException$1('getInstace() expects the first parameter to be a string, but ' + (typeof key === 'undefined' ? 'undefined' : _typeof(key)) + ' was passed instead.');
+			}
+
+			if ((typeof key === 'undefined' ? 'undefined' : _typeof(key)) == 'object') {
+				return this.instances[key.constructor.name] || null;
+			}
+
+			return this.instances[key] || null;
+		}
+
+		/**
+   * Checks if an instance exist.
+   *
+   * @param mixed | instance
+   * @return bool
+   */
+
+	}, {
+		key: 'instanceExist',
+		value: function instanceExist(instance) {
+			if ((typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) == 'object' || (typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) == 'symbol') {
+				return typeof this.instances[instance.constructor.name] !== 'undefined';
+			} else if (typeof instance == 'string') {
+				return typeof this.instances[instance] !== 'undefined';
+			}
+
+			throw new InvalidArgumentException$1('instanceExist() expects the first parameter to be string or an object, but ' + (typeof instance === 'undefined' ? 'undefined' : _typeof(instance)) + ' was passed instead.');
+		}
+
+		/**
+   * Retrieve an object, if not exists
+   * will create it, set it in the ioc container
+   * for later use and retrieve it.
+   *
+   * @param mixed | object 
+   * @return object
+   */
+
+	}, {
+		key: 'make',
+		value: function make(object) {
+			var instance = {};
+			var key = void 0;
+
+			if (this.instanceExist(object)) {
+				return this.getInstance(object);
+			}
+
+			if ((typeof object === 'undefined' ? 'undefined' : _typeof(object)) == 'object') {
+				instance = object;
+				key = object.constructor.name;
+				this.setInstance(key, instance);
+			} else if (typeof object == 'string' && this.hasOwnProperty(object)) {
+				instance = new this[object]();
+				key = object;
+				this.setInstance(key, instance);
+			} else if (typeof object == 'string' && this.Components.exists(object)) {
+				instance = new this.components[object]();
+				key = object;
+				this.setInstance(key, instance);
+			} else {
+				throw new InvalidBindingException('Container.make() could not create the object!');
+			}
+
+			return instance;
+		}
+
+		/**
+   * Remove all existing instances.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'flush',
+		value: function flush() {
+			this.instances = [];
+		}
+
+		/**
+   * Registers the dependecies.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'register',
+		value: function register() {
+			this.setInstance('Request', new Request());
+			this.setInstance('Events', new EventManager());
+		}
+
+		/**
+   * Registers the providers.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'registerProviders',
+		value: function registerProviders() {
+			this.setInstance('Components', new ComponentsProvider(this));
+		}
+	}]);
+
+	return Container$5;
+}();
+
+// Helpers
+// Core
 // Exceptions
 /**
  * Stores the default settings.
@@ -3302,11 +3467,16 @@ var TurboEcommerce = function () {
 			throw new InvalidArgumentException$1();
 		}
 
-		this.container = new Container();
 		this.settings = Common.extend(defaultSettings$6, settings);
 
 		ExceptionHandler.setDebugLevel = this.settings.debug_level;
+
 		this.loadExternalLibraries();
+
+		this.container = new Container$5();
+
+		this.components = this.container.make('Components');
+		this.components.register(this.settings.components);
 
 		document.addEventListener('DOMContentLoaded', function () {
 			this.setElement(this.settings.element);
@@ -3318,17 +3488,15 @@ var TurboEcommerce = function () {
 			this.addStyleTag();
 		}.bind(this));
 
-		bindComponentsDependencies.call(this, settings.components);
-
 		return new Proxy(this, {
-			get: function get(target, source) {
-				if (Common.in_array(source, settings.components)) {
-					return target.container.make(source);
-				} else if (target.container.instanceExist(source)) {
-					return target.container.getInstance(source);
+			get: function get(shop, source) {
+				if (shop.components.exists(source)) {
+					return shop.components.provide(source);
 				}
 
-				throw new ComponentNotRegisteredException('components must be registered in order to use them.');
+				if (shop.container.instanceExist(source)) {
+					return shop.container.getInstance(source);
+				}
 			}
 		});
 	}
@@ -3367,9 +3535,9 @@ var TurboEcommerce = function () {
 	}, {
 		key: 'setElement',
 		value: function setElement(selector) {
-			this.wrapper = DOM.find(selector);
+			this.element = DOM.find(selector);
 
-			DOM.addClass(this.wrapper, this.settings.class);
+			DOM.addClass(this.element, this.settings.class);
 		}
 
 		/**
@@ -3395,69 +3563,14 @@ var TurboEcommerce = function () {
 }();
 
 /**
- * Binds components dependencies.
- *
- * @param object | components
- * @return void
- */
-
-
-function bindComponentsDependencies(components) {
-
-	this.container.setInstance('Request', new Request());
-	this.container.setInstance('Events', new EventManager());
-
-	this.container.bind('Filter', function (container) {
-		var component = new Filter(container);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Services', function (container) {
-		var component = new Services(container);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Products', function (container) {
-		var component = new Products(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Pagination', function (container) {
-		var component = new Pagination(container, container.make('Products'), container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Cart', function (container) {
-		var component = new Cart(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.bind('Checkout', function (container) {
-		var component = new Checkout(container, container.Request, container.Events);
-		component.booted = true;
-		return component;
-	});
-
-	this.container.Filter.booted = false;
-	this.container.Services.booted = false;
-	this.container.Products.booted = false;
-	this.container.Pagination.booted = false;
-	this.container.Cart.booted = false;
-	this.container.Checkout.booted = false;
-}
-
-/**
  * Attaches a loader to the top of the screen
  * and hides the content.
  * Stops automatically after 20% reached.
  *
  * @return void 
  */
+
+
 function startLoading() {
 	var loader = DOM.createElement('div', {
 		class: 'loading-progress-bar'
@@ -3475,7 +3588,7 @@ function startLoading() {
 
 	window.requestAnimationFrame(progressDraw);
 
-	var content = this.wrapper;
+	var content = this.element;
 
 	content.style.display = 'none';
 

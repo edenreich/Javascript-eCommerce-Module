@@ -1,14 +1,21 @@
 
+// External Packages
 import Window from 'window';
 import {assert} from 'chai';
+import {XMLHttpRequest} from 'xmlhttprequest';
+
+// Core
 import Container from '../src/Core/Container.js';
 import EventManager from '../src/Core/EventManager.js';
 
 describe('EventManagerTest', function() {
 
 	beforeEach(function() {	
+		global.window = new Window();
+		global.XMLHttpRequest = XMLHttpRequest;
+		global.document = window.document;
+
 		this.container = new Container;
-		this.container.setInstance('Events', new EventManager);
 	});
 
 	afterEach(function() {

@@ -90,7 +90,7 @@ class Checkout
 		document.addEventListener('DOMContentLoaded', function() {
 
 			this.setElement(this.settings.element);
-		
+			this.hide();
 			this.addStyleTag();
 		}.bind(this));
 	}
@@ -129,7 +129,9 @@ class Checkout
 
 		let css = `
 			${this.settings.element} {
-				
+				width: 100%;
+				min-height: 400px;
+				border: 1px solid #e4e4e4;
 			}
 		`;
 	    
@@ -142,9 +144,22 @@ class Checkout
 	 * @return void 
 	 */
 	hideAll()
+	{	
+		Container.Components.booted.forEach(function(component) {
+			if (component.constructor.name != 'Checkout') {
+				component.hide();
+			}
+		});
+	}
+
+	/**
+	 * Hides the component from the DOM.
+	 *
+	 * @return void 
+	 */
+	hide()
 	{
-		console.log(this);
-		console.log(Container.instances());
+		this.element.style.display = 'none';
 	}
 
 	/**

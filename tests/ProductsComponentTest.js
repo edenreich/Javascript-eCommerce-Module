@@ -1,4 +1,5 @@
 
+// External Packages
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
@@ -6,6 +7,7 @@ import {XMLHttpRequest} from 'xmlhttprequest';
 // Core
 import Container from '../src/Core/Container.js';
 import EventManager from '../src/Core/EventManager.js';
+import ComponentsProvider from '../src/Core/ComponentsProvider.js';
 
 // Components
 import Pagination from '../src/Components/Pagination.js';
@@ -32,24 +34,14 @@ describe('ProductsComponentTest', function() {
 									<div class="pagination-links"></div>`;
 
 		this.container = new Container;
-
-		this.container.setInstance('Events', new EventManager);
-
-		this.container.setInstance('Request', new Request);
-
-		this.container.bind('Pagination', function(container) {
-			return new Pagination(container, container.make('Products'), container.Events);
-		});
-
-		this.container.bind('Products', function(container) {
-			return new Products(container, container.Request, container.Events);
-		});
+		this.components = this.container.make('Components');
+		this.components.register(['Pagination', 'Products']);
 
 		done();
 	});
 
 	it('should set the given settings from the user', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({
 			element: '.products',
@@ -66,7 +58,7 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should replace the items in the products container div', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({});
 
@@ -82,7 +74,7 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('checks that each product have .add-to-cart and .favorite classes', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({});
 
@@ -100,7 +92,7 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should let the developer to add css class to the buttons', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({
 			add_button_class: 'test-class',
@@ -122,7 +114,7 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should get products from the server side', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({
 			url: host + '/server/products.php'

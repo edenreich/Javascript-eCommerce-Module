@@ -1,4 +1,5 @@
 
+// Extenral Packages
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
@@ -6,6 +7,7 @@ import {XMLHttpRequest} from 'xmlhttprequest';
 // Core
 import Container from '../src/Core/Container.js';
 import EventManager from '../src/Core/EventManager.js';
+import ComponentsProvider from '../src/Core/ComponentsProvider.js';
 
 // Components
 import Pagination from '../src/Components/Pagination.js';
@@ -29,26 +31,17 @@ describe('PaginationComponentTest', function() {
 									<div class="pagination-links"></div>`;
 
 		this.container = new Container;
+		this.components = this.container.make('Components');
+		this.components.register(['Pagination', 'Products']);
 
-		this.container.setInstance('Events', new EventManager);
-
-		let request = this.container.make(new Request);
-
-		this.container.bind('Pagination', function(container) {
-			return new Pagination(container, container.make('Products'), container.Events);
-		});
-
-		this.container.bind('Products', function(container) {
-			return new Products(container, request, container.Events);
-		});
-
-		this.Pagination = this.container.make('Pagination');
-		this.Products = this.container.make('Products');
+		this.Pagination = this.components.provide('Pagination');
+		this.Products = this.components.provide('Products');
 	});
 
 	afterEach(function(done) {
 		this.container.flush();
 		this.container = undefined;
+		this.components = undefined;
 		done();
 	});
 

@@ -1,6 +1,11 @@
 
 // Helpers
 import Common from '../Helpers/Common.js';
+import Request from '../Helpers/Request.js';
+
+// Core
+import EventManager from './EventManager.js';
+import ComponentsProvider from './ComponentsProvider.js';
 
 // Exceptions
 import InvalidBindingException from '../Exceptions/InvalidBindingException.js';
@@ -13,15 +18,21 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  * Handles/Controls the dependencies of ecommerce.
  */
 
-/**
- * Stores the instances
- *
- * @var array
- */
-let instances = [];
-
 class Container 
 {
+	/**
+	 * - Initialize instances member.
+	 * - Register bindings.
+	 *
+	 * @return void
+	 */
+	constructor()
+	{
+		this.instances = [];
+		this.register();
+		this.registerProviders();
+	}
+
 	/**
 	 * Binds key to concrete class.
 	 *
@@ -29,7 +40,7 @@ class Container
 	 * @param class | concrete
 	 * @return void
 	 */
-	bind(key, concrete) 
+	bind(key, concrete, namespace = null) 
 	{
 		if (typeof key != 'string') {
 			throw new InvalidArgumentException('bind() expects the first parameter to be string, but ' + typeof key + ' was passed instead.');
@@ -39,11 +50,15 @@ class Container
 			throw new InvalidArgumentException('bind() expects the second parameter to be a function, but ' + typeof concrete + ' was passed instead.');
 		}
 
-		if (typeof this[key] != 'undefined') {
-			throw new InvalidBindingException('bind() recieved an already existing bind.');
-		}
+		if (namespace) {
+			if (typeof this[namespace] == 'undefined') {
+				this[namespace] = {};
+			}
 
-		this[key] = concrete.bind(concrete, this);
+			this[namespace][key] = concrete.bind(concrete, this, key);
+		} else {
+			this[key] = concrete.bind(concrete, this, key);
+		}
 	}
 
 	/**
@@ -64,7 +79,7 @@ class Container
 			throw new InvalidArgumentException('setInstance() expects the second parameter to be an object, but ' + typeof instance + ' was passed instead.');
 		}
 
-		instances[key] = instance;
+		this.instances[key] = instance;
 		this[key] = instance;
 	}
 
@@ -77,15 +92,15 @@ class Container
 	 */
 	getInstance(key) 
 	{
-		if(typeof key != 'string') {
+		if (typeof key != 'string' && typeof key != 'object') {
 			throw new InvalidArgumentException('getInstace() expects the first parameter to be a string, but ' + typeof key + ' was passed instead.');
 		}
 
-		if(typeof key == 'object') {
-			return instances[key.constructor.name] || null;
+		if (typeof key == 'object') {
+			return this.instances[key.constructor.name] || null;
 		}
 
-		return instances[key] || null;
+		return this.instances[key] || null;
 	}
 
 	/**
@@ -96,10 +111,10 @@ class Container
 	 */
 	instanceExist(instance) 
 	{
-		if (typeof instance == 'object') {
-			return (typeof instances[instance.constructor.name] !== 'undefined');
+		if (typeof instance == 'object' || typeof instance == 'symbol') {
+			return (typeof this.instances[instance.constructor.name] !== 'undefined');
 		} else if (typeof instance == 'string') {
-			return (typeof instances[instance] !== 'undefined')
+			return (typeof this.instances[instance] !== 'undefined')
 		}
 		
 		throw new InvalidArgumentException('instanceExist() expects the first parameter to be string or an object, but ' + typeof instance + ' was passed instead.');
@@ -126,12 +141,16 @@ class Container
 			instance = object;
 			key = object.constructor.name;
 			this.setInstance(key, instance); 
-		} else if(typeof object == 'string' && this.hasOwnProperty(object)) {
+		} else if (typeof object == 'string' && this.hasOwnProperty(object)) {
 			instance = new this[object];
 			key = object;
 			this.setInstance(key, instance);	
+		} else if (typeof object == 'string' && this.Components.exists(object)) {
+			instance = new this.components[object];
+			key = object;
+			this.setInstance(key, instance);
 		} else {
-			throw new InvalidBindingException('The parameter you passed could not be bounded to the container, parameter: ' + typeof object);
+			throw new InvalidBindingException('Container.make() could not create the object!');
 		}
 
 		return instance;
@@ -144,17 +163,28 @@ class Container
 	 */
 	flush()
 	{
-		instances = [];
+		this.instances = [];
 	}
 
 	/**
-	 * Retrieve all instances.
+	 * Registers the dependecies.
 	 *
-	 * @return array
+	 * @return void 
 	 */
-	instances() 
+	register()
 	{
-		return instances;
+		this.setInstance('Request', new Request);
+		this.setInstance('Events', new EventManager);
+	}
+
+	/**
+	 * Registers the providers.
+	 *
+	 * @return void 
+	 */
+	registerProviders()
+	{
+		this.setInstance('Components', new ComponentsProvider(this));
 	}
 }
 
