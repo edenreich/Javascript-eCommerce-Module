@@ -47,7 +47,7 @@ class Common
 	 */
 	static in_array(needle, hystack) {
 		if (typeof hystack == 'undefined' || hystack.constructor !== Array) {
-			throw new InvalidArgumentException('in_array() expects the second parameter to be an array, but ' + typeof hystack + ' was passd instead');
+			throw new InvalidArgumentException('Common.in_array() expects the second parameter to be an array, but ' + typeof hystack + ' was passd instead');
 		}
 
 		for (var i = 0; i <= hystack.length; i++) {
