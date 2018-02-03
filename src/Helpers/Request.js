@@ -92,13 +92,17 @@ class Request
 			xhr.timeout = options.timeout || 3000;
 
 			xhr.onreadystatechange = function() {
-			    if(this.readyState != 4 || this.status != 200) {
+				if (this.readyState == 4 && (this.status >= 400 && this.status <= 500)) {
+			    	reject(this.responseText);
+			    }
+			    
+			    if (this.readyState != 4 || this.status != 200) {
 			    	return;
 			    }
 	       	
        			resolve(this.response);
        			
-       			if(options.hasOwnProperty('after') && typeof options.after == 'function') {
+       			if (options.hasOwnProperty('after') && typeof options.after == 'function') {
 					options.after.call(this);
 				}
 			};
@@ -160,7 +164,11 @@ class Request
 			}
 			
 			xhr.onreadystatechange = function() {
-			    if(this.readyState != 4 || this.status != 200) {
+			    if (this.readyState == 4 && (this.status >= 400 && this.status <= 500)) {
+			    	reject(this.responseText);
+			    }
+
+			    if (this.readyState != 4 || this.status != 200) {
 			    	return;
 			    }
 
