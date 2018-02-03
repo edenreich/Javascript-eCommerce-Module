@@ -138,18 +138,18 @@ class Request
 	{
 		let xhr = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");			
 
-		if(options.hasOwnProperty('before') && typeof options.before == 'function') {
+		if (options.hasOwnProperty('before') && typeof options.before == 'function') {
 			options.before.call(this);
 		}
 
 		return new Promise(function(resolve, reject) {
-			if(typeof options !== 'object') {
+			if (typeof options !== 'object') {
 				throw new Error('get expecting a json object to be passed as an argument, but '+ typeof options + ' was passed.');
 			}
 
 			options.data = options.data || {};
 
-			if(typeof options.data !== 'object') {
+			if (typeof options.data !== 'object') {
 				throw new Error('data property expecting a json object to be passed as an argument, but ' + typeof options.data + ' was passed.');
 			}
 
@@ -162,34 +162,37 @@ class Request
 				xhr.setRequestHeader('Content-Type', 'application/json');
 				xhr.setRequestHeader('Accept', 'application/json');
 			}
-			
-			xhr.onreadystatechange = function() {
+
+			if (xhr.responseType == 'document') {
+				xhr.setRequestHeader('Content-Type', 'text/html');
+				xhr.setRequestHeader('Accept', 'text/html');	
+			}
+
+			xhr.onreadystatechange = xhr.onload = function() {console.log(1);
 			    if (this.readyState == 4 && (this.status >= 400 && this.status <= 500)) {
 			    	reject(this.responseText);
 			    }
-
-			    if (this.readyState != 4 || this.status != 200) {
-			    	return;
-			    }
-
-			    let response = this.response || this.responseText; 
-			    response = (xhr.responseType == 'json' && typeof response != 'object') ? JSON.parse(response) : response;
-			    resolve(response);	
-       			
-       			if(options.hasOwnProperty('after') && typeof options.after == 'function') {
-					options.after.call(this);
+			    
+			    if (this.readyState == 4 && this.status == 200) {		    
+				    let response = this.response || this.responseText;
+				    response = (xhr.responseType == 'json' && typeof response != 'object') ? JSON.parse(response) : response;
+				    resolve(response);	
+	       			
+	       			if (options.hasOwnProperty('after') && typeof options.after == 'function') {
+						options.after.call(this);
+					}
 				}
 			};
 
-			xhr.onerror = function(message) {
-				if(options.hasOwnProperty('error') && typeof options.error == 'function') {
+			xhr.onabort = xhr.onerror = function(message) {
+				if (options.hasOwnProperty('error') && typeof options.error == 'function') {
 					options.error(message);
 				}
 
 				reject(message);
 			};
 
-			if(! options.data) {
+			if (! options.data) {
 				xhr.send(null);
 			}
 
