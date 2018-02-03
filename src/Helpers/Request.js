@@ -168,7 +168,7 @@ class Request
 				xhr.setRequestHeader('Accept', 'text/html');	
 			}
 
-			xhr.onreadystatechange = xhr.onload = function() {console.log(1);
+			xhr.onreadystatechange = xhr.onload = function() {
 			    if (this.readyState == 4 && (this.status >= 400 && this.status <= 500)) {
 			    	reject(this.responseText);
 			    }
