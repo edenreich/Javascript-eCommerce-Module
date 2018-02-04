@@ -164,19 +164,20 @@ class Request
 			}
 
 			if (xhr.responseType == 'document') {
+				xhr.overrideMimeType('text/xml');
 				xhr.setRequestHeader('Content-Type', 'text/html');
 				xhr.setRequestHeader('Accept', 'text/html');	
 			}
 
-			xhr.onreadystatechange = xhr.onload = function() {
+			xhr.onreadystatechange = function() {
 			    if (this.readyState == 4 && (this.status >= 400 && this.status <= 500)) {
 			    	reject(this.responseText);
 			    }
-			    
-			    if (this.readyState == 4 && this.status == 200) {		    
+			   
+			    if (this.readyState == 4 && this.status == 200) {
 				    let response = this.response || this.responseText;
 				    response = (xhr.responseType == 'json' && typeof response != 'object') ? JSON.parse(response) : response;
-				    resolve(response);	
+				    resolve(response);
 	       			
 	       			if (options.hasOwnProperty('after') && typeof options.after == 'function') {
 						options.after.call(this);
