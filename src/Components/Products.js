@@ -340,11 +340,24 @@ class Products
 			
 			let tag = DOM.createElement(tagType, {
 				class: 'product-image',
-				html: image
+				html: image.outerHTML
 			});
 			
 			product.appendChild(tag);
-			delete attributes['image'];
+		}
+
+		if (attributes.hasOwnProperty('price')) {
+			let tag = DOM.createElement(tagType, {
+				class: 'product-price',
+				text: attributes.price.amount
+			});
+			let span = DOM.createElement('span', {
+				class: 'product-currency',
+				html: attributes.price.currency
+			});
+
+			tag.appendChild(span);
+			overlay.appendChild(tag);
 		}
 
 		for (var attribute in attributes) {
@@ -352,21 +365,12 @@ class Products
 				continue;
 			}
 
-			let tag;
-
-			if (typeof attributes[attribute] == 'object') {
-				tag = DOM.createElement(tagType);
-				let span = DOM.createElement('span', {
-					class: 'product-' + Str.kebabCase(Object.keys(attributes[attribute])[1])
-				});
-
-				tag.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[0]] || '';
-				span.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[1]];
-				tag.appendChild(span);
-			} else {
-				tag = DOM.createElement(tagType);
-				tag.innerHTML = attributes[attribute] || '';
+			if (attribute == 'price' || attribute == 'image') {
+				continue;
 			}
+
+			let tag = DOM.createElement(tagType);
+			tag.innerHTML = attributes[attribute] || '';
 			
 			DOM.addClass(tag, 'product-' + Str.kebabCase(attribute));
 			overlay.appendChild(tag);
@@ -424,9 +428,9 @@ class Products
 	 */
 	addDefaultAttributes(attributes)
 	{
-		if (this.settings.attributes.indexOf('price') != -1) {
+		if (attributes.hasOwnProperty('price') && typeof attributes.price != 'object') {
 			attributes.price = {
-				"value": attributes.price,
+				"amount": attributes.price,
 				"currency": this.settings.currency
 			};
 		}

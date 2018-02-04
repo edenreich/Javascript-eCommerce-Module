@@ -436,10 +436,8 @@ var DOM = function () {
 			for (var option in options) {
 				switch (option) {
 					case 'text':
-						element.innerHTML = options[option];
-						break;
 					case 'html':
-						_typeof(options[option]) == 'object' ? element.appendChild(options[option]) : element.innerHTML = options[option];
+						element.innerHTML = options[option];
 						break;
 					default:
 						element.setAttribute(option, options[option]);
@@ -2472,11 +2470,24 @@ var Products = function () {
 
 				var _tag = DOM.createElement(tagType, {
 					class: 'product-image',
-					html: image
+					html: image.outerHTML
 				});
 
 				product.appendChild(_tag);
-				delete attributes['image'];
+			}
+
+			if (attributes.hasOwnProperty('price')) {
+				var _tag2 = DOM.createElement(tagType, {
+					class: 'product-price',
+					text: attributes.price.amount
+				});
+				var span = DOM.createElement('span', {
+					class: 'product-currency',
+					html: attributes.price.currency
+				});
+
+				_tag2.appendChild(span);
+				overlay.appendChild(_tag2);
 			}
 
 			for (var attribute in attributes) {
@@ -2484,24 +2495,15 @@ var Products = function () {
 					continue;
 				}
 
-				var _tag2 = void 0;
-
-				if (_typeof(attributes[attribute]) == 'object') {
-					_tag2 = DOM.createElement(tagType);
-					var span = DOM.createElement('span', {
-						class: 'product-' + Str.kebabCase(Object.keys(attributes[attribute])[1])
-					});
-
-					_tag2.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[0]] || '';
-					span.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[1]];
-					_tag2.appendChild(span);
-				} else {
-					_tag2 = DOM.createElement(tagType);
-					_tag2.innerHTML = attributes[attribute] || '';
+				if (attribute == 'price' || attribute == 'image') {
+					continue;
 				}
 
-				DOM.addClass(_tag2, 'product-' + Str.kebabCase(attribute));
-				overlay.appendChild(_tag2);
+				var _tag3 = DOM.createElement(tagType);
+				_tag3.innerHTML = attributes[attribute] || '';
+
+				DOM.addClass(_tag3, 'product-' + Str.kebabCase(attribute));
+				overlay.appendChild(_tag3);
 			}
 
 			var tag = DOM.createElement('div', {
@@ -2558,9 +2560,9 @@ var Products = function () {
 	}, {
 		key: 'addDefaultAttributes',
 		value: function addDefaultAttributes(attributes) {
-			if (this.settings.attributes.indexOf('price') != -1) {
+			if (attributes.hasOwnProperty('price') && _typeof(attributes.price) != 'object') {
 				attributes.price = {
-					"value": attributes.price,
+					"amount": attributes.price,
 					"currency": this.settings.currency
 				};
 			}
