@@ -193,12 +193,19 @@ class DOM
 		}
 
 		for (let option in options) {
-			if(option == 'text') {
-				element.innerHTML = options[option];
-				continue;
+			switch(option)
+			{
+				case 'text':
+					element.innerHTML = options[option];
+					break;
+				case 'html':
+					(typeof options[option] == 'object') ? element.appendChild(options[option]) 
+														 : element.innerHTML = options[option];
+					break;
+				default:
+					element.setAttribute(option, options[option]);
+					break;
 			}
-
-			element.setAttribute(option, options[option]);
 		}
 
 		return element;
