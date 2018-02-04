@@ -33,6 +33,7 @@
     "gulp-rollup": "^2.16.2",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
+    "jsdom": "^11.6.2",
     "mocha": "^3.5.3",
     "window": "^4.2.4",
     "xmlhttprequest": "^1.8.0"

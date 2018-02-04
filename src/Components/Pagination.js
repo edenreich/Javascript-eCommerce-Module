@@ -1,5 +1,6 @@
 
 import DOM from '../Helpers/DOM.js';
+import Url from '../Helpers/Url.js';
 import Common from '../Helpers/Common.js';
 
 import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
@@ -23,6 +24,8 @@ let defaultSettings = {
 	class: '',
 	per_page: 5,
 	total_items: 5,
+	url_parameter: 'page',
+	separator: '#' 
 };
 
 /**
@@ -58,7 +61,6 @@ class Pagination
 	 */
 	constructor(container, products, events) 
 	{
-		this.setCurrent(1);
 		Container = container;
 		Products = products;
 		EventManager = events;
@@ -77,19 +79,22 @@ class Pagination
 		}
 
 		this.settings = Common.extend(defaultSettings, settings);
+		this.setCurrent(1);
 
-		this.setElement(this.settings.element);
+		document.addEventListener('DOMContentLoaded', function() {		
+			this.setElement(this.settings.element);
 
-		// Listen to when products are being loaded and update the pagination
-		// with the actual items count.
-		EventManager.subscribe('products.loaded', function(products) {
-			this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
+			// Listen to when products are being loaded and update the pagination
+			// with the actual items count.
+			EventManager.subscribe('products.loaded', function(products) {
+				this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
+				this.buildPagination();
+			}.bind(this));
+
+			// As a fallback choose the user's settings for the total items count.
+			this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
 			this.buildPagination();
 		}.bind(this));
-
-		// As a fallback choose the user's settings for the total items count.
-		this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
-		this.buildPagination();
 	}
 
 	/**
@@ -347,8 +352,7 @@ class Pagination
 	 */
 	changeUrl(pageNumber) 
 	{
-		pageNumber =  pageNumber || queryString()['page'];
-		window.history.replaceState('', '', this.updateURLParameter(window.location.href, 'page', pageNumber));
+		Url.change(this.settings.url_parameter, pageNumber, this.settings.separator);
 	}
 
 	/**
@@ -366,51 +370,6 @@ class Pagination
 				DOM.removeClass(this.pages[page], 'active');
 			}
 		}
-	}
-
-	/**
-	 * Get the get variables from the url.
-	 *
-	 * @return array
-	 */
-	queryString() 
-	{
-		var vars = {};
-		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-			vars[key] = value;
-		});
-
-		return vars;
-	}
-
-	/**
-	 * Modifies the get parameter in the url.
-	 *
-	 * @param string | url
-	 * @param string | param
-	 * @param number | paramVal
-	 * @return string
-	 */
-	updateURLParameter(url, param, paramVal) 
-	{
-	    var newAdditionalURL = "";
-	    var tempArray = url.split("?");
-	    var baseURL = tempArray[0];
-	    var additionalURL = tempArray[1];
-	    var temp = "";
-
-	    if (additionalURL) {
-	        tempArray = additionalURL.split("&");
-	        for (var i = 0; i < tempArray.length; i++){
-	            if (tempArray[i].split('=')[0] != param){
-	                newAdditionalURL += temp + tempArray[i];
-	                temp = "&";
-	            }
-	        }
-	    }
-
-	    var rowsText = temp + "" + param + "=" + paramVal;
-	    return baseURL + "?" + newAdditionalURL + rowsText;
 	}
 
 	/**

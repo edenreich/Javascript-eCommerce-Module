@@ -809,6 +809,10 @@ var Request = function () {
 				xhr.timeout = options.timeout || 3000;
 
 				xhr.onreadystatechange = function () {
+					if (this.readyState == 4 && this.status >= 400 && this.status <= 500) {
+						reject(this.responseText);
+					}
+
 					if (this.readyState != 4 || this.status != 200) {
 						return;
 					}
@@ -877,21 +881,29 @@ var Request = function () {
 					xhr.setRequestHeader('Accept', 'application/json');
 				}
 
+				if (xhr.responseType == 'document') {
+					xhr.overrideMimeType('text/xml');
+					xhr.setRequestHeader('Content-Type', 'text/html');
+					xhr.setRequestHeader('Accept', 'text/html');
+				}
+
 				xhr.onreadystatechange = function () {
-					if (this.readyState != 4 || this.status != 200) {
-						return;
+					if (this.readyState == 4 && this.status >= 400 && this.status <= 500) {
+						reject(this.responseText);
 					}
 
-					var response = this.response || this.responseText;
-					response = xhr.responseType == 'json' && (typeof response === 'undefined' ? 'undefined' : _typeof(response)) != 'object' ? JSON.parse(response) : response;
-					resolve(response);
+					if (this.readyState == 4 && this.status == 200) {
+						var response = this.response || this.responseText;
+						response = xhr.responseType == 'json' && (typeof response === 'undefined' ? 'undefined' : _typeof(response)) != 'object' ? JSON.parse(response) : response;
+						resolve(response);
 
-					if (options.hasOwnProperty('after') && typeof options.after == 'function') {
-						options.after.call(this);
+						if (options.hasOwnProperty('after') && typeof options.after == 'function') {
+							options.after.call(this);
+						}
 					}
 				};
 
-				xhr.onerror = function (message) {
+				xhr.onabort = xhr.onerror = function (message) {
 					if (options.hasOwnProperty('error') && typeof options.error == 'function') {
 						options.error(message);
 					}
@@ -2553,6 +2565,95 @@ var Services = function Services() {
 	_classCallCheck(this, Services);
 };
 
+var Url = function () {
+	function Url() {
+		_classCallCheck(this, Url);
+	}
+
+	_createClass(Url, null, [{
+		key: 'processAjaxData',
+		value: function processAjaxData(selector, content, urlPath) {
+			var context = DOM.find(selector);
+
+			context.innerHTML = content;
+			var title = DOM.find('title', context);
+			document.title = title.innerHTML;
+			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
+
+			window.onpopstate = function (e) {
+				if (e.state) {
+					context.innerHTML = e.state.html;
+					document.title = e.state.pageTitle;
+				}
+			};
+		}
+
+		/**
+   * Modifies the get parameter in the url.
+   *
+   * @param string | url
+   * @param string | key
+   * @param number | value
+   * @param string | separator
+   * @return string
+   */
+
+	}, {
+		key: 'changeQueryParameterValue',
+		value: function changeQueryParameterValue(url, key, value) {
+			var separator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '=';
+
+			var regExp = new RegExp("([?&])" + key + separator + ".*?(&|$)", "i");
+			var pairSeparator = url.indexOf('?') !== -1 ? "&" : "?";
+
+			if (url.match(regExp)) {
+				return url.replace(regExp, '$1' + key + separator + value + '$2');
+			} else {
+				return url + pairSeparator + key + separator + value;
+			}
+		}
+
+		/**
+   * Changes the url to a given page number.
+   *
+   * @param string | parameterKey
+   * @param string | parameterValue
+   * @param string | separator
+   * @return void
+   */
+
+	}, {
+		key: 'change',
+		value: function change(parameterKey, parameterValue) {
+			var separator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '=';
+
+			parameterValue = parameterValue || this.queryString()[parameterKey];
+			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
+			console.log(requestedUrl);
+			window.history.replaceState('', '', requestedUrl);
+		}
+
+		/**
+   * Get the get variables from the url.
+   *
+   * @return array
+   */
+
+	}, {
+		key: 'queryString',
+		value: function queryString() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+				vars[key] = value;
+			});
+
+			return vars;
+		}
+	}]);
+
+	return Url;
+}();
+
 var defaultMessage$4 = 'Sorry, no more pages.';
 
 var NotInPageRangeException = function (_ExceptionHandler5) {
@@ -2593,7 +2694,9 @@ var defaultSettings$5 = {
 	proccessing: 'client-side',
 	class: '',
 	per_page: 5,
-	total_items: 5
+	total_items: 5,
+	url_parameter: 'page',
+	separator: '#'
 };
 
 /**
@@ -2629,7 +2732,6 @@ var Pagination = function () {
 	function Pagination(container, products, events) {
 		_classCallCheck(this, Pagination);
 
-		this.setCurrent(1);
 		Container$4 = container;
 		Products$2 = products;
 		EventManager$5 = events;
@@ -2651,19 +2753,22 @@ var Pagination = function () {
 			}
 
 			this.settings = Common.extend(defaultSettings$5, settings);
+			this.setCurrent(1);
 
-			this.setElement(this.settings.element);
+			document.addEventListener('DOMContentLoaded', function () {
+				this.setElement(this.settings.element);
 
-			// Listen to when products are being loaded and update the pagination
-			// with the actual items count.
-			EventManager$5.subscribe('products.loaded', function (products) {
-				this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
+				// Listen to when products are being loaded and update the pagination
+				// with the actual items count.
+				EventManager$5.subscribe('products.loaded', function (products) {
+					this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
+					this.buildPagination();
+				}.bind(this));
+
+				// As a fallback choose the user's settings for the total items count.
+				this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
 				this.buildPagination();
 			}.bind(this));
-
-			// As a fallback choose the user's settings for the total items count.
-			this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
-			this.buildPagination();
 		}
 
 		/**
@@ -2946,8 +3051,7 @@ var Pagination = function () {
 	}, {
 		key: 'changeUrl',
 		value: function changeUrl(pageNumber) {
-			pageNumber = pageNumber || queryString()['page'];
-			window.history.replaceState('', '', this.updateURLParameter(window.location.href, 'page', pageNumber));
+			Url.change(this.settings.url_parameter, pageNumber, this.settings.separator);
 		}
 
 		/**
@@ -2967,55 +3071,6 @@ var Pagination = function () {
 					DOM.removeClass(this.pages[page], 'active');
 				}
 			}
-		}
-
-		/**
-   * Get the get variables from the url.
-   *
-   * @return array
-   */
-
-	}, {
-		key: 'queryString',
-		value: function queryString() {
-			var vars = {};
-			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-				vars[key] = value;
-			});
-
-			return vars;
-		}
-
-		/**
-   * Modifies the get parameter in the url.
-   *
-   * @param string | url
-   * @param string | param
-   * @param number | paramVal
-   * @return string
-   */
-
-	}, {
-		key: 'updateURLParameter',
-		value: function updateURLParameter(url, param, paramVal) {
-			var newAdditionalURL = "";
-			var tempArray = url.split("?");
-			var baseURL = tempArray[0];
-			var additionalURL = tempArray[1];
-			var temp = "";
-
-			if (additionalURL) {
-				tempArray = additionalURL.split("&");
-				for (var i = 0; i < tempArray.length; i++) {
-					if (tempArray[i].split('=')[0] != param) {
-						newAdditionalURL += temp + tempArray[i];
-						temp = "&";
-					}
-				}
-			}
-
-			var rowsText = temp + "" + param + "=" + paramVal;
-			return baseURL + "?" + newAdditionalURL + rowsText;
 		}
 
 		/**
