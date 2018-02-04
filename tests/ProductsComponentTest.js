@@ -132,4 +132,45 @@ describe('ProductsComponentTest', function() {
 			done();
 		});
 	}).timeout(5000);
+
+	it('should create default currency attribute if the developer did not supply one', function(done) {
+		let products = this.components.provide('Products');
+
+		products.setup({
+			url: host + '/server/products.php'
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		let request = products.loadPageProductsByServer(1);
+
+		request.then(function(items) {
+			let product = items[0];
+
+			assert.isOk(product.hasOwnProperty('currency'));
+			done();
+		});
+	}).timeout(5000);
+
+	it('should display currency on the product', function(done) {
+		let products = this.components.provide('Products');
+
+		products.setup({
+			url: host + '/server/products.php',
+			currency: '€'
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		let request = products.loadPageProductsByServer(1);
+
+		request.then(function(items) {
+			let product = items[0];
+			let productElement = DOM.find('.product')[0];
+			let currency = DOM.find('.product-currency', productElement);
+
+			assert.equal(currency.innerHTML, '€')
+			done();
+		});
+	}).timeout(5000);
 });

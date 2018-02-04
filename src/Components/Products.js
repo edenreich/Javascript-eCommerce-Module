@@ -28,6 +28,7 @@ let defaultSettings = {
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
 	no_css: false,
+	currency: '$',
 };
 
 /**
@@ -289,6 +290,11 @@ class Products
 
 		let builtProducts = [];
 
+		// Enter default attribute.
+		if (this.settings.attributes.indexOf('currency') == -1) {
+			this.settings.attributes.push('currency');
+		}
+		
 		attributesCollection.forEach(function(attributes) {
 			let builtProduct = this.buildProduct(attributes, className, tagType);
 			builtProducts.push(builtProduct);
@@ -325,22 +331,43 @@ class Products
 
 		product.appendChild(overlay);
 
+		attributes = this.addDefaultAttributes(attributes);
+
+		if (attributes.hasOwnProperty('image')) {
+			let image = DOM.createElement('img', {
+				src: attributes['image']
+			});
+			
+			let tag = DOM.createElement(tagType, {
+				class: 'product-image',
+				html: image
+			});
+			
+			product.appendChild(tag);
+			delete attributes['image'];
+		}
+
 		for (var attribute in attributes) {
 			if (! Common.in_array(attribute, this.settings.attributes)) {
 				continue;
 			}
 
-			let tag = DOM.createElement(tagType);
+			let tag;
 
-			if (attribute == 'image') {
-				let image = DOM.createElement('img', {
-					src: attributes[attribute]
+			if (typeof attributes[attribute] == 'object') {
+				tag = DOM.createElement(tagType);
+				let span = DOM.createElement('span', {
+					class: 'product-' + Str.kebabCase(Object.keys(attributes[attribute])[1])
 				});
-				product.appendChild(image);
+
+				tag.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[0]] || '';
+				span.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[1]];
+				tag.appendChild(span);
 			} else {
+				tag = DOM.createElement(tagType);
 				tag.innerHTML = attributes[attribute] || '';
 			}
-
+			
 			DOM.addClass(tag, 'product-' + Str.kebabCase(attribute));
 			overlay.appendChild(tag);
 		}
@@ -386,6 +413,25 @@ class Products
 		overlay.appendChild(tag);
 
 		return product;
+	}
+
+	/**
+	 * Adds default attributes
+	 * to the supplied attributes.
+	 *
+	 * @param object | attributes
+	 * @return object
+	 */
+	addDefaultAttributes(attributes)
+	{
+		if (this.settings.attributes.indexOf('price') != -1) {
+			attributes.price = {
+				"value": attributes.price,
+				"currency": this.settings.currency
+			};
+		}
+
+		return attributes;
 	}
 
 	/**
@@ -439,19 +485,12 @@ class Products
 				transition: 0.5s all;
 			}
 
-			.product > img {
+			.product > .product-image > img {
 				position: absolute;
 				left: 0;
 				top: 0;
 				width: 100%;
 				height: 100%;
-			}
-
-			.product > .product-image {
-				z-index: 0;
-				position: absolute;
-				top: 0;
-				left: 0;
 			}
 
 			.product > .product-overlay > .product-name, 

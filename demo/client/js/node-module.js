@@ -434,12 +434,17 @@ var DOM = function () {
 			}
 
 			for (var option in options) {
-				if (option == 'text') {
-					element.innerHTML = options[option];
-					continue;
+				switch (option) {
+					case 'text':
+						element.innerHTML = options[option];
+						break;
+					case 'html':
+						_typeof(options[option]) == 'object' ? element.appendChild(options[option]) : element.innerHTML = options[option];
+						break;
+					default:
+						element.setAttribute(option, options[option]);
+						break;
 				}
-
-				element.setAttribute(option, options[option]);
 			}
 
 			return element;
@@ -2131,7 +2136,8 @@ var defaultSettings$4 = {
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
-	no_css: false
+	no_css: false,
+	currency: '$'
 };
 
 /**
@@ -2414,6 +2420,11 @@ var Products = function () {
 
 			var builtProducts = [];
 
+			// Enter default attribute.
+			if (this.settings.attributes.indexOf('currency') == -1) {
+				this.settings.attributes.push('currency');
+			}
+
 			attributesCollection.forEach(function (attributes) {
 				var builtProduct = this.buildProduct(attributes, className, tagType);
 				builtProducts.push(builtProduct);
@@ -2452,24 +2463,45 @@ var Products = function () {
 
 			product.appendChild(overlay);
 
+			attributes = this.addDefaultAttributes(attributes);
+
+			if (attributes.hasOwnProperty('image')) {
+				var image = DOM.createElement('img', {
+					src: attributes['image']
+				});
+
+				var _tag = DOM.createElement(tagType, {
+					class: 'product-image',
+					html: image
+				});
+
+				product.appendChild(_tag);
+				delete attributes['image'];
+			}
+
 			for (var attribute in attributes) {
 				if (!Common.in_array(attribute, this.settings.attributes)) {
 					continue;
 				}
 
-				var _tag = DOM.createElement(tagType);
+				var _tag2 = void 0;
 
-				if (attribute == 'image') {
-					var image = DOM.createElement('img', {
-						src: attributes[attribute]
+				if (_typeof(attributes[attribute]) == 'object') {
+					_tag2 = DOM.createElement(tagType);
+					var span = DOM.createElement('span', {
+						class: 'product-' + Str.kebabCase(Object.keys(attributes[attribute])[1])
 					});
-					product.appendChild(image);
+
+					_tag2.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[0]] || '';
+					span.innerHTML = attributes[attribute][Object.keys(attributes[attribute])[1]];
+					_tag2.appendChild(span);
 				} else {
-					_tag.innerHTML = attributes[attribute] || '';
+					_tag2 = DOM.createElement(tagType);
+					_tag2.innerHTML = attributes[attribute] || '';
 				}
 
-				DOM.addClass(_tag, 'product-' + Str.kebabCase(attribute));
-				overlay.appendChild(_tag);
+				DOM.addClass(_tag2, 'product-' + Str.kebabCase(attribute));
+				overlay.appendChild(_tag2);
 			}
 
 			var tag = DOM.createElement('div', {
@@ -2516,6 +2548,27 @@ var Products = function () {
 		}
 
 		/**
+   * Adds default attributes
+   * to the supplied attributes.
+   *
+   * @param object | attributes
+   * @return object
+   */
+
+	}, {
+		key: 'addDefaultAttributes',
+		value: function addDefaultAttributes(attributes) {
+			if (this.settings.attributes.indexOf('price') != -1) {
+				attributes.price = {
+					"value": attributes.price,
+					"currency": this.settings.currency
+				};
+			}
+
+			return attributes;
+		}
+
+		/**
    * Add the eCommerce style tags to the DOM.
    */
 
@@ -2535,7 +2588,7 @@ var Products = function () {
 			var minWidth = this.settings.min_width || '200px';
 			var maxWidth = this.settings.max_width || '250px';
 
-			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-image {\n\t\t\t\tz-index: 0;\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > .favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
+			var css = '\n\t\t\t.product {\n\t\t\t\tposition: relative;\n\t\t\t\tmargin: 5px 5px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t\twidth: ' + width + ';\n\t\t\t\tmin-width: ' + minWidth + ';\n\t\t\t\tmax-width: ' + maxWidth + ';\n\t\t\t\theight: ' + height + ';\n\t\t\t\tcursor: pointer;\n\t\t\t\tcolor: #ffffff;\n\t\t\t\toverflow: hidden;\n\t\t\t}\n\n\t\t\t.product > .product-overlay {\n\t\t\t\tposition: absolute;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t\topacity: 0.5;\n\t\t\t\tz-index: 5;\n\t\t\t\ttransition: 1s all;\n\t\t\t\ttransform: translateX(-250px);\n\t\t\t}\n\n\t\t\t.product:hover > .product-overlay {\n\t\t\t\tbackground: rgba(0, 0, 0, 0.45);\n\t\t\t\ttransform: translateX(0px);\n\t\t\t\topacity: 1;\n\t\t\t\ttransition: 0.5s all;\n\t\t\t}\n\n\t\t\t.product > .product-image > img {\n\t\t\t\tposition: absolute;\n\t\t\t\tleft: 0;\n\t\t\t\ttop: 0;\n\t\t\t\twidth: 100%;\n\t\t\t\theight: 100%;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .product-name, \n\t\t\t.product > .product-overlay > .product-price,\n\t\t\t.product > .product-overlay > .product-delivery-time {\n\t\t\t\tz-index: 1;\n\t\t\t\tposition: relative;\n\t\t\t\ttext-align: center;\n\t\t\t\tmargin-top: 25px;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons {\n\t\t\t\twidth: 100%;\n\t\t\t\tmargin-top: 10px;\n\t\t\t\ttext-align: center;\n\t\t\t}\n\n\t\t\t.product > .product-overlay > .action-buttons > .favorite {\n\t\t\t\tmargin-left: 10px;\n\t\t\t}\n\n\t\t';
 
 			DOM.addStyle('Turbo-eCommerce-Products', css);
 		}
@@ -2629,7 +2682,6 @@ var Url = function () {
 
 			parameterValue = parameterValue || this.queryString()[parameterKey];
 			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
-			console.log(requestedUrl);
 			window.history.replaceState('', '', requestedUrl);
 		}
 

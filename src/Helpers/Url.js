@@ -53,7 +53,6 @@ class Url
 	{
 		parameterValue =  parameterValue || this.queryString()[parameterKey];
 		let requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
-		console.log(requestedUrl);
 		window.history.replaceState('', '', requestedUrl);
 	}
 
