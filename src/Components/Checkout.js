@@ -1,5 +1,6 @@
 
 // Helpers
+import Url from '../Helpers/Url.js';
 import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
@@ -68,6 +69,7 @@ class Checkout
 		EventManager = eventManager;
 		
 		EventManager.subscribe('cart.checkout', function() {	
+			this.changeUrl();
 			this.hideAll();
 			this.show();
 		}.bind(this));	
@@ -108,6 +110,16 @@ class Checkout
 		if (this.element) {
 			DOM.addClass(this.element, this.settings.class);
 		}
+	}
+
+	/**
+	 * Changes the url to be checkout
+	 *
+	 * @return void 
+	 */
+	changeUrl()
+	{
+		Url.change('checkout');
 	}
 
 	/**

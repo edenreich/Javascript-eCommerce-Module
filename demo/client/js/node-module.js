@@ -1975,6 +1975,107 @@ var Filter = function () {
 	return Filter;
 }();
 
+var Url = function () {
+	function Url() {
+		_classCallCheck(this, Url);
+	}
+
+	_createClass(Url, null, [{
+		key: 'processAjaxData',
+		value: function processAjaxData(selector, content, urlPath) {
+			var context = DOM.find(selector);
+
+			context.innerHTML = content;
+			var title = DOM.find('title', context);
+			document.title = title.innerHTML;
+			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
+
+			window.onpopstate = function (e) {
+				if (e.state) {
+					context.innerHTML = e.state.html;
+					document.title = e.state.pageTitle;
+				}
+			};
+		}
+
+		/**
+   * Modifies the get parameter in the url.
+   *
+   * @param string | url
+   * @param string | key
+   * @param number | value
+   * @param string | separator
+   * @return string
+   */
+
+	}, {
+		key: 'changeQueryParameterValue',
+		value: function changeQueryParameterValue(url, key, value) {
+			var separator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '=';
+
+			var regExp = new RegExp("([?&])" + key + separator + ".*?(&|$)", "i");
+			var pairSeparator = url.indexOf('?') !== -1 ? "&" : "?";
+
+			if (url.match(regExp)) {
+				return url.replace(regExp, '$1' + key + separator + value + '$2');
+			} else {
+				return url + pairSeparator + key + separator + value;
+			}
+		}
+
+		/**
+   * Changes the url to a given page number.
+   *
+   * @param string | parameterKey
+   * @param string | parameterValue
+   * @param string | separator
+   * @return void
+   */
+
+	}, {
+		key: 'changeParameter',
+		value: function changeParameter(parameterKey, parameterValue) {
+			var separator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '=';
+
+			parameterValue = parameterValue || this.queryString()[parameterKey];
+			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
+			window.history.replaceState('', '', requestedUrl);
+		}
+
+		/**
+   * Changes the url.
+   *
+   * @param string | url
+   * @return void
+   */
+
+	}, {
+		key: 'change',
+		value: function change(url) {
+			window.history.replaceState('', '', url);
+		}
+
+		/**
+   * Get the get variables from the url.
+   *
+   * @return array
+   */
+
+	}, {
+		key: 'queryString',
+		value: function queryString() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+				vars[key] = value;
+			});
+
+			return vars;
+		}
+	}]);
+
+	return Url;
+}();
+
 // Helpers
 // Exceptions
 /**
@@ -2037,6 +2138,7 @@ var Checkout = function () {
 		EventManager$3 = eventManager;
 
 		EventManager$3.subscribe('cart.checkout', function () {
+			this.changeUrl();
 			this.hideAll();
 			this.show();
 		}.bind(this));
@@ -2082,6 +2184,18 @@ var Checkout = function () {
 			if (this.element) {
 				DOM.addClass(this.element, this.settings.class);
 			}
+		}
+
+		/**
+   * Changes the url to be checkout
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'changeUrl',
+		value: function changeUrl() {
+			Url.change('checkout');
 		}
 
 		/**
@@ -2668,94 +2782,6 @@ var Services = function Services() {
 	_classCallCheck(this, Services);
 };
 
-var Url = function () {
-	function Url() {
-		_classCallCheck(this, Url);
-	}
-
-	_createClass(Url, null, [{
-		key: 'processAjaxData',
-		value: function processAjaxData(selector, content, urlPath) {
-			var context = DOM.find(selector);
-
-			context.innerHTML = content;
-			var title = DOM.find('title', context);
-			document.title = title.innerHTML;
-			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
-
-			window.onpopstate = function (e) {
-				if (e.state) {
-					context.innerHTML = e.state.html;
-					document.title = e.state.pageTitle;
-				}
-			};
-		}
-
-		/**
-   * Modifies the get parameter in the url.
-   *
-   * @param string | url
-   * @param string | key
-   * @param number | value
-   * @param string | separator
-   * @return string
-   */
-
-	}, {
-		key: 'changeQueryParameterValue',
-		value: function changeQueryParameterValue(url, key, value) {
-			var separator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '=';
-
-			var regExp = new RegExp("([?&])" + key + separator + ".*?(&|$)", "i");
-			var pairSeparator = url.indexOf('?') !== -1 ? "&" : "?";
-
-			if (url.match(regExp)) {
-				return url.replace(regExp, '$1' + key + separator + value + '$2');
-			} else {
-				return url + pairSeparator + key + separator + value;
-			}
-		}
-
-		/**
-   * Changes the url to a given page number.
-   *
-   * @param string | parameterKey
-   * @param string | parameterValue
-   * @param string | separator
-   * @return void
-   */
-
-	}, {
-		key: 'change',
-		value: function change(parameterKey, parameterValue) {
-			var separator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '=';
-
-			parameterValue = parameterValue || this.queryString()[parameterKey];
-			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
-			window.history.replaceState('', '', requestedUrl);
-		}
-
-		/**
-   * Get the get variables from the url.
-   *
-   * @return array
-   */
-
-	}, {
-		key: 'queryString',
-		value: function queryString() {
-			var vars = {};
-			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-				vars[key] = value;
-			});
-
-			return vars;
-		}
-	}]);
-
-	return Url;
-}();
-
 var defaultMessage$4 = 'Sorry, no more pages.';
 
 var NotInPageRangeException = function (_ExceptionHandler5) {
@@ -3156,7 +3182,7 @@ var Pagination = function () {
 	}, {
 		key: 'changeUrl',
 		value: function changeUrl(pageNumber) {
-			Url.change(this.settings.url_parameter, pageNumber, this.settings.separator);
+			Url.changeParameter(this.settings.url_parameter, pageNumber, this.settings.separator);
 		}
 
 		/**

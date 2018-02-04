@@ -352,7 +352,7 @@ class Pagination
 	 */
 	changeUrl(pageNumber) 
 	{
-		Url.change(this.settings.url_parameter, pageNumber, this.settings.separator);
+		Url.changeParameter(this.settings.url_parameter, pageNumber, this.settings.separator);
 	}
 
 	/**

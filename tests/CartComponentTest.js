@@ -25,7 +25,7 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
 
@@ -256,7 +256,7 @@ describe.only('CartComponentTest', function() {
 		});
 	});
 
-	it('give the possiblity to click checkout inside the cart preview', function(done) {
+	it.only('give the possiblity to click checkout inside the cart preview', function(done) {
 		let cart = this.components.provide('Cart');
 		let products = this.components.provide('Products');
 
@@ -287,7 +287,7 @@ describe.only('CartComponentTest', function() {
 				
 				let tableCells = lastItem.children;
 			
-				assert.lengthOf(tableCells, 1);
+				assert.isAbove(tableCells.length, 1);
 
 				let td = tableCells[0];
 				
@@ -301,7 +301,7 @@ describe.only('CartComponentTest', function() {
 		});
 	}).timeout(10000);
 
-	it.only('should show to total sum on the cart preview', function(done) {
+	it('should show to total sum on the cart preview', function(done) {
 		let cart = this.components.provide('Cart');
 		let products = this.components.provide('Products');
 

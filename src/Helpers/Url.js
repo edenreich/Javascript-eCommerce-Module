@@ -49,11 +49,22 @@ class Url
 	 * @param string | separator
 	 * @return void
 	 */
-	static change(parameterKey, parameterValue, separator = '=')
+	static changeParameter(parameterKey, parameterValue, separator = '=')
 	{
 		parameterValue =  parameterValue || this.queryString()[parameterKey];
 		let requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
 		window.history.replaceState('', '', requestedUrl);
+	}
+
+	/**
+	 * Changes the url.
+	 *
+	 * @param string | url
+	 * @return void
+	 */
+	static change(url)
+	{
+		window.history.replaceState('', '', url);
 	}
 
 	/**
