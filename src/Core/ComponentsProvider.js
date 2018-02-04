@@ -76,7 +76,9 @@ class ComponentsProvider
 		}, 'components');
 
 		this.container.bind('Pagination', function(container, component) {
-			instance.components[component] = new Pagination(container, instance.provide('Products'), container.Events);
+			let products = (instance.exists('Products')) ? (instance.components['Products']) : null; 
+			let services = (instance.exists('Services')) ? (instance.components['Services']) : null; 
+			instance.components[component] = new Pagination(container, container.Events, products, services);
 			instance.components[component].booted = true;
 			instance.booted.push(instance.components[component]);
 			return instance.components[component];

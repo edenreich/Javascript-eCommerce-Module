@@ -111,19 +111,22 @@ class Products
 	loadProducts(pageNumber = 1)
 	{
 		if (Container.Pagination && Container.Pagination.booted) {
-			switch(Container.Pagination.settings.proccessing) 
+			
+			let limit = Container.Pagination.settings.per_page;
+
+			switch(Container.Pagination.settings.processing) 
 			{
 				case 'client-side':
-					return this.loadPageProductsByClient(pageNumber);
+					return this.loadPageProductsOnce(pageNumber, limit);
 					break;
 				case 'server-side':
-					return this.loadPageProductsByServer(pageNumber);
+					return this.loadPageProducts(pageNumber, limit);
 					break;
 				default:
-					throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
+					throw new InvalidArgumentException('for processing you can choose \'server-side\' or \'client-side\' options.');
 			}
 		} else {
-			this.loadPageProductsByServer();
+			this.loadPageProducts();
 		}
 	}
 
@@ -132,26 +135,24 @@ class Products
 	 * replace them in the div container.
 	 *
 	 * @param number | pageNumber
+	 * @param number | limit
 	 * @return void
 	 */
-	loadPageProductsByServer(pageNumber = null)
+	loadPageProducts(pageNumber = null, limit = null)
 	{
 		let request = this.getProducts(pageNumber);
 
 		request.then(function(products) {
-
-			this.currentItems = products;
-
-			for (var i = 0; i < this.currentItems.length; i++) {
-				var product = this.currentItems[i];
-				EventManager.publish('products.loading', product);
+			if (limit) {
+				this.currentItems = products.slice(0, limit);
+			} else {
+				this.currentItems = products;
 			}
 
-			EventManager.publish('products.loaded', products);
-			this.replaceItems(products);
-			resolve();
+			this.replaceProducts(this.currentItems);
+			Promise.resolve(this.currentItems);
 		}.bind(this)).catch(function(error) {
-
+			// throw new Error('Could not load products! Reason: ' + error);
 		});
 
 		return request;
@@ -163,7 +164,7 @@ class Products
 	 *
 	 * @return void
 	 */
-	loadPageProductsByClient(pageNumber)
+	loadPageProductsOnce(pageNumber)
 	{
 		let request;
 
@@ -175,22 +176,12 @@ class Products
 
 		request.then(function(products) {
 			this.totalItems = products;
-
 			let pages = this.calculateClientPages(products);
-
 			this.currentItems = pages[pageNumber-1];
-
-			for (var i = 0; i < this.currentItems.length; i++) {
-				var product = this.currentItems[i];
-				EventManager.publish('products.loading', product);
-			}
-
-			EventManager.publish('products.loaded', products);
-			this.replaceItems(this.currentItems);
+			this.replaceProducts(this.currentItems);
 			Promise.resolve(this.currentItems);
-
 		}.bind(this)).catch(function(error) {
-
+			// throw new Error('Could not load products! Reason: ' + error);
 		});
 
 		return request;
@@ -236,26 +227,29 @@ class Products
 	}
 
 	/**
-	 * Replace items in 
+	 * Replace products in 
 	 * the products container.
 	 *
-	 * @param array | items
+	 * @param array | rawProducts
 	 * @return array
 	 */
-	replaceItems(items) 
+	replaceProducts(rawProducts) 
 	{
-		if (! Array.isArray(items) || (items.length <= 0 && typeof items[0] == 'string')) {
+		if (! Array.isArray(rawProducts) || (rawProducts.length <= 0 && typeof rawProducts[0] == 'string')) {
 			throw new InvalidArgumentException;
 		}
 
-		let products = this.buildProducts(items, this.settings.item_class, 'div');
+		let products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
 		this.element.innerHTML = '';
 		products.forEach(function(product) {
+			EventManager.publish('products.loading', product);
 			this.element.appendChild(product);
 		}.bind(this));
 
-		return items;
+		EventManager.publish('products.loaded', products);
+
+		return products;
 	}
 
 	/**

@@ -19,8 +19,8 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  * @var object
  */
 let defaultSettings = {
-	element: '.pagination',
-	proccessing: 'client-side',
+	element: '.pagination-links',
+	processing: 'client-side',
 	class: '',
 	per_page: 5,
 	total_items: 5,
@@ -57,9 +57,10 @@ class Pagination
 	 *
 	 * @param \Core\Container | container
 	 * @param \Components\Products | products
+	 * @param \Components\Services | services
 	 * @return void
 	 */
-	constructor(container, products, events) 
+	constructor(container, events, products = null, services = null) 
 	{
 		Container = container;
 		Products = products;
@@ -83,13 +84,6 @@ class Pagination
 
 		document.addEventListener('DOMContentLoaded', function() {		
 			this.setElement(this.settings.element);
-
-			// Listen to when products are being loaded and update the pagination
-			// with the actual items count.
-			EventManager.subscribe('products.loaded', function(products) {
-				this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
-				this.buildPagination();
-			}.bind(this));
 
 			// As a fallback choose the user's settings for the total items count.
 			this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
@@ -168,9 +162,11 @@ class Pagination
 				throw new NotInPageRangeException('The page you requesting does not exists');
 			}
 
-			Products.loadProducts(requestedPage).then(function(products) {
-				instance.setCurrent(requestedPage);
-			});
+			if (Products && Products.booted) {
+				Products.loadProducts(requestedPage).then(function(products) {
+					instance.setCurrent(requestedPage);
+				});
+			}
 		};
 
 		this.previous.childNodes[0].onclick = function(e) {
@@ -182,9 +178,11 @@ class Pagination
 				throw new NotInPageRangeException('The page you requesting does not exists');
 			}
 			
-			Products.loadProducts(requestedPage).then(function(products) {
-				instance.setCurrent(requestedPage);
-			});
+			if (Products && Products.booted) {
+				Products.loadProducts(requestedPage).then(function(products) {
+					instance.setCurrent(requestedPage);
+				});
+			}
 		};
 
 		for(var i = 0; i < this.pages.length; i++) {
@@ -193,9 +191,11 @@ class Pagination
 				
 				let requestedPage = this.getAttribute('data-page-nr');
 				
-				Products.loadProducts(requestedPage).then(function(products) {
-					instance.setCurrent(requestedPage);
-				});
+				if (Products && Products.booted) {
+					Products.loadProducts(requestedPage).then(function(products) {
+						instance.setCurrent(requestedPage);
+					});
+				}
 			};
 		}
 	}

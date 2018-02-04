@@ -24,6 +24,7 @@ import DomEvents from './Helpers/DomEvents.js';
 describe('ProductsComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
+	const testEndPoint = 'server/products.php';
 
 	beforeEach(function(done) {	
 		global.window = new Window;
@@ -64,12 +65,12 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 
-		let productNodeElements = DOM.find('.product');
+		let productElements = DOM.find('.product');
 
-		assert.lengthOf(productNodeElements, 3);
-		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
+		assert.lengthOf(productElements, 3);
+		assert.isNotNull(DOM.find('.product-name', productElements[0]));
 		done();
 	});
 
@@ -80,7 +81,7 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 		
 		let buttons = DOM.find('.action-buttons')[0];
 		let favoriteButton = DOM.find('.favorite', buttons);
@@ -101,7 +102,7 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 
 		let productElements = DOM.find('.product');
 		let buttons = DOM.find('.action-buttons', productElements[0]);
@@ -122,7 +123,7 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		let request = products.loadPageProductsByServer(1);
+		let request = products.loadPageProducts(1);
 
 		request.then(function(items) {
 			assert.lengthOf(items, 5);
@@ -137,35 +138,36 @@ describe('ProductsComponentTest', function() {
 		let products = this.components.provide('Products');
 
 		products.setup({
-			url: host + '/server/products.php'
+			element: ".products",
+			url: host + '/' + testEndPoint,
+			currency: "€"
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		let request = products.loadPageProductsByServer(1);
-
-		request.then(function(items) {
-			let product = items[0];
-
-			assert.isOk(product.hasOwnProperty('currency'));
+		setTimeout(function() {
+			let product = DOM.find('.product')[0];
+			let productCurrencyElement = DOM.find('.product-currency', product);
+			assert.isNotNull(productCurrencyElement);
 			done();
-		});
+		}, 2000);
+
 	}).timeout(5000);
 
 	it('should display currency on the product', function(done) {
 		let products = this.components.provide('Products');
 
 		products.setup({
-			url: host + '/server/products.php',
+			url: host + '/' + testEndPoint,
 			currency: '€'
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		let request = products.loadPageProductsByServer(1);
+		let request = products.loadPageProducts(1);
 
-		request.then(function(items) {
-			let product = items[0];
+		request.then(function(products) {
+			let product = products[0];
 			let productElement = DOM.find('.product')[0];
 			let currency = DOM.find('.product-currency', productElement);
 

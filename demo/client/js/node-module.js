@@ -1426,8 +1426,15 @@ var Cart = function () {
 
 							_td.appendChild(image);
 							break;
-						case 'name':
 						case 'price':
+							_td = DOM.createElement('td');
+							var span = DOM.createElement('span', {
+								html: '&nbsp' + attributes[attribute].currency
+							});
+							_td.innerHTML = attributes[attribute].amount;
+							_td.appendChild(span);
+							break;
+						case 'name':
 							_td = DOM.createElement('td');
 							_td.innerHTML = attributes[attribute];
 							break;
@@ -2225,18 +2232,21 @@ var Products = function () {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
 			if (Container$3.Pagination && Container$3.Pagination.booted) {
-				switch (Container$3.Pagination.settings.proccessing) {
+
+				var limit = Container$3.Pagination.settings.per_page;
+
+				switch (Container$3.Pagination.settings.processing) {
 					case 'client-side':
-						return this.loadPageProductsByClient(pageNumber);
+						return this.loadPageProductsOnce(pageNumber, limit);
 						break;
 					case 'server-side':
-						return this.loadPageProductsByServer(pageNumber);
+						return this.loadPageProducts(pageNumber, limit);
 						break;
 					default:
-						throw new InvalidArgumentException$1('for proccessing you can choose \'server-side\' or \'client-side\' options.');
+						throw new InvalidArgumentException$1('for processing you can choose \'server-side\' or \'client-side\' options.');
 				}
 			} else {
-				this.loadPageProductsByServer();
+				this.loadPageProducts();
 			}
 		}
 
@@ -2245,29 +2255,30 @@ var Products = function () {
    * replace them in the div container.
    *
    * @param number | pageNumber
+   * @param number | limit
    * @return void
    */
 
 	}, {
-		key: 'loadPageProductsByServer',
-		value: function loadPageProductsByServer() {
+		key: 'loadPageProducts',
+		value: function loadPageProducts() {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+			var limit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
 			var request = this.getProducts(pageNumber);
 
 			request.then(function (products) {
-
-				this.currentItems = products;
-
-				for (var i = 0; i < this.currentItems.length; i++) {
-					var product = this.currentItems[i];
-					EventManager$4.publish('products.loading', product);
+				if (limit) {
+					this.currentItems = products.slice(0, limit);
+				} else {
+					this.currentItems = products;
 				}
 
-				EventManager$4.publish('products.loaded', products);
-				this.replaceItems(products);
-				resolve();
-			}.bind(this)).catch(function (error) {});
+				this.replaceProducts(this.currentItems);
+				Promise.resolve(this.currentItems);
+			}.bind(this)).catch(function (error) {
+				// throw new Error('Could not load products! Reason: ' + error);
+			});
 
 			return request;
 		}
@@ -2280,8 +2291,8 @@ var Products = function () {
    */
 
 	}, {
-		key: 'loadPageProductsByClient',
-		value: function loadPageProductsByClient(pageNumber) {
+		key: 'loadPageProductsOnce',
+		value: function loadPageProductsOnce(pageNumber) {
 			var request = void 0;
 
 			if (this.totalItems == null) {
@@ -2294,20 +2305,13 @@ var Products = function () {
 
 			request.then(function (products) {
 				this.totalItems = products;
-
 				var pages = this.calculateClientPages(products);
-
 				this.currentItems = pages[pageNumber - 1];
-
-				for (var i = 0; i < this.currentItems.length; i++) {
-					var product = this.currentItems[i];
-					EventManager$4.publish('products.loading', product);
-				}
-
-				EventManager$4.publish('products.loaded', products);
-				this.replaceItems(this.currentItems);
+				this.replaceProducts(this.currentItems);
 				Promise.resolve(this.currentItems);
-			}.bind(this)).catch(function (error) {});
+			}.bind(this)).catch(function (error) {
+				// throw new Error('Could not load products! Reason: ' + error);
+			});
 
 			return request;
 		}
@@ -2356,28 +2360,31 @@ var Products = function () {
 		}
 
 		/**
-   * Replace items in 
+   * Replace products in 
    * the products container.
    *
-   * @param array | items
+   * @param array | rawProducts
    * @return array
    */
 
 	}, {
-		key: 'replaceItems',
-		value: function replaceItems(items) {
-			if (!Array.isArray(items) || items.length <= 0 && typeof items[0] == 'string') {
+		key: 'replaceProducts',
+		value: function replaceProducts(rawProducts) {
+			if (!Array.isArray(rawProducts) || rawProducts.length <= 0 && typeof rawProducts[0] == 'string') {
 				throw new InvalidArgumentException$1();
 			}
 
-			var products = this.buildProducts(items, this.settings.item_class, 'div');
+			var products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
 			this.element.innerHTML = '';
 			products.forEach(function (product) {
+				EventManager$4.publish('products.loading', product);
 				this.element.appendChild(product);
 			}.bind(this));
 
-			return items;
+			EventManager$4.publish('products.loaded', products);
+
+			return products;
 		}
 
 		/**
@@ -2744,8 +2751,8 @@ var NotInPageRangeException = function (_ExceptionHandler5) {
 
 
 var defaultSettings$5 = {
-	element: '.pagination',
-	proccessing: 'client-side',
+	element: '.pagination-links',
+	processing: 'client-side',
 	class: '',
 	per_page: 5,
 	total_items: 5,
@@ -2781,9 +2788,13 @@ var Pagination = function () {
   *
   * @param \Core\Container | container
   * @param \Components\Products | products
+  * @param \Components\Services | services
   * @return void
   */
-	function Pagination(container, products, events) {
+	function Pagination(container, events) {
+		var products = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+		var services = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
 		_classCallCheck(this, Pagination);
 
 		Container$4 = container;
@@ -2811,13 +2822,6 @@ var Pagination = function () {
 
 			document.addEventListener('DOMContentLoaded', function () {
 				this.setElement(this.settings.element);
-
-				// Listen to when products are being loaded and update the pagination
-				// with the actual items count.
-				EventManager$5.subscribe('products.loaded', function (products) {
-					this.totalPages = this.calculateTotalPages(this.settings.per_page, products.length);
-					this.buildPagination();
-				}.bind(this));
 
 				// As a fallback choose the user's settings for the total items count.
 				this.totalPages = this.calculateTotalPages(this.settings.per_page, this.settings.total_items);
@@ -2906,9 +2910,11 @@ var Pagination = function () {
 					throw new NotInPageRangeException('The page you requesting does not exists');
 				}
 
-				Products$2.loadProducts(requestedPage).then(function (products) {
-					instance.setCurrent(requestedPage);
-				});
+				if (Products$2 && Products$2.booted) {
+					Products$2.loadProducts(requestedPage).then(function (products) {
+						instance.setCurrent(requestedPage);
+					});
+				}
 			};
 
 			this.previous.childNodes[0].onclick = function (e) {
@@ -2920,9 +2926,11 @@ var Pagination = function () {
 					throw new NotInPageRangeException('The page you requesting does not exists');
 				}
 
-				Products$2.loadProducts(requestedPage).then(function (products) {
-					instance.setCurrent(requestedPage);
-				});
+				if (Products$2 && Products$2.booted) {
+					Products$2.loadProducts(requestedPage).then(function (products) {
+						instance.setCurrent(requestedPage);
+					});
+				}
 			};
 
 			for (var i = 0; i < this.pages.length; i++) {
@@ -2931,9 +2939,11 @@ var Pagination = function () {
 
 					var requestedPage = this.getAttribute('data-page-nr');
 
-					Products$2.loadProducts(requestedPage).then(function (products) {
-						instance.setCurrent(requestedPage);
-					});
+					if (Products$2 && Products$2.booted) {
+						Products$2.loadProducts(requestedPage).then(function (products) {
+							instance.setCurrent(requestedPage);
+						});
+					}
 				};
 			}
 		}
@@ -3248,7 +3258,9 @@ var ComponentsProvider = function () {
 			}, 'components');
 
 			this.container.bind('Pagination', function (container, component) {
-				instance.components[component] = new Pagination(container, instance.provide('Products'), container.Events);
+				var products = instance.exists('Products') ? instance.components['Products'] : null;
+				var services = instance.exists('Services') ? instance.components['Services'] : null;
+				instance.components[component] = new Pagination(container, container.Events, products, services);
 				instance.components[component].booted = true;
 				instance.booted.push(instance.components[component]);
 				return instance.components[component];

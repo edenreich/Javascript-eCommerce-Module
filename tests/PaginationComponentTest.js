@@ -21,6 +21,7 @@ import Request from '../src/Helpers/Request.js';
 describe('PaginationComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
+	const testEndPoint = 'server/products.php';
 
 	beforeEach(function() {	
 		global.window = new Window();
@@ -46,54 +47,42 @@ describe('PaginationComponentTest', function() {
 	});
 
 	it('should set the amount of items per page according to the settings', function(done) {
+
 		this.Pagination.setup({
-			element: '.pagination-links',
-			class: 'col-xs-offset-4 col-xs-8',
+			element: ".pagination-links",
 			per_page: 2,
-			total_items: 5,
-			processing: 'client-side',
-		});
-
-
-		setTimeout(function() {
-			let links = DOM.find('li.page-item');
-	
-			assert.lengthOf(links, 5); // including next and prev buttons
-			done();
-		}, 5000);
-	}).timeout(15000);
-
-	it('should show the links corresponding to the amount of products and ignoring the users total_items', function(done) {
-		this.Products.setup({
-			element: '.products',
-			class: 'col-xs-12 col-md-8',
-			item_class: 'col-xs-12 col-md-4',
-			add_button_class: 'btn btn-primary',
-			favorite_button_class: 'btn btn-danger',
-			min_width: '200px',
-			max_width: '300px',
-			height: '280px',
-			attributes: ['image', 'name', 'price', 'deliveryTime'],
-			url: host + '/server/products.php'
-		});
-
-		// Create pagin
-		this.Pagination.setup({
-			element: '.pagination-links',
-			class: 'col-xs-offset-4 col-xs-8',
-			per_page: 5,
 			total_items: 5
 		});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
 		setTimeout(function() {
-
 			let links = DOM.find('li.page-item');
-			
-			// 30 records / 5 = 6 // including the next and prev buttons should give 8
-			assert.lengthOf(links, 8); 
+			assert.lengthOf(links, 5); // including next and prev buttons
 			done();
-		}, 5000);
-	}).timeout(15000);
+		}, 2000);
+	}).timeout(5000);
+
+	it('should display only the amount of products that is set in per_page', function(done) {
+		
+		this.Products.setup({
+			element: ".products",
+			url: host + '/' + testEndPoint,
+		});
+
+		this.Pagination.setup({
+			element: ".pagination-links",
+			per_page: 2,
+			total_items: 5,
+			processing: "server-side",
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		setTimeout(function() {
+			let products = DOM.find('.product');
+			assert.lengthOf(products, 2);
+			done();
+		}, 3000);
+	}).timeout(5000);
 });

@@ -42,18 +42,17 @@
 			attributes: ['image', 'name', 'price', 'deliveryTime'],
 			url: '../server/products.php',
 			no_css: false,
-			currency: '€'
+			currency: ' €'
 		});
-
+		
 		shop.Pagination.setup({
 			element: '.pagination-links',
 			class: 'col-xs-offset-2 col-xs-10 col-md-offset-4 col-md-8',
 			per_page: 5,
-			total_items: 5,
-			proccessing: 'client-side',
+			total_items: 15,
+			processing: 'client-side',
 			separator: '#',
 			url_parameter: 'page',
-
 		});
 
 		shop.Events.subscribe('products.loading', function(product) {

@@ -293,8 +293,15 @@ class Cart
 
 						td.appendChild(image);
 						break;
-					case 'name':
 					case 'price':
+						td = DOM.createElement('td');
+						let span = DOM.createElement('span', {
+							html: '&nbsp' + attributes[attribute].currency
+						});
+						td.innerHTML = attributes[attribute].amount;
+						td.appendChild(span);
+						break;
+					case 'name':
 						td = DOM.createElement('td');
 						td.innerHTML = attributes[attribute];
 						break;
