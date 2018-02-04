@@ -1446,10 +1446,10 @@ var Cart = function () {
 				table.appendChild(_tr);
 			}
 
-			// create checkout button at the buttom
+			// create checkout button at the bottom of the preview
 			var tr = DOM.createElement('tr');
 			var td = DOM.createElement('td', {
-				colspan: '4'
+				colspan: '3'
 			});
 
 			var checkout = DOM.createElement('a', {
@@ -1465,9 +1465,44 @@ var Cart = function () {
 			td.appendChild(checkout);
 			tr.appendChild(td);
 
+			// create total sum at the bottom of the preview
+			td = DOM.createElement('td', {
+				colspan: '1'
+			});
+
+			var total = DOM.createElement('div', {
+				class: 'cart-total',
+				text: this.total()
+			});
+
+			td.appendChild(total);
+			tr.appendChild(td);
+
 			table.appendChild(tr);
 
 			itemsDiv.appendChild(table);
+		}
+
+		/**
+   * Calculates the total of the cart
+   * and retrieve it.
+   *
+   * @return number 
+   */
+
+	}, {
+		key: 'total',
+		value: function total() {
+			this.cart = Cookie.get(this.settings.cookie_name);
+
+			var total = 0.00;
+			var i = void 0;
+
+			for (i = 0; i < this.cart.items.length; i++) {
+				total += parseFloat(this.cart.items[i].price.amount) * this.cart.items[i].quantity;
+			}
+
+			return total.toFixed(2);
 		}
 
 		/**
@@ -2485,15 +2520,21 @@ var Products = function () {
 
 			if (attributes.hasOwnProperty('price')) {
 				var _tag2 = DOM.createElement(tagType, {
-					class: 'product-price',
-					text: attributes.price.amount
+					class: 'product-price'
 				});
+
 				var span = DOM.createElement('span', {
+					class: 'product-amount',
+					html: attributes.price.amount
+				});
+
+				var span2 = DOM.createElement('span', {
 					class: 'product-currency',
 					html: attributes.price.currency
 				});
 
 				_tag2.appendChild(span);
+				_tag2.appendChild(span2);
 				overlay.appendChild(_tag2);
 			}
 

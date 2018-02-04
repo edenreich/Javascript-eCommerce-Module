@@ -313,10 +313,10 @@ class Cart
 			table.appendChild(tr);
 		}
 
-		// create checkout button at the buttom
+		// create checkout button at the bottom of the preview
 		let tr = DOM.createElement('tr');
 		let td = DOM.createElement('td', {
-			colspan: '4',
+			colspan: '3',
 		});
 
 		let checkout = DOM.createElement('a', {
@@ -329,12 +329,45 @@ class Cart
 			EventManager.publish('cart.checkout');
 		}.bind(this);
 
-		td.appendChild( checkout);
+		td.appendChild(checkout);
+		tr.appendChild(td);
+
+		// create total sum at the bottom of the preview
+		td = DOM.createElement('td', {
+			colspan: '1',
+		});
+
+		let total = DOM.createElement('div', {
+			class: 'cart-total',
+			text: this.total()
+		});
+
+		td.appendChild(total);
 		tr.appendChild(td);
 
 		table.appendChild(tr);
 
 		itemsDiv.appendChild(table);
+	}
+
+	/**
+	 * Calculates the total of the cart
+	 * and retrieve it.
+	 *
+	 * @return number 
+	 */
+	total()
+	{
+ 		this.cart = Cookie.get(this.settings.cookie_name);
+
+ 		var total = 0.00;
+ 		let i;
+
+ 		for (i = 0; i < this.cart.items.length; i++) {
+ 			total += parseFloat(this.cart.items[i].price.amount) * this.cart.items[i].quantity;
+ 		}
+
+ 		return total.toFixed(2);
 	}
 
 	/**

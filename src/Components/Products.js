@@ -343,14 +343,20 @@ class Products
 		if (attributes.hasOwnProperty('price')) {
 			let tag = DOM.createElement(tagType, {
 				class: 'product-price',
-				text: attributes.price.amount
 			});
+
 			let span = DOM.createElement('span', {
+				class: 'product-amount',
+				html: attributes.price.amount
+			});
+
+			let span2 = DOM.createElement('span', {
 				class: 'product-currency',
 				html: attributes.price.currency
 			});
 
 			tag.appendChild(span);
+			tag.appendChild(span2);
 			overlay.appendChild(tag);
 		}
 

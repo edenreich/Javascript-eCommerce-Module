@@ -25,7 +25,7 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe('CartComponentTest', function() {
+describe.only('CartComponentTest', function() {
 
 	const host = 'http://dev.turbo-ecommerce.com';
 
@@ -300,6 +300,51 @@ describe('CartComponentTest', function() {
 			});
 		});
 	}).timeout(10000);
+
+	it.only('should show to total sum on the cart preview', function(done) {
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
+
+		cart.setup({
+			element: ".cart-icon",
+			cookie_name: "cart",
+		});
+
+		products.setup({
+			element: ".products",
+			url: host + '/' + productsEndPoint,
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		waitFor(1, function() {
+			let productElements = DOM.find('.product');
+			let addToCartFirst = DOM.find('.add-to-cart', productElements[0]);
+			let addToCartSecond = DOM.find('.add-to-cart', productElements[1]);
+			let priceFirst = parseFloat(DOM.find('.product-amount', productElements[0]).innerHTML);
+			let priceSecond = parseFloat(DOM.find('.product-amount', productElements[1]).innerHTML);
+					
+			addToCartFirst.click();
+			addToCartSecond.click();
+
+			waitFor(3, function() {
+				let previewTable = DOM.find('.preview-table');
+				let previewTableItems = DOM.find('tr', previewTable);
+				let lastItem = previewTableItems[previewTableItems.length-1];
+
+				let tableCells = lastItem.children;
+				
+				assert.lengthOf(tableCells, 2);
+
+				let td = tableCells[1];
+
+				if (td.children) {
+					assert.equal(td.children[0].innerHTML, priceFirst + priceSecond);
+					done();
+				}
+			});
+		});
+	}).timeout(5000);
 
 	/**
 	 * Simple helper, for async operations.
