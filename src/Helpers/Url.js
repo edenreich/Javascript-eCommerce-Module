@@ -64,7 +64,16 @@ class Url
 	 */
 	static change(url)
 	{
-		window.history.replaceState('', '', url);
+		if (url.charAt(0) != '/') {
+			url = '/' + url;
+		}
+
+		if (url == '/') {
+			url = '/home';
+		}
+		
+		window.history.pushState('', '', url);
+		
 	}
 
 	/**
@@ -80,6 +89,17 @@ class Url
 		});
 
 		return vars;
+	}
+
+	/**
+	 * Checks if a given url have parameters.
+	 *
+	 * @param string | url
+	 * @return bool
+	 */
+	static hasParameters(url)
+	{
+		return url.indexOf('?') >= 0;
 	}
 
 

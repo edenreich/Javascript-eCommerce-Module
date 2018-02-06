@@ -256,7 +256,7 @@ describe('CartComponentTest', function() {
 		});
 	});
 
-	it.only('give the possiblity to click checkout inside the cart preview', function(done) {
+	it('give the possiblity to click checkout inside the cart preview', function(done) {
 		let cart = this.components.provide('Cart');
 		let products = this.components.provide('Products');
 

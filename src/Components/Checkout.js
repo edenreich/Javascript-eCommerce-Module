@@ -6,16 +6,12 @@ import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
 
+// Components
+import BaseComponent from './BaseComponent.js';
+
 // Exceptions
 import InvalidCartItemException from '../Exceptions/InvalidCartItemException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
-
-/**
- * @file 
- * Cart class.
- *
- * Handles adding, removing etc... of items.
- */
 
 /**
  * The default settings of the cart.
@@ -48,8 +44,14 @@ let EventManager;
  */
 let Http;
 
+/**
+ * @class Checkout
+ *
+ * Handles the checkout process.
+ * payments validation, cart validation etc..
+ */
 
-class Checkout 
+class Checkout extends BaseComponent
 {
 	/**
 	 * - Initialize the IoC container
@@ -64,15 +66,11 @@ class Checkout
 	 */
 	constructor(container, http, eventManager) 
 	{
+		super();
+
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
-		
-		EventManager.subscribe('cart.checkout', function() {	
-			this.changeUrl();
-			this.hideAll();
-			this.show();
-		}.bind(this));	
 	}
 
 	/**
@@ -93,7 +91,7 @@ class Checkout
 
 			this.setElement(this.settings.element);
 			this.hide();
-			this.addStyleTag();
+			this.draw();
 		}.bind(this));
 	}
 
@@ -127,7 +125,7 @@ class Checkout
 	 *
 	 * @return void
 	 */
-	addStyleTag() 
+	draw() 
 	{
 		if (DOM.find('#Turbo-eCommerce-Checkout')) {
 			return;
@@ -162,26 +160,6 @@ class Checkout
 				component.hide();
 			}
 		});
-	}
-
-	/**
-	 * Hides the component from the DOM.
-	 *
-	 * @return void 
-	 */
-	hide()
-	{
-		this.element.style.display = 'none';
-	}
-
-	/**
-	 * Shows the element on the DOM.
-	 *
-	 * @return void 
-	 */
-	show()
-	{
-		this.element.style.display = 'block';
 	}
 }
 

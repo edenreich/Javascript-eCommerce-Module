@@ -21,7 +21,8 @@ let defaultSettings = {
 	element: 'body',
 	inject_libraries: [],
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart'],
-	loading_animation: true
+	loading_animation: true,
+	hash_navigation: false,
 };
 
 /**
@@ -67,6 +68,8 @@ class TurboEcommerce
 
 		document.addEventListener('DOMContentLoaded', function() {
 			this.setElement(this.settings.element);
+
+			this.container.Router.entry();
 
 			if (this.settings.loading_animation) {
 				startLoading.call(this);

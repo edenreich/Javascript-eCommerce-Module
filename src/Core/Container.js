@@ -4,6 +4,7 @@ import Common from '../Helpers/Common.js';
 import Request from '../Helpers/Request.js';
 
 // Core
+import Router from './Router.js';
 import EventManager from './EventManager.js';
 import ComponentsProvider from './ComponentsProvider.js';
 
@@ -31,6 +32,7 @@ class Container
 		this.instances = [];
 		this.register();
 		this.registerProviders();
+		this.registerRouter();
 	}
 
 	/**
@@ -185,6 +187,11 @@ class Container
 	registerProviders()
 	{
 		this.setInstance('Components', new ComponentsProvider(this));
+	}
+
+	registerRouter()
+	{
+		this.setInstance('Router', new Router(this));
 	}
 }
 

@@ -1,7 +1,11 @@
+
+// Components
+import BaseComponent from './BaseComponent.js';
+
 /**
  * The Services Object, handles the services.
  */
-class Services 
+class Services extends BaseComponent 
 {
 
 }

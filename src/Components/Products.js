@@ -1,16 +1,14 @@
 
+// Helpers
 import DOM from '../Helpers/DOM.js';
-import Common from '../Helpers/Common.js';
 import Str from '../Helpers/Str.js';
+import Common from '../Helpers/Common.js';
+
+// Components
+import BaseComponent from './BaseComponent.js';
+
+// Exceptions
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
-
-/**
- * @file 
- * Products class.
- *
- * The Products component, handles the products tasks.
- */
-
 
 /**
  * The default settings of each product.
@@ -60,7 +58,13 @@ let Http;
  */
 let chunkedProducts;
 
-class Products 
+/**
+ * @class Products
+ *
+ * The Products component, handles the products tasks.
+ */
+
+class Products extends BaseComponent
 {
 	/**
 	 * Initalize the Container.
@@ -71,6 +75,8 @@ class Products
 	 */
 	constructor(container, http, eventManager) 
 	{
+		super();
+
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
@@ -96,7 +102,7 @@ class Products
 
 			this.setElement(this.settings.element);
 
-			this.addStyleTag();	
+			this.draw();	
 
 			this.loadProducts(1);
 		}.bind(this));
@@ -441,7 +447,7 @@ class Products
 	/**
 	 * Add the eCommerce style tags to the DOM.
 	 */
-	addStyleTag() 
+	draw() 
 	{
 		if (DOM.find('#Turbo-eCommerce-Products')) {
 			return;
@@ -522,13 +528,17 @@ class Products
 	}
 
 	/**
-	 * Hides the component from the DOM.
+	 * Hides all irrelevant elements from the DOM.
 	 *
 	 * @return void 
 	 */
-	hide()
-	{
-		this.element.style.display = 'none';
+	hideAll()
+	{	
+		Container.Components.booted.forEach(function(component) {
+			if (component.constructor.name != 'Products') {
+				component.hide();
+			}
+		});
 	}
 }
 

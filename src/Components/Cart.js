@@ -5,16 +5,12 @@ import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
 
+// Components
+import BaseComponent from './BaseComponent.js';
+
 // Exceptions
 import InvalidCartItemException from '../Exceptions/InvalidCartItemException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
-
-/**
- * @file 
- * Cart class.
- *
- * Handles adding, removing etc... of items.
- */
 
 /**
  * The default settings of the cart.
@@ -70,7 +66,13 @@ let loadingOverlay;
  */
 let itemsDiv
 
-class Cart 
+/**
+ * @class Cart
+ *
+ * Handles adding, removing, calculations of items.
+ */
+
+class Cart extends BaseComponent
 {
 	/**
 	 * - Initialize the IoC container
@@ -85,6 +87,8 @@ class Cart
 	 */
 	constructor(container, http, eventManager) 
 	{
+		super();
+
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
@@ -112,7 +116,7 @@ class Cart
 		DOM.addClass(this.previewElement, 'closed');
 		DOM.addClass(this.previewElement, this.settings.preview_class);
 		
-		this.addStyleTag();
+		this.draw();
 		this.bindEventListeners();
 		
 		if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
@@ -321,13 +325,10 @@ class Cart
 
 		let checkout = DOM.createElement('a', {
 			class: 'btn btn-primary',
-			text: 'Checkout'
+			text: 'Checkout',
+			href: 'checkout'
 		});
 
-		checkout.onclick = function(e) {
-			e.preventDefault();
-			EventManager.publish('cart.checkout');
-		}.bind(this);
 
 		td.appendChild(checkout);
 		tr.appendChild(td);
@@ -413,7 +414,7 @@ class Cart
 	 *
 	 * @return void
 	 */
-	addStyleTag() 
+	draw() 
 	{
 		if (DOM.find('#Turbo-eCommerce-Cart')) {
 			return;
@@ -663,16 +664,6 @@ class Cart
 		let cart = Cookie.get(this.settings.cookie_name);
 
 		return (cart) ? cart.items : [];
-	}
-
-	/**
-	 * Hides the component from the DOM.
-	 *
-	 * @return void 
-	 */
-	hide()
-	{
-		this.element.style.display = 'none';
 	}
 }
 

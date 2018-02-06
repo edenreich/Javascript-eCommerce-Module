@@ -1,17 +1,15 @@
 
+// Helpers
 import DOM from '../Helpers/DOM.js';
 import Url from '../Helpers/Url.js';
 import Common from '../Helpers/Common.js';
 
+// Components
+import BaseComponent from './BaseComponent.js';
+
+// Exceptions
 import NotInPageRangeException from '../Exceptions/NotInPageRangeException.js';
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
- 
-/**
- * @file 
- * Pagination class.
- *
- * The Pagination component, handles the pagination.
- */
 
 /**
  * The default settings of the pagination.
@@ -49,7 +47,13 @@ let Products;
  */
 let EventManager;
 
-class Pagination 
+/**
+ * @class Pagination
+ *
+ * The Pagination component, handles the pagination.
+ */
+
+class Pagination extends BaseComponent
 {
 	/**
 	 * - Initialize the container object.
@@ -62,6 +66,8 @@ class Pagination
 	 */
 	constructor(container, events, products = null, services = null) 
 	{
+		super();
+
 		Container = container;
 		Products = products;
 		EventManager = events;
@@ -381,16 +387,6 @@ class Pagination
 	{
 		this.setCurrent(1);
 		this.changeUrl(1);
-	}
-
-	/**
-	 * Hides the component from the DOM.
-	 *
-	 * @return void 
-	 */
-	hide()
-	{
-		this.element.style.display = 'none';
 	}
 }
 

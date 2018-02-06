@@ -930,6 +930,276 @@ var Request = function () {
 	return Request;
 }();
 
+var Url = function () {
+	function Url() {
+		_classCallCheck(this, Url);
+	}
+
+	_createClass(Url, null, [{
+		key: 'processAjaxData',
+		value: function processAjaxData(selector, content, urlPath) {
+			var context = DOM.find(selector);
+
+			context.innerHTML = content;
+			var title = DOM.find('title', context);
+			document.title = title.innerHTML;
+			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
+
+			window.onpopstate = function (e) {
+				if (e.state) {
+					context.innerHTML = e.state.html;
+					document.title = e.state.pageTitle;
+				}
+			};
+		}
+
+		/**
+   * Modifies the get parameter in the url.
+   *
+   * @param string | url
+   * @param string | key
+   * @param number | value
+   * @param string | separator
+   * @return string
+   */
+
+	}, {
+		key: 'changeQueryParameterValue',
+		value: function changeQueryParameterValue(url, key, value) {
+			var separator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '=';
+
+			var regExp = new RegExp("([?&])" + key + separator + ".*?(&|$)", "i");
+			var pairSeparator = url.indexOf('?') !== -1 ? "&" : "?";
+
+			if (url.match(regExp)) {
+				return url.replace(regExp, '$1' + key + separator + value + '$2');
+			} else {
+				return url + pairSeparator + key + separator + value;
+			}
+		}
+
+		/**
+   * Changes the url to a given page number.
+   *
+   * @param string | parameterKey
+   * @param string | parameterValue
+   * @param string | separator
+   * @return void
+   */
+
+	}, {
+		key: 'changeParameter',
+		value: function changeParameter(parameterKey, parameterValue) {
+			var separator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '=';
+
+			parameterValue = parameterValue || this.queryString()[parameterKey];
+			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
+			window.history.replaceState('', '', requestedUrl);
+		}
+
+		/**
+   * Changes the url.
+   *
+   * @param string | url
+   * @return void
+   */
+
+	}, {
+		key: 'change',
+		value: function change(url) {
+			if (url.charAt(0) != '/') {
+				url = '/' + url;
+			}
+
+			if (url == '/') {
+				url = '/home';
+			}
+
+			window.history.pushState('', '', url);
+		}
+
+		/**
+   * Get the get variables from the url.
+   *
+   * @return array
+   */
+
+	}, {
+		key: 'queryString',
+		value: function queryString() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+				vars[key] = value;
+			});
+
+			return vars;
+		}
+
+		/**
+   * Checks if a given url have parameters.
+   *
+   * @param string | url
+   * @return bool
+   */
+
+	}, {
+		key: 'hasParameters',
+		value: function hasParameters(url) {
+			return url.indexOf('?') >= 0;
+		}
+	}]);
+
+	return Url;
+}();
+
+/**
+ * @class Router
+ *
+ * Handles the client-side routing.
+ */
+
+var Router = function () {
+	/**
+  * - Initialize the container
+  * - Initialize the routes
+  * - Attach event listeners for:
+  * click, popstate, touchstart, hashchange.
+  *
+  * @param App\Core\Container 
+  * @return void
+  */
+	function Router(container) {
+		_classCallCheck(this, Router);
+
+		this.local = true;
+		this.container = container;
+		this.routes = this.buildRoutes();
+		window.addEventListener('popstate', this.entry.bind(this));
+		window.addEventListener('hashchange', this.entry.bind(this));
+		window.addEventListener('touchstart', this.entry.bind(this));
+		window.addEventListener('click', this.entry.bind(this));
+	}
+
+	/**
+  * Entry point for the application.
+  * from here will be decided which
+  * component should be displayed.
+  *
+  * @param object | event
+  * @return void
+  */
+
+
+	_createClass(Router, [{
+		key: 'entry',
+		value: function entry(event) {
+			var url = window.location.pathname;
+			var queryString = void 0;
+
+			if (typeof url == 'undefined') {
+				return;
+			}
+
+			if (Url.hasParameters(url)) {
+				var parts = url.split('?')[1];
+				queryString = parts[1];
+				url = parts[0].substring(parts[0].length - 1);
+			}
+
+			if (url.indexOf('##/') != -1) {
+				url = url.replace('##/', '');
+			}
+
+			if (queryString) {
+				url = url + queryString;
+			}
+
+			if (event) {
+				event.preventDefault();
+
+				if (typeof event.target.pathname != 'undefined') {
+					url = event.target.pathname;
+				}
+			}
+
+			this.container.Events.subscribe('route.dispatched', function (url) {
+				if (this.local) {
+					url = '/client' + url;
+				}
+
+				Url.change(url);
+			}.bind(this));
+
+			// means this is a demo.
+			// for the meanwhile, @todo find a different solution
+			if (this.local) {
+				url = url.replace('/client', '');
+			}
+
+			this.current = url;
+			this.dispatch(url);
+		}
+
+		/**
+   * Dispaches the route for a given url.
+   *
+   * @param string | url
+   * @return void
+   */
+
+	}, {
+		key: 'dispatch',
+		value: function dispatch(url) {
+			// @todo check for parameters routes and replace fetch the value from the url.
+			console.log(url);
+
+			if (this.routes.indexOf(url) != -1) {
+				switch (url) {
+					case '/':
+					case '/home':
+						console.log('home');
+						this.container.Products.hideAll();
+						this.container.Filter.show();
+						this.container.Products.show();
+						this.container.Cart.show();
+						this.container.Pagination.show();
+						break;
+					case '/checkout':
+						console.log('checkout');
+						this.container.Checkout.hideAll();
+						this.container.Checkout.show();
+						break;
+					case '/info/:product':
+						console.log('single product info page');
+						// @todo build product info component
+						break;
+					default:
+						console.log('default route');
+						break;
+				}
+			} else {
+				throw new Error('No matching route found!');
+			}
+
+			this.container.Events.publish('route.dispatched', url);
+		}
+
+		/**
+   * Builds the routes.
+   *
+   * @return array
+   */
+
+	}, {
+		key: 'buildRoutes',
+		value: function buildRoutes() {
+			return ['/', '/home', '/checkout', '/info/:product'];
+		}
+	}]);
+
+	return Router;
+}();
+
 var defaultMessage$2 = 'The event you called does not exists or you supplied wrong argument';
 
 var BadEventCallException = function (_ExceptionHandler3) {
@@ -1104,6 +1374,63 @@ var Cookie = function () {
 	return Cookie;
 }();
 
+/**
+ * @class BaseComponent
+ * 
+ * Common functionallity of components. 
+ */
+
+var BaseComponent = function () {
+	function BaseComponent() {
+		_classCallCheck(this, BaseComponent);
+	}
+
+	_createClass(BaseComponent, [{
+		key: 'hide',
+
+		/**
+   * Hides the component from the DOM.
+   *
+   * @return void 
+   */
+		value: function hide() {
+			if (typeof this.element != 'undefined') {
+				this.element.style.display = 'none';
+			}
+		}
+
+		/**
+   * Shows the element on the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'show',
+		value: function show() {
+			if (typeof this.element != 'undefined') {
+				this.element.style.display = 'block';
+			}
+		}
+
+		/**
+   * Empty the component.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'empty',
+		value: function empty() {
+			if (typeof this.element != 'undefined') {
+				this.element.innerHTML = '';
+			}
+		}
+	}]);
+
+	return BaseComponent;
+}();
+
 var defaultMessage$3 = 'The item you are trying to add must contain a unique id';
 
 var InvalidCartItemException = function (_ExceptionHandler4) {
@@ -1126,14 +1453,8 @@ var InvalidCartItemException = function (_ExceptionHandler4) {
 }(ExceptionHandler);
 
 // Helpers
+// Components
 // Exceptions
-/**
- * @file 
- * Cart class.
- *
- * Handles adding, removing etc... of items.
- */
-
 /**
  * The default settings of the cart.
  *
@@ -1190,7 +1511,15 @@ var _loadingOverlay = void 0;
  */
 var itemsDiv = void 0;
 
-var Cart = function () {
+/**
+ * @class Cart
+ *
+ * Handles adding, removing, calculations of items.
+ */
+
+var Cart = function (_BaseComponent) {
+	_inherits(Cart, _BaseComponent);
+
 	/**
   * - Initialize the IoC container
   * - Initialize the Request
@@ -1205,12 +1534,15 @@ var Cart = function () {
 	function Cart(container, http, eventManager) {
 		_classCallCheck(this, Cart);
 
+		var _this5 = _possibleConstructorReturn(this, (Cart.__proto__ || Object.getPrototypeOf(Cart)).call(this));
+
 		Container = container;
 		Http = http;
 		EventManager$2 = eventManager;
 
-		this.previewElement = this.createPreviewElement();
-		this.icon = createIcon.call(this);
+		_this5.previewElement = _this5.createPreviewElement();
+		_this5.icon = createIcon.call(_this5);
+		return _this5;
 	}
 
 	/**
@@ -1235,7 +1567,7 @@ var Cart = function () {
 			DOM.addClass(this.previewElement, 'closed');
 			DOM.addClass(this.previewElement, this.settings.preview_class);
 
-			this.addStyleTag();
+			this.draw();
 			this.bindEventListeners();
 
 			if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
@@ -1454,13 +1786,9 @@ var Cart = function () {
 
 			var checkout = DOM.createElement('a', {
 				class: 'btn btn-primary',
-				text: 'Checkout'
+				text: 'Checkout',
+				href: 'checkout'
 			});
-
-			checkout.onclick = function (e) {
-				e.preventDefault();
-				EventManager$2.publish('cart.checkout');
-			}.bind(this);
 
 			td.appendChild(checkout);
 			tr.appendChild(td);
@@ -1554,8 +1882,8 @@ var Cart = function () {
    */
 
 	}, {
-		key: 'addStyleTag',
-		value: function addStyleTag() {
+		key: 'draw',
+		value: function draw() {
 			if (DOM.find('#Turbo-eCommerce-Cart')) {
 				return;
 			}
@@ -1723,22 +2051,10 @@ var Cart = function () {
 
 			return cart ? cart.items : [];
 		}
-
-		/**
-   * Hides the component from the DOM.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'hide',
-		value: function hide() {
-			this.element.style.display = 'none';
-		}
 	}]);
 
 	return Cart;
-}();
+}(BaseComponent);
 
 /**
  * Closes the cart preview element.
@@ -1857,13 +2173,9 @@ function createLoader() {
 	return svg;
 }
 
-/**
- * @file 
- * Filter class.
- *
- * The Filter Object, handles the filter of the products/services.
- */
-
+// Helpers
+// Components
+// Exceptions
 /**
  * The default settings of the filter.
  */
@@ -1882,7 +2194,15 @@ var defaultSettings$2 = {
  */
 var Container$1 = void 0;
 
-var Filter = function () {
+/**
+ * @class Filter
+ *
+ * The Filter Object, handles the filter of the products/services.
+ */
+
+var Filter = function (_BaseComponent2) {
+	_inherits(Filter, _BaseComponent2);
+
 	/**
   * - Initialize the IoC container.
   *
@@ -1892,7 +2212,10 @@ var Filter = function () {
 	function Filter(container) {
 		_classCallCheck(this, Filter);
 
+		var _this6 = _possibleConstructorReturn(this, (Filter.__proto__ || Object.getPrototypeOf(Filter)).call(this));
+
 		Container$1 = container;
+		return _this6;
 	}
 
 	/**
@@ -1916,7 +2239,7 @@ var Filter = function () {
 
 				this.setElement(this.settings.element);
 
-				this.addStyleTag();
+				this.draw();
 			}.bind(this));
 		}
 
@@ -1940,8 +2263,8 @@ var Filter = function () {
    */
 
 	}, {
-		key: 'addStyleTag',
-		value: function addStyleTag() {
+		key: 'draw',
+		value: function draw() {
 			if (DOM.find('#Turbo-eCommerce-Filter')) {
 				return;
 			}
@@ -1958,133 +2281,14 @@ var Filter = function () {
 
 			DOM.addStyle('Turbo-eCommerce-Filter', css);
 		}
-
-		/**
-   * Hides the component from the DOM.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'hide',
-		value: function hide() {
-			this.element.style.display = 'none';
-		}
 	}]);
 
 	return Filter;
-}();
-
-var Url = function () {
-	function Url() {
-		_classCallCheck(this, Url);
-	}
-
-	_createClass(Url, null, [{
-		key: 'processAjaxData',
-		value: function processAjaxData(selector, content, urlPath) {
-			var context = DOM.find(selector);
-
-			context.innerHTML = content;
-			var title = DOM.find('title', context);
-			document.title = title.innerHTML;
-			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
-
-			window.onpopstate = function (e) {
-				if (e.state) {
-					context.innerHTML = e.state.html;
-					document.title = e.state.pageTitle;
-				}
-			};
-		}
-
-		/**
-   * Modifies the get parameter in the url.
-   *
-   * @param string | url
-   * @param string | key
-   * @param number | value
-   * @param string | separator
-   * @return string
-   */
-
-	}, {
-		key: 'changeQueryParameterValue',
-		value: function changeQueryParameterValue(url, key, value) {
-			var separator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '=';
-
-			var regExp = new RegExp("([?&])" + key + separator + ".*?(&|$)", "i");
-			var pairSeparator = url.indexOf('?') !== -1 ? "&" : "?";
-
-			if (url.match(regExp)) {
-				return url.replace(regExp, '$1' + key + separator + value + '$2');
-			} else {
-				return url + pairSeparator + key + separator + value;
-			}
-		}
-
-		/**
-   * Changes the url to a given page number.
-   *
-   * @param string | parameterKey
-   * @param string | parameterValue
-   * @param string | separator
-   * @return void
-   */
-
-	}, {
-		key: 'changeParameter',
-		value: function changeParameter(parameterKey, parameterValue) {
-			var separator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '=';
-
-			parameterValue = parameterValue || this.queryString()[parameterKey];
-			var requestedUrl = this.changeQueryParameterValue(window.location.href, parameterKey, parameterValue, separator);
-			window.history.replaceState('', '', requestedUrl);
-		}
-
-		/**
-   * Changes the url.
-   *
-   * @param string | url
-   * @return void
-   */
-
-	}, {
-		key: 'change',
-		value: function change(url) {
-			window.history.replaceState('', '', url);
-		}
-
-		/**
-   * Get the get variables from the url.
-   *
-   * @return array
-   */
-
-	}, {
-		key: 'queryString',
-		value: function queryString() {
-			var vars = {};
-			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-				vars[key] = value;
-			});
-
-			return vars;
-		}
-	}]);
-
-	return Url;
-}();
+}(BaseComponent);
 
 // Helpers
+// Components
 // Exceptions
-/**
- * @file 
- * Cart class.
- *
- * Handles adding, removing etc... of items.
- */
-
 /**
  * The default settings of the cart.
  *
@@ -2118,7 +2322,16 @@ var EventManager$3 = void 0;
  */
 var Http$1 = void 0;
 
-var Checkout = function () {
+/**
+ * @class Checkout
+ *
+ * Handles the checkout process.
+ * payments validation, cart validation etc..
+ */
+
+var Checkout = function (_BaseComponent3) {
+	_inherits(Checkout, _BaseComponent3);
+
 	/**
   * - Initialize the IoC container
   * - Initialize the Request
@@ -2133,15 +2346,12 @@ var Checkout = function () {
 	function Checkout(container, http, eventManager) {
 		_classCallCheck(this, Checkout);
 
+		var _this7 = _possibleConstructorReturn(this, (Checkout.__proto__ || Object.getPrototypeOf(Checkout)).call(this));
+
 		Container$2 = container;
 		Http$1 = http;
 		EventManager$3 = eventManager;
-
-		EventManager$3.subscribe('cart.checkout', function () {
-			this.changeUrl();
-			this.hideAll();
-			this.show();
-		}.bind(this));
+		return _this7;
 	}
 
 	/**
@@ -2165,7 +2375,7 @@ var Checkout = function () {
 
 				this.setElement(this.settings.element);
 				this.hide();
-				this.addStyleTag();
+				this.draw();
 			}.bind(this));
 		}
 
@@ -2205,8 +2415,8 @@ var Checkout = function () {
    */
 
 	}, {
-		key: 'addStyleTag',
-		value: function addStyleTag() {
+		key: 'draw',
+		value: function draw() {
 			if (DOM.find('#Turbo-eCommerce-Checkout')) {
 				return;
 			}
@@ -2237,42 +2447,14 @@ var Checkout = function () {
 				}
 			});
 		}
-
-		/**
-   * Hides the component from the DOM.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'hide',
-		value: function hide() {
-			this.element.style.display = 'none';
-		}
-
-		/**
-   * Shows the element on the DOM.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'show',
-		value: function show() {
-			this.element.style.display = 'block';
-		}
 	}]);
 
 	return Checkout;
-}();
+}(BaseComponent);
 
-/**
- * @file 
- * Products class.
- *
- * The Products component, handles the products tasks.
- */
-
+// Helpers
+// Components
+// Exceptions
 /**
  * The default settings of each product.
  *
@@ -2323,7 +2505,15 @@ var Http$2 = void 0;
  */
 var chunkedProducts = void 0;
 
-var Products = function () {
+/**
+ * @class Products
+ *
+ * The Products component, handles the products tasks.
+ */
+
+var Products = function (_BaseComponent4) {
+	_inherits(Products, _BaseComponent4);
+
 	/**
   * Initalize the Container.
   *
@@ -2334,10 +2524,13 @@ var Products = function () {
 	function Products(container, http, eventManager) {
 		_classCallCheck(this, Products);
 
+		var _this8 = _possibleConstructorReturn(this, (Products.__proto__ || Object.getPrototypeOf(Products)).call(this));
+
 		Container$3 = container;
 		Http$2 = http;
 		EventManager$4 = eventManager;
 		chunkedProducts = [];
+		return _this8;
 	}
 
 	/**
@@ -2362,7 +2555,7 @@ var Products = function () {
 
 				this.setElement(this.settings.element);
 
-				this.addStyleTag();
+				this.draw();
 
 				this.loadProducts(1);
 			}.bind(this));
@@ -2737,8 +2930,8 @@ var Products = function () {
    */
 
 	}, {
-		key: 'addStyleTag',
-		value: function addStyleTag() {
+		key: 'draw',
+		value: function draw() {
 			if (DOM.find('#Turbo-eCommerce-Products')) {
 				return;
 			}
@@ -2758,29 +2951,42 @@ var Products = function () {
 		}
 
 		/**
-   * Hides the component from the DOM.
+   * Hides all irrelevant elements from the DOM.
    *
    * @return void 
    */
 
 	}, {
-		key: 'hide',
-		value: function hide() {
-			this.element.style.display = 'none';
+		key: 'hideAll',
+		value: function hideAll() {
+			Container$3.Components.booted.forEach(function (component) {
+				if (component.constructor.name != 'Products') {
+					component.hide();
+				}
+			});
 		}
 	}]);
 
 	return Products;
-}();
+}(BaseComponent);
 
+// Components
 /**
  * The Services Object, handles the services.
  */
 
 
-var Services = function Services() {
-	_classCallCheck(this, Services);
-};
+var Services = function (_BaseComponent5) {
+	_inherits(Services, _BaseComponent5);
+
+	function Services() {
+		_classCallCheck(this, Services);
+
+		return _possibleConstructorReturn(this, (Services.__proto__ || Object.getPrototypeOf(Services)).apply(this, arguments));
+	}
+
+	return Services;
+}(BaseComponent);
 
 var defaultMessage$4 = 'Sorry, no more pages.';
 
@@ -2794,22 +3000,18 @@ var NotInPageRangeException = function (_ExceptionHandler5) {
 
 		message = message || defaultMessage$4;
 
-		var _this5 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
+		var _this10 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
 
-		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this5).call(_this5, _this5, message);
-		return _this5;
+		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this10).call(_this10, _this10, message);
+		return _this10;
 	}
 
 	return NotInPageRangeException;
 }(ExceptionHandler);
 
-/**
- * @file 
- * Pagination class.
- *
- * The Pagination component, handles the pagination.
- */
-
+// Helpers
+// Components
+// Exceptions
 /**
  * The default settings of the pagination.
  *
@@ -2848,7 +3050,15 @@ var Products$2 = void 0;
  */
 var EventManager$5 = void 0;
 
-var Pagination = function () {
+/**
+ * @class Pagination
+ *
+ * The Pagination component, handles the pagination.
+ */
+
+var Pagination = function (_BaseComponent6) {
+	_inherits(Pagination, _BaseComponent6);
+
 	/**
   * - Initialize the container object.
   * - Initialize the products component.
@@ -2864,9 +3074,12 @@ var Pagination = function () {
 
 		_classCallCheck(this, Pagination);
 
+		var _this11 = _possibleConstructorReturn(this, (Pagination.__proto__ || Object.getPrototypeOf(Pagination)).call(this));
+
 		Container$4 = container;
 		Products$2 = products;
 		EventManager$5 = events;
+		return _this11;
 	}
 
 	/**
@@ -3216,22 +3429,10 @@ var Pagination = function () {
 			this.setCurrent(1);
 			this.changeUrl(1);
 		}
-
-		/**
-   * Hides the component from the DOM.
-   *
-   * @return void 
-   */
-
-	}, {
-		key: 'hide',
-		value: function hide() {
-			this.element.style.display = 'none';
-		}
 	}]);
 
 	return Pagination;
-}();
+}(BaseComponent);
 
 var defaultMessage$5 = 'In order to use components you must register them with the shop!';
 
@@ -3245,10 +3446,10 @@ var ComponentNotRegisteredException = function (_ExceptionHandler6) {
 
 		message = message || defaultMessage$5;
 
-		var _this6 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
+		var _this12 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
 
-		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this6).call(_this6, _this6, message);
-		return _this6;
+		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this12).call(_this12, _this12, message);
+		return _this12;
 	}
 
 	return ComponentNotRegisteredException;
@@ -3394,10 +3595,10 @@ var InvalidBindingException = function (_ExceptionHandler7) {
 
 		message = message || defaultMessage$6;
 
-		var _this7 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
+		var _this13 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
 
-		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this7).call(_this7, _this7, message);
-		return _this7;
+		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this13).call(_this13, _this13, message);
+		return _this13;
 	}
 
 	return InvalidBindingException;
@@ -3426,6 +3627,7 @@ var Container$5 = function () {
 		this.instances = [];
 		this.register();
 		this.registerProviders();
+		this.registerRouter();
 	}
 
 	/**
@@ -3602,6 +3804,11 @@ var Container$5 = function () {
 		value: function registerProviders() {
 			this.setInstance('Components', new ComponentsProvider(this));
 		}
+	}, {
+		key: 'registerRouter',
+		value: function registerRouter() {
+			this.setInstance('Router', new Router(this));
+		}
 	}]);
 
 	return Container$5;
@@ -3622,7 +3829,8 @@ var defaultSettings$6 = {
 	element: 'body',
 	inject_libraries: [],
 	components: ['Products', 'Services', 'Filter', 'Pagination', 'Cart'],
-	loading_animation: true
+	loading_animation: true,
+	hash_navigation: false
 };
 
 /**
@@ -3668,6 +3876,8 @@ var TurboEcommerce = function () {
 
 		document.addEventListener('DOMContentLoaded', function () {
 			this.setElement(this.settings.element);
+
+			this.container.Router.entry();
 
 			if (this.settings.loading_animation) {
 				startLoading.call(this);
