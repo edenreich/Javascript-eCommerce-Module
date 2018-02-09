@@ -487,6 +487,42 @@ var DOM = function () {
 
 			return queryElement(selector, context);
 		}
+
+		/**
+   * Get the document height.
+   *
+   * @return number 
+   */
+
+	}, {
+		key: 'documentHeight',
+		value: function documentHeight() {
+			return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
+		}
+
+		/**
+   * Get the window height.
+   *
+   * @return number 
+   */
+
+	}, {
+		key: 'windowHeight',
+		value: function windowHeight() {
+			return window.innerHeight || (document.documentElement || document.body).clientHeight;
+		}
+
+		/**
+   * Get the scroll offset position.
+   *
+   * @return number
+   */
+
+	}, {
+		key: 'scrollYOffset',
+		value: function scrollYOffset() {
+			return window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+		}
 	}]);
 
 	return DOM;
@@ -944,13 +980,6 @@ var Url = function () {
 			var title = DOM.find('title', context);
 			document.title = title.innerHTML;
 			window.history.pushState({ "html": content, "pageTitle": title.innerHTML }, "", urlPath);
-
-			window.onpopstate = function (e) {
-				if (e.state) {
-					context.innerHTML = e.state.html;
-					document.title = e.state.pageTitle;
-				}
-			};
 		}
 
 		/**
@@ -1015,7 +1044,9 @@ var Url = function () {
 				url = '/home';
 			}
 
-			window.history.pushState('', '', url);
+			var previousUrl = window.location.pathname;
+
+			window.history.pushState({ "previous": previousUrl }, '', url);
 		}
 
 		/**
@@ -1074,6 +1105,11 @@ var Router = function () {
 		this.local = true;
 		this.container = container;
 		this.routes = this.buildRoutes();
+
+		if (typeof history != 'undefined') {
+			history.replaceState('', '', window.location.pathname);
+		}
+
 		window.addEventListener('popstate', this.entry.bind(this));
 		window.addEventListener('hashchange', this.entry.bind(this));
 		window.addEventListener('touchstart', this.entry.bind(this));
@@ -1093,11 +1129,24 @@ var Router = function () {
 	_createClass(Router, [{
 		key: 'entry',
 		value: function entry(event) {
-			var url = window.location.pathname;
+			if (typeof event != 'undefined' && event.type == 'click') {
+				event.preventDefault();
+			}
+
+			if (typeof event != 'undefined' && event.type == 'click' && event.target.tagName.toLowerCase() != 'a') {
+				return;
+			}
+
+			var dispatchedUrl = void 0;
+			var url = dispatchedUrl || window.location.pathname;
 			var queryString = void 0;
 
 			if (typeof url == 'undefined') {
 				return;
+			}
+
+			if (typeof event != 'undefined' && event.type == 'popstate') {
+				url = event.state.previous;
 			}
 
 			if (Url.hasParameters(url)) {
@@ -1114,18 +1163,16 @@ var Router = function () {
 				url = url + queryString;
 			}
 
-			if (event) {
-				event.preventDefault();
-
-				if (typeof event.target.pathname != 'undefined') {
-					url = event.target.pathname;
-				}
+			if (typeof event != 'undefined' && typeof event.target.pathname != 'undefined') {
+				url = event.target.pathname || event.target.href;
 			}
 
 			this.container.Events.subscribe('route.dispatched', function (url) {
 				if (this.local) {
 					url = '/client' + url;
 				}
+
+				dispatchedUrl = url;
 
 				Url.change(url);
 			}.bind(this));
@@ -2565,6 +2612,7 @@ var Products = function (_BaseComponent4) {
    * Loads the products for the page.
    * 
    * @param number | pageNumber
+   * @param bool | append
    * @return void
    */
 
@@ -2572,6 +2620,7 @@ var Products = function (_BaseComponent4) {
 		key: 'loadProducts',
 		value: function loadProducts() {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+			var append = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
 			if (Container$3.Pagination && Container$3.Pagination.booted) {
 
@@ -2579,10 +2628,10 @@ var Products = function (_BaseComponent4) {
 
 				switch (Container$3.Pagination.settings.processing) {
 					case 'client-side':
-						return this.loadPageProductsOnce(pageNumber, limit);
+						return this.loadPageProductsOnce(pageNumber, limit, append);
 						break;
 					case 'server-side':
-						return this.loadPageProducts(pageNumber, limit);
+						return this.loadPageProducts(pageNumber, limit, append);
 						break;
 					default:
 						throw new InvalidArgumentException$1('for processing you can choose \'server-side\' or \'client-side\' options.');
@@ -2629,12 +2678,16 @@ var Products = function (_BaseComponent4) {
    * Loads the products and 
    * replace them in the div container.
    *
+   * @param number | pageNumber
+   * @param bool | append
    * @return void
    */
 
 	}, {
 		key: 'loadPageProductsOnce',
 		value: function loadPageProductsOnce(pageNumber) {
+			var append = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
 			var request = void 0;
 
 			if (this.totalItems == null) {
@@ -2645,17 +2698,25 @@ var Products = function (_BaseComponent4) {
 				request = Promise.resolve(this.totalItems);
 			}
 
-			request.then(function (products) {
+			return request.then(function (products) {
 				this.totalItems = products;
 				var pages = this.calculateClientPages(products);
 				this.currentItems = pages[pageNumber - 1];
-				this.replaceProducts(this.currentItems);
-				Promise.resolve(this.currentItems);
+
+				if (typeof this.currentItems == 'undefined') {
+					return null;
+				}
+
+				if (append) {
+					this.appendProducts(this.currentItems);
+				} else {
+					this.replaceProducts(this.currentItems);
+				}
+
+				return this.currentItems;
 			}.bind(this)).catch(function (error) {
 				// throw new Error('Could not load products! Reason: ' + error);
 			});
-
-			return request;
 		}
 
 		/**
@@ -2719,6 +2780,33 @@ var Products = function (_BaseComponent4) {
 			var products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
 			this.element.innerHTML = '';
+			products.forEach(function (product) {
+				EventManager$4.publish('products.loading', product);
+				this.element.appendChild(product);
+			}.bind(this));
+
+			EventManager$4.publish('products.loaded', products);
+
+			return products;
+		}
+
+		/**
+   * Appends more products to the
+   * div container.
+   *
+   * @param array | rawProducts
+   * @return array
+   */
+
+	}, {
+		key: 'appendProducts',
+		value: function appendProducts(rawProducts) {
+			if (!Array.isArray(rawProducts) || rawProducts.length <= 0 && typeof rawProducts[0] == 'string') {
+				throw new InvalidArgumentException$1();
+			}
+
+			var products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
+
 			products.forEach(function (product) {
 				EventManager$4.publish('products.loading', product);
 				this.element.appendChild(product);
@@ -3026,7 +3114,8 @@ var defaultSettings$5 = {
 	per_page: 5,
 	total_items: 5,
 	url_parameter: 'page',
-	separator: '#'
+	separator: '#',
+	scroll: false
 };
 
 /**
@@ -3118,6 +3207,12 @@ var Pagination = function (_BaseComponent6) {
 	}, {
 		key: 'buildPagination',
 		value: function buildPagination() {
+			if (this.settings.scroll == true) {
+
+				window.onscroll = this.monitorScrolling.bind(this);
+				return;
+			}
+
 			this.links = this.createLinks();
 			this.replaceLinks(this.links);
 			this.bindEventListeners(this.links);
@@ -3167,6 +3262,34 @@ var Pagination = function (_BaseComponent6) {
 			totalItems = parseInt(totalItems);
 
 			return Math.ceil(totalItems / perPage);
+		}
+
+		/**
+   * Listen to scroll event.
+   *
+   * @param 
+   * @return void
+   */
+
+	}, {
+		key: 'monitorScrolling',
+		value: function monitorScrolling(event) {
+			var currentYOffset = DOM.scrollYOffset();
+			var documentHeight = DOM.documentHeight();
+			var windowHeight = DOM.windowHeight();
+
+			if (documentHeight - windowHeight - currentYOffset <= 50) {
+				var requestedPage = this.current + 1;
+
+				if (Products$2 && Products$2.booted) {
+					Products$2.loadProducts(requestedPage, true).then(function (products) {
+						console.log(products);
+						if (products) {
+							this.setCurrent(requestedPage);
+						}
+					}.bind(this));
+				}
+			}
 		}
 
 		/**

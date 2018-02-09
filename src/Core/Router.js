@@ -23,6 +23,11 @@ class Router
 		this.local = true;
 		this.container = container;
 		this.routes = this.buildRoutes();
+		
+		if (typeof history != 'undefined') {
+			history.replaceState('', '', window.location.pathname);
+		}
+
 		window.addEventListener('popstate', this.entry.bind(this));
 		window.addEventListener('hashchange', this.entry.bind(this));
 		window.addEventListener('touchstart', this.entry.bind(this));
@@ -39,11 +44,25 @@ class Router
 	 */
 	entry(event)
 	{
-		let url = window.location.pathname;
+		if (typeof event != 'undefined' && event.type == 'click') {
+			event.preventDefault();
+		}
+
+		if (typeof event != 'undefined' && event.type == 'click' && 
+			event.target.tagName.toLowerCase() != 'a') {
+			return;
+		}
+
+		let dispatchedUrl;
+		let url = dispatchedUrl || window.location.pathname;
 		let queryString;
 
 		if (typeof url == 'undefined') {
 			return;
+		}
+
+		if (typeof event != 'undefined' && event.type == 'popstate') {
+			url = event.state.previous;
 		}
 
 		if (Url.hasParameters(url)) {
@@ -60,12 +79,8 @@ class Router
 			url = url + queryString;
 		}
 
-		if (event) {
-			event.preventDefault();
-
-			if (typeof event.target.pathname != 'undefined') {
-				url = event.target.pathname;
-			}
+		if (typeof event != 'undefined' && typeof event.target.pathname != 'undefined') {
+			url = event.target.pathname || event.target.href;
 		}
 
 		this.container.Events.subscribe('route.dispatched', function(url) {
@@ -73,8 +88,9 @@ class Router
 				url = '/client' + url;
 			}
 
+			dispatchedUrl = url;
+
 			Url.change(url);
-			
 		}.bind(this));
 
 		// means this is a demo.

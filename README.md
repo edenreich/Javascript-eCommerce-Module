@@ -60,12 +60,20 @@ shop.Products.setup({
 - class - the class name for each product element.
 - per_page - the amount of items you would like to display per page.
 - total_items - the total amount of items.
+- processing - processing on client or on the server(if on the server it will send page GET parameter on each request)
+- separator - the separator shows on the url
+- url_parameter - the url parameter name
+- scroll - scroll pagination
 ```javascript
 shop.Pagination.setup({
 	element: '.pagination-links',
-	class: 'col-xs-offset-4 col-xs-8',
-	per_page: 5,
-	total_items: 10
+	class: 'col-xs-offset-2 col-xs-10 col-md-offset-4 col-md-8',
+	per_page: 10,
+	total_items: 25,
+	processing: 'client-side',
+	separator: '#',
+	url_parameter: 'page',
+	scroll: true,
 });
 ```
 #### Configure the Filter:

@@ -11,13 +11,6 @@ class Url
 	    let title = DOM.find('title', context);
 	    document.title = title.innerHTML;
 	    window.history.pushState({"html":content,"pageTitle": title.innerHTML}, "", urlPath);
-
-	 	window.onpopstate = function(e) {
-		    if (e.state) {
-		        context.innerHTML = e.state.html;
-		        document.title = e.state.pageTitle;
-		    }
-		};
 	 }
 
 	/**
@@ -71,9 +64,10 @@ class Url
 		if (url == '/') {
 			url = '/home';
 		}
+
+		let previousUrl = window.location.pathname;
 		
-		window.history.pushState('', '', url);
-		
+		window.history.pushState({"previous": previousUrl}, '', url);
 	}
 
 	/**

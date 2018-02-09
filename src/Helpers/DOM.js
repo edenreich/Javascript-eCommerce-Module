@@ -241,6 +241,40 @@ class DOM
 	{
 		return queryElement(selector, context);
 	}
+
+	/**
+	 * Get the document height.
+	 *
+	 * @return number 
+	 */
+	static documentHeight()
+	{
+		return Math.max(
+	        document.body.scrollHeight, document.documentElement.scrollHeight,
+	       	document.body.offsetHeight, document.documentElement.offsetHeight,
+	        document.body.clientHeight, document.documentElement.clientHeight
+	    )
+	}
+
+	/**
+	 * Get the window height.
+	 *
+	 * @return number 
+	 */
+	static windowHeight()
+	{
+		return window.innerHeight || (document.documentElement || document.body).clientHeight;
+	}
+
+	/**
+	 * Get the scroll offset position.
+	 *
+	 * @return number
+	 */
+	static scrollYOffset()
+	{
+		return window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+	}
 }
 
 /**

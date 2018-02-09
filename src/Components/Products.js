@@ -112,9 +112,10 @@ class Products extends BaseComponent
 	 * Loads the products for the page.
 	 * 
 	 * @param number | pageNumber
+	 * @param bool | append
 	 * @return void
 	 */
-	loadProducts(pageNumber = 1)
+	loadProducts(pageNumber = 1, append = false)
 	{
 		if (Container.Pagination && Container.Pagination.booted) {
 			
@@ -123,10 +124,10 @@ class Products extends BaseComponent
 			switch(Container.Pagination.settings.processing) 
 			{
 				case 'client-side':
-					return this.loadPageProductsOnce(pageNumber, limit);
+					return this.loadPageProductsOnce(pageNumber, limit, append);
 					break;
 				case 'server-side':
-					return this.loadPageProducts(pageNumber, limit);
+					return this.loadPageProducts(pageNumber, limit, append);
 					break;
 				default:
 					throw new InvalidArgumentException('for processing you can choose \'server-side\' or \'client-side\' options.');
@@ -168,9 +169,11 @@ class Products extends BaseComponent
 	 * Loads the products and 
 	 * replace them in the div container.
 	 *
+	 * @param number | pageNumber
+	 * @param bool | append
 	 * @return void
 	 */
-	loadPageProductsOnce(pageNumber)
+	loadPageProductsOnce(pageNumber, append = false)
 	{
 		let request;
 
@@ -180,17 +183,25 @@ class Products extends BaseComponent
 			request = Promise.resolve(this.totalItems);
 		}
 
-		request.then(function(products) {
+		return request.then(function(products) {
 			this.totalItems = products;
 			let pages = this.calculateClientPages(products);
 			this.currentItems = pages[pageNumber-1];
-			this.replaceProducts(this.currentItems);
-			Promise.resolve(this.currentItems);
+
+			if (typeof this.currentItems == 'undefined') {
+				return null;
+			}
+
+			if (append) {
+				this.appendProducts(this.currentItems);
+			} else {
+				this.replaceProducts(this.currentItems);
+			}
+
+			return this.currentItems;
 		}.bind(this)).catch(function(error) {
 			// throw new Error('Could not load products! Reason: ' + error);
 		});
-
-		return request;
 	}
 
 	/**
@@ -248,6 +259,31 @@ class Products extends BaseComponent
 		let products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
 		this.element.innerHTML = '';
+		products.forEach(function(product) {
+			EventManager.publish('products.loading', product);
+			this.element.appendChild(product);
+		}.bind(this));
+
+		EventManager.publish('products.loaded', products);
+
+		return products;
+	}
+
+	/**
+	 * Appends more products to the
+	 * div container.
+	 *
+	 * @param array | rawProducts
+	 * @return array
+	 */
+	appendProducts(rawProducts)
+	{
+		if (! Array.isArray(rawProducts) || (rawProducts.length <= 0 && typeof rawProducts[0] == 'string')) {
+			throw new InvalidArgumentException;
+		}
+
+		let products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
+
 		products.forEach(function(product) {
 			EventManager.publish('products.loading', product);
 			this.element.appendChild(product);

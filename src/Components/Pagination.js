@@ -23,7 +23,8 @@ let defaultSettings = {
 	per_page: 5,
 	total_items: 5,
 	url_parameter: 'page',
-	separator: '#' 
+	separator: '#',
+	scroll: false,
 };
 
 /**
@@ -104,6 +105,12 @@ class Pagination extends BaseComponent
 	 */
 	buildPagination()
 	{
+		if (this.settings.scroll == true) {
+
+			window.onscroll = this.monitorScrolling.bind(this);
+			return;
+		} 
+
 		this.links = this.createLinks();
 		this.replaceLinks(this.links);
 		this.bindEventListeners(this.links);
@@ -147,6 +154,32 @@ class Pagination extends BaseComponent
 		totalItems = parseInt(totalItems);
 
 		return Math.ceil(totalItems / perPage);
+	}
+
+	/**
+	 * Listen to scroll event.
+	 *
+	 * @param 
+	 * @return void
+	 */
+	monitorScrolling(event)
+	{
+		let currentYOffset = DOM.scrollYOffset();
+		let documentHeight = DOM.documentHeight();
+		let windowHeight = DOM.windowHeight();
+
+		if ((documentHeight-windowHeight) - currentYOffset <= 50) {
+			let requestedPage = this.current+1;
+
+			if (Products && Products.booted) {
+				Products.loadProducts(requestedPage, true).then(function(products) {
+					console.log(products);
+					if (products) {
+						this.setCurrent(requestedPage);
+					}
+				}.bind(this));
+			}
+		}
 	}
 
 	/**

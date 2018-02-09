@@ -85,4 +85,36 @@ describe('PaginationComponentTest', function() {
 			done();
 		}, 3000);
 	}).timeout(5000);
+
+	// Skip this test for now, scrollBy, scroll, scrollTo not implemented in domjs
+	// @see https://github.com/jsdom/jsdom/issues/1422
+	it.skip('should load more products if the page is scrolled to specific offset', function(done) {
+		this.Products.setup({
+			element: ".products",
+			url: host + '/' + testEndPoint,
+		});
+
+		this.Pagination.setup({
+			element: ".pagination-links",
+			per_page: 10,
+			total_items: 30,
+			processing: "client-side",
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		setTimeout(function() {
+			let products = DOM.find('.product');
+
+			window.scrollBy(0, window.innerHeight-100);
+
+			products = DOM.find('.product');
+
+			// No really need to wait but just to be sure.
+			setTimeout(function() {
+				assert.lengthOf(products, 20);
+				done();
+			}, 1000);
+		}, 3000);
+	});
 });
