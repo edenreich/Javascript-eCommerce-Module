@@ -25,7 +25,7 @@ gulp.task('build', () => {
 		   	.pipe(notify({
 	            title: "bundle.js has been Compiled"
 	        }))
-		   	.pipe(gulp.dest('demo/client/js/'));
+		   	.pipe(gulp.dest('demo/js/'));
 });
 
 gulp.task('build-min', () => {
@@ -49,7 +49,7 @@ gulp.task('build-min', () => {
 	            title: "bundle.min.js has been Compiled"
 	        }))
 	        .pipe(uglify())
-		   	.pipe(gulp.dest('demo/client/js/'));
+		   	.pipe(gulp.dest('demo/js/'));
 });
 
 gulp.task('build-node-module', () => {
@@ -70,7 +70,7 @@ gulp.task('build-node-module', () => {
 		   	.pipe(notify({
 	            title: "node-module.js has been Compiled"
 	        }))
-		   	.pipe(gulp.dest('demo/client/js/'));
+		   	.pipe(gulp.dest('demo/js/'));
 });
 
 gulp.task('build-node-module-min', () => {
@@ -94,7 +94,7 @@ gulp.task('build-node-module-min', () => {
 	            title: "node-module.min.js has been Compiled"
 	        }))
 	        .pipe(uglify())
-		   	.pipe(gulp.dest('demo/client/js/'));
+		   	.pipe(gulp.dest('demo/js/'));
 });
 
 gulp.task('default', ['build', 'build-min', 'build-node-module', 'build-node-module-min'], () => {

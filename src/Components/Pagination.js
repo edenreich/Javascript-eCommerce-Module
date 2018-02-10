@@ -173,7 +173,6 @@ class Pagination extends BaseComponent
 
 			if (Products && Products.booted) {
 				Products.loadProducts(requestedPage, true).then(function(products) {
-					console.log(products);
 					if (products) {
 						this.setCurrent(requestedPage);
 					}

@@ -20,7 +20,6 @@ class Router
 	 */
 	constructor(container)
 	{
-		this.local = true;
 		this.container = container;
 		this.routes = this.buildRoutes();
 		
@@ -28,10 +27,10 @@ class Router
 			history.replaceState('', '', window.location.pathname);
 		}
 
-		window.addEventListener('popstate', this.entry.bind(this));
-		window.addEventListener('hashchange', this.entry.bind(this));
-		window.addEventListener('touchstart', this.entry.bind(this));
-		window.addEventListener('click', this.entry.bind(this));
+		window.addEventListener('popstate', this.register.bind(this));
+		window.addEventListener('hashchange', this.register.bind(this));
+		window.addEventListener('touchstart', this.register.bind(this));
+		window.addEventListener('click', this.register.bind(this));
 	}
 
 	/**
@@ -42,61 +41,79 @@ class Router
 	 * @param object | event
 	 * @return void
 	 */
-	entry(event)
+	register(event)
 	{
-		if (typeof event != 'undefined' && event.type == 'click') {
-			event.preventDefault();
-		}
+		let url = this.parseUrl();
 
-		if (typeof event != 'undefined' && event.type == 'click' && 
-			event.target.tagName.toLowerCase() != 'a') {
-			return;
+		if (typeof event == 'undefined') {
+			this.parseHttpRequest(url);
+		} else {
+			this.parseEvent(event, url);
 		}
+	}
 
-		let dispatchedUrl;
-		let url = dispatchedUrl || window.location.pathname;
-		let queryString;
-
-		if (typeof url == 'undefined') {
-			return;
-		}
-
-		if (typeof event != 'undefined' && event.type == 'popstate') {
-			url = event.state.previous;
-		}
+	parseUrl()
+	{
+		let url = window.location.href;
 
 		if (Url.hasParameters(url)) {
-			let parts = url.split('?')[1];
-			queryString = parts[1];
-			url = parts[0].substring(parts[0].length-1);
+			this.queryString = url.split('?')[1];
+			url = window.location.pathname;
 		}
 
-		if (url.indexOf('##/') != -1) {
+		if (url.indexOf('##/') >= 0) {
 			url = url.replace('##/', '');
 		}
 
-		if (queryString) {
-			url = url + queryString;
-		}
+		return url;
+	}
 
-		if (typeof event != 'undefined' && typeof event.target.pathname != 'undefined') {
-			url = event.target.pathname || event.target.href;
-		}
+	/**
+	 * Parse a full http comming request.
+	 *
+	 * @param string | url
+	 * @return void
+	 */
+	parseHttpRequest(url)
+	{
+		this.dispatch(url);
+	}
 
+	/**
+	 * Parse a request happens by triggered event.
+	 *
+	 * @param string | url
+	 * @return void
+	 */
+	parseEvent(event, url)
+	{
 		this.container.Events.subscribe('route.dispatched', function(url) {
-			if (this.local) {
-				url = '/client' + url;
-			}
-
-			dispatchedUrl = url;
-
 			Url.change(url);
 		}.bind(this));
 
-		// means this is a demo.
-		// for the meanwhile, @todo find a different solution
-		if (this.local) {
-			url = url.replace('/client', '');
+		switch(event.type)
+		{
+			case 'touchstart':
+			case 'click':
+				event.preventDefault();
+				
+				// basically exit, stop parsing, the user did not click a link
+				if (event.target.tagName.toLowerCase() != 'a') {
+					return; 
+				}
+
+				// get the link href attribute, only the path segment.
+				if (typeof event.target.pathname != 'undefined') {
+					url = event.target.pathname;
+				}
+
+				break;
+			case 'popstate':
+				url = event.state.previous;
+				break;
+			case 'hashchange':
+
+				break;
 		}
 
 		this.current = url;

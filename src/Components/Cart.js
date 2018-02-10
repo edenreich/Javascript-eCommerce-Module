@@ -326,7 +326,7 @@ class Cart extends BaseComponent
 		let checkout = DOM.createElement('a', {
 			class: 'btn btn-primary',
 			text: 'Checkout',
-			href: 'checkout'
+			href: '/checkout'
 		});
 
 

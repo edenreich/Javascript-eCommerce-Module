@@ -69,7 +69,7 @@ class TurboEcommerce
 		document.addEventListener('DOMContentLoaded', function() {
 			this.setElement(this.settings.element);
 
-			this.container.Router.entry();
+			this.container.Router.register();
 
 			if (this.settings.loading_animation) {
 				startLoading.call(this);
