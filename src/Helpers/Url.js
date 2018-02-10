@@ -61,10 +61,6 @@ class Url
 			url = '/' + url;
 		}
 
-		if (url == '/') {
-			url = '/home';
-		}
-
 		let previousUrl = window.location.pathname;
 		
 		window.history.pushState({"previous": previousUrl}, '', url);

@@ -1040,10 +1040,6 @@ var Url = function () {
 				url = '/' + url;
 			}
 
-			if (url == '/') {
-				url = '/home';
-			}
-
 			var previousUrl = window.location.pathname;
 
 			window.history.pushState({ "previous": previousUrl }, '', url);
@@ -1104,13 +1100,14 @@ var Router = function () {
 
 		this.container = container;
 		this.routes = this.buildRoutes();
+		this.hash = '##';
 
 		if (typeof history != 'undefined') {
-			history.replaceState('', '', window.location.pathname);
+			history.replaceState({ "previous": '/' }, '', window.location.pathname);
 		}
 
-		window.addEventListener('popstate', this.register.bind(this));
 		window.addEventListener('hashchange', this.register.bind(this));
+		window.addEventListener('popstate', this.register.bind(this));
 		window.addEventListener('touchstart', this.register.bind(this));
 		window.addEventListener('click', this.register.bind(this));
 	}
@@ -1130,24 +1127,46 @@ var Router = function () {
 		value: function register(event) {
 			var url = this.parseUrl();
 
+			if (this.hashNavigation) {
+				var modifiedUrl = this.hash + url + '?' + this.queryString;
+
+				if (typeof event != 'undefined' && event.type == 'popstate') {
+					Url.change(modifiedUrl);
+				}
+			}
+
 			if (typeof event == 'undefined') {
 				this.parseHttpRequest(url);
 			} else {
 				this.parseEvent(event, url);
 			}
 		}
+
+		/**
+   * Parse the url.
+   * separate query string from url.
+   *
+   * @return url 
+   */
+
 	}, {
 		key: 'parseUrl',
 		value: function parseUrl() {
 			var url = window.location.href;
 
 			if (Url.hasParameters(url)) {
-				this.queryString = url.split('?')[1];
-				url = window.location.pathname;
+				var parts = url.split('?');
+				this.queryString = parts[1];
+				url = parts[0].replace(window.location.protocol + '//' + window.location.host, '');
+				this.current = url;
 			}
 
-			if (url.indexOf('##/') >= 0) {
-				url = url.replace('##/', '');
+			if (url.indexOf(this.hash) >= 0) {
+				url = window.location.pathname.replace(this.hash, '');
+			}
+
+			if (this.hashNavigation) {
+				Url.change(this.hash + url + '?' + this.queryString);
 			}
 
 			return url;
@@ -1163,6 +1182,7 @@ var Router = function () {
 	}, {
 		key: 'parseHttpRequest',
 		value: function parseHttpRequest(url) {
+			this.current = url;
 			this.dispatch(url);
 		}
 
@@ -1176,17 +1196,13 @@ var Router = function () {
 	}, {
 		key: 'parseEvent',
 		value: function parseEvent(event, url) {
-			this.container.Events.subscribe('route.dispatched', function (url) {
-				Url.change(url);
-			}.bind(this));
-
 			switch (event.type) {
 				case 'touchstart':
 				case 'click':
 					event.preventDefault();
 
 					// basically exit, stop parsing, the user did not click a link
-					if (event.target.tagName.toLowerCase() != 'a') {
+					if (event.target.tagName.toLowerCase() != 'a' || DOM.hasClass(event.target, 'page-item') || DOM.hasClass(event.target, 'page-link')) {
 						return;
 					}
 
@@ -1197,12 +1213,22 @@ var Router = function () {
 
 					break;
 				case 'popstate':
-					url = event.state.previous;
+					if (typeof event.state != 'undefined') {
+						url = event.state.previous;
+					}
 					break;
 				case 'hashchange':
-
+					url = window.location.pathname.replace(this.hash, '');
 					break;
 			}
+
+			this.container.Events.subscribe('route.dispatched', function (url) {
+				if (this.hashNavigation) {
+					url = this.hash + url;
+				}
+
+				Url.change(url);
+			}.bind(this));
 
 			this.current = url;
 			this.dispatch(url);
@@ -1239,7 +1265,8 @@ var Router = function () {
 						break;
 					case '/info/:product':
 						console.log('single product info page');
-						// @todo build product info component
+						this.container.Details.hideAll();
+						this.container.Details.show();
 						break;
 					default:
 						console.log('default route');
@@ -1250,6 +1277,26 @@ var Router = function () {
 			}
 
 			this.container.Events.publish('route.dispatched', url);
+		}
+
+		/**
+   * Based on developer's configuration.
+   * attaches an hash for the navigation
+   * to prevent webserver from not finding files
+   * on page refresh.
+   * 
+   * @param bool | active
+   * @return this
+   */
+
+	}, {
+		key: 'hashNavigation',
+		value: function hashNavigation() {
+			var active = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+			this.hashNavigation = active;
+
+			return this;
 		}
 
 		/**
@@ -2365,7 +2412,7 @@ var Filter = function (_BaseComponent2) {
 
 
 var defaultSettings$3 = {
-	element: '.checkout',
+	element: '.details',
 	no_css: false
 };
 
@@ -2397,8 +2444,174 @@ var Http$1 = void 0;
  * payments validation, cart validation etc..
  */
 
-var Checkout = function (_BaseComponent3) {
-	_inherits(Checkout, _BaseComponent3);
+var Details = function (_BaseComponent3) {
+	_inherits(Details, _BaseComponent3);
+
+	/**
+  * - Initialize the IoC container
+  * - Initialize the Request
+  * - Initialize the EventManager
+  * - Listen to checkout event.
+  *
+  * @param \Core\Container | container
+  * @param \Helpers\Request | http
+  * @param \Core\EventManager | eventManager
+  * @return void
+  */
+	function Details(container, http, eventManager) {
+		_classCallCheck(this, Details);
+
+		var _this7 = _possibleConstructorReturn(this, (Details.__proto__ || Object.getPrototypeOf(Details)).call(this));
+
+		Container$2 = container;
+		Http$1 = http;
+		EventManager$3 = eventManager;
+		return _this7;
+	}
+
+	/**
+  * Sets the object by the users setting.
+  *
+  * @param object | settings
+  * @return void
+  */
+
+
+	_createClass(Details, [{
+		key: 'setup',
+		value: function setup(settings) {
+			if ((typeof settings === 'undefined' ? 'undefined' : _typeof(settings)) != 'object') {
+				throw new InvalidArgumentException$1();
+			}
+
+			this.settings = Common.extend(defaultSettings$3, settings);
+
+			document.addEventListener('DOMContentLoaded', function () {
+
+				this.setElement(this.settings.element);
+				this.hide();
+				this.draw();
+			}.bind(this));
+		}
+
+		/**
+   * Binds everthing to the element.
+   *
+   * @param string | selector
+   * @return void
+   */
+
+	}, {
+		key: 'setElement',
+		value: function setElement(selector) {
+			this.element = DOM.find(selector);
+
+			if (this.element) {
+				DOM.addClass(this.element, this.settings.class);
+			}
+		}
+
+		/**
+   * Changes the url to be checkout
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'changeUrl',
+		value: function changeUrl() {
+			Url.change('checkout');
+		}
+
+		/**
+   * Add the eCommerce style tags to the DOM.
+   *
+   * @return void
+   */
+
+	}, {
+		key: 'draw',
+		value: function draw() {
+			if (DOM.find('#Turbo-eCommerce-Details')) {
+				return;
+			}
+
+			if (this.settings.no_css) {
+				return;
+			}
+
+			var position = this.settings.fixed ? 'fixed' : 'absolute';
+
+			var css = '\n\t\t\t' + this.settings.element + ' {\n\t\t\t\twidth: 100%;\n\t\t\t\tmin-height: 400px;\n\t\t\t\tborder: 1px solid #e4e4e4;\n\t\t\t}\n\t\t';
+
+			DOM.addStyle('Turbo-eCommerce-Details', css);
+		}
+
+		/**
+   * Hides all irrelevant elements from the DOM.
+   *
+   * @return void 
+   */
+
+	}, {
+		key: 'hideAll',
+		value: function hideAll() {
+			Container$2.Components.booted.forEach(function (component) {
+				if (component.constructor.name != 'Details') {
+					component.hide();
+				}
+			});
+		}
+	}]);
+
+	return Details;
+}(BaseComponent);
+
+// Helpers
+// Components
+// Exceptions
+/**
+ * The default settings of the cart.
+ *
+ * @var object
+ */
+
+
+var defaultSettings$4 = {
+	element: '.checkout',
+	no_css: false
+};
+
+/**
+ * Stores the container object.
+ *
+ * @var \Core\Container
+ */
+var Container$3 = void 0;
+
+/**
+ * Stores the event manager object.
+ *
+ * @var \Core\EventManager
+ */
+var EventManager$4 = void 0;
+
+/**
+ * Stores the request object.
+ *
+ * @var \Helpers\Request
+ */
+var Http$2 = void 0;
+
+/**
+ * @class Checkout
+ *
+ * Handles the checkout process.
+ * payments validation, cart validation etc..
+ */
+
+var Checkout = function (_BaseComponent4) {
+	_inherits(Checkout, _BaseComponent4);
 
 	/**
   * - Initialize the IoC container
@@ -2414,12 +2627,12 @@ var Checkout = function (_BaseComponent3) {
 	function Checkout(container, http, eventManager) {
 		_classCallCheck(this, Checkout);
 
-		var _this7 = _possibleConstructorReturn(this, (Checkout.__proto__ || Object.getPrototypeOf(Checkout)).call(this));
+		var _this8 = _possibleConstructorReturn(this, (Checkout.__proto__ || Object.getPrototypeOf(Checkout)).call(this));
 
-		Container$2 = container;
-		Http$1 = http;
-		EventManager$3 = eventManager;
-		return _this7;
+		Container$3 = container;
+		Http$2 = http;
+		EventManager$4 = eventManager;
+		return _this8;
 	}
 
 	/**
@@ -2437,7 +2650,7 @@ var Checkout = function (_BaseComponent3) {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$3, settings);
+			this.settings = Common.extend(defaultSettings$4, settings);
 
 			document.addEventListener('DOMContentLoaded', function () {
 
@@ -2509,7 +2722,7 @@ var Checkout = function (_BaseComponent3) {
 	}, {
 		key: 'hideAll',
 		value: function hideAll() {
-			Container$2.Components.booted.forEach(function (component) {
+			Container$3.Components.booted.forEach(function (component) {
 				if (component.constructor.name != 'Checkout') {
 					component.hide();
 				}
@@ -2530,7 +2743,7 @@ var Checkout = function (_BaseComponent3) {
  */
 
 
-var defaultSettings$4 = {
+var defaultSettings$5 = {
 	element: '.products',
 	class: '',
 	item_class: '',
@@ -2549,21 +2762,21 @@ var defaultSettings$4 = {
  * 
  * @var \Core\Container
  */
-var Container$3 = void 0;
+var Container$4 = void 0;
 
 /**
  * Stores the container object.
  * 
  * @var \Core\EventManager
  */
-var EventManager$4 = void 0;
+var EventManager$5 = void 0;
 
 /**
  * Stores the request object.
  * 
  * @var \Helper\Request 
  */
-var Http$2 = void 0;
+var Http$3 = void 0;
 
 /**
  * Stores the chunked per 
@@ -2579,8 +2792,8 @@ var chunkedProducts = void 0;
  * The Products component, handles the products tasks.
  */
 
-var Products = function (_BaseComponent4) {
-	_inherits(Products, _BaseComponent4);
+var Products = function (_BaseComponent5) {
+	_inherits(Products, _BaseComponent5);
 
 	/**
   * Initalize the Container.
@@ -2592,13 +2805,13 @@ var Products = function (_BaseComponent4) {
 	function Products(container, http, eventManager) {
 		_classCallCheck(this, Products);
 
-		var _this8 = _possibleConstructorReturn(this, (Products.__proto__ || Object.getPrototypeOf(Products)).call(this));
+		var _this9 = _possibleConstructorReturn(this, (Products.__proto__ || Object.getPrototypeOf(Products)).call(this));
 
-		Container$3 = container;
-		Http$2 = http;
-		EventManager$4 = eventManager;
+		Container$4 = container;
+		Http$3 = http;
+		EventManager$5 = eventManager;
 		chunkedProducts = [];
-		return _this8;
+		return _this9;
 	}
 
 	/**
@@ -2616,7 +2829,7 @@ var Products = function (_BaseComponent4) {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$4, settings);
+			this.settings = Common.extend(defaultSettings$5, settings);
 			this.totalItems = null;
 
 			document.addEventListener('DOMContentLoaded', function () {
@@ -2643,11 +2856,11 @@ var Products = function (_BaseComponent4) {
 			var pageNumber = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 			var append = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-			if (Container$3.Pagination && Container$3.Pagination.booted) {
+			if (Container$4.Pagination && Container$4.Pagination.booted) {
 
-				var limit = Container$3.Pagination.settings.per_page;
+				var limit = Container$4.Pagination.settings.per_page;
 
-				switch (Container$3.Pagination.settings.processing) {
+				switch (Container$4.Pagination.settings.processing) {
 					case 'client-side':
 						return this.loadPageProductsOnce(pageNumber, limit, append);
 						break;
@@ -2706,8 +2919,8 @@ var Products = function (_BaseComponent4) {
 
 	}, {
 		key: 'loadPageProductsOnce',
-		value: function loadPageProductsOnce(pageNumber) {
-			var append = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+		value: function loadPageProductsOnce(pageNumber, undefined) {
+			var append = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
 			var request = void 0;
 
@@ -2751,9 +2964,9 @@ var Products = function (_BaseComponent4) {
 		key: 'calculateClientPages',
 		value: function calculateClientPages(products) {
 			// We are using pagination so we need to update it too.
-			Container$3.Pagination.settings.total_items = products.length;
+			Container$4.Pagination.settings.total_items = products.length;
 
-			var perPage = Container$3.Pagination.settings.per_page;
+			var perPage = Container$4.Pagination.settings.per_page;
 
 			// We need to calculate the pages on full http request 
 			// only once. so we check to see if we have results in our cache.
@@ -2802,11 +3015,11 @@ var Products = function (_BaseComponent4) {
 
 			this.element.innerHTML = '';
 			products.forEach(function (product) {
-				EventManager$4.publish('products.loading', product);
+				EventManager$5.publish('products.loading', product);
 				this.element.appendChild(product);
 			}.bind(this));
 
-			EventManager$4.publish('products.loaded', products);
+			EventManager$5.publish('products.loaded', products);
 
 			return products;
 		}
@@ -2829,11 +3042,11 @@ var Products = function (_BaseComponent4) {
 			var products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
 			products.forEach(function (product) {
-				EventManager$4.publish('products.loading', product);
+				EventManager$5.publish('products.loading', product);
 				this.element.appendChild(product);
 			}.bind(this));
 
-			EventManager$4.publish('products.loaded', products);
+			EventManager$5.publish('products.loaded', products);
 
 			return products;
 		}
@@ -2853,7 +3066,7 @@ var Products = function (_BaseComponent4) {
 
 			var action = pageNumber ? this.settings.url + '?page=' + pageNumber : this.settings.url;
 
-			return Http$2.get({
+			return Http$3.get({
 				url: action
 			});
 		}
@@ -2999,13 +3212,13 @@ var Products = function (_BaseComponent4) {
 
 			addToCart.addEventListener('click', function (e) {
 				e.preventDefault();
-				EventManager$4.publish('cart.product.added', attributes);
+				EventManager$5.publish('cart.product.added', attributes);
 			});
 
 			favorite.addEventListener('click', function (e) {
 				e.preventDefault();
 				this.innerHTML = '&#x2713;';
-				EventManager$4.publish('cart.product.favorited', attributes);
+				EventManager$5.publish('cart.product.favorited', attributes);
 			});
 
 			overlay.appendChild(tag);
@@ -3068,7 +3281,7 @@ var Products = function (_BaseComponent4) {
 	}, {
 		key: 'hideAll',
 		value: function hideAll() {
-			Container$3.Components.booted.forEach(function (component) {
+			Container$4.Components.booted.forEach(function (component) {
 				if (component.constructor.name != 'Products') {
 					component.hide();
 				}
@@ -3085,8 +3298,8 @@ var Products = function (_BaseComponent4) {
  */
 
 
-var Services = function (_BaseComponent5) {
-	_inherits(Services, _BaseComponent5);
+var Services = function (_BaseComponent6) {
+	_inherits(Services, _BaseComponent6);
 
 	function Services() {
 		_classCallCheck(this, Services);
@@ -3109,10 +3322,10 @@ var NotInPageRangeException = function (_ExceptionHandler5) {
 
 		message = message || defaultMessage$4;
 
-		var _this10 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
+		var _this11 = _possibleConstructorReturn(this, (NotInPageRangeException.__proto__ || Object.getPrototypeOf(NotInPageRangeException)).call(this));
 
-		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this10).call(_this10, _this10, message);
-		return _this10;
+		_get(NotInPageRangeException.prototype.__proto__ || Object.getPrototypeOf(NotInPageRangeException.prototype), 'stackTrace', _this11).call(_this11, _this11, message);
+		return _this11;
 	}
 
 	return NotInPageRangeException;
@@ -3128,7 +3341,7 @@ var NotInPageRangeException = function (_ExceptionHandler5) {
  */
 
 
-var defaultSettings$5 = {
+var defaultSettings$6 = {
 	element: '.pagination-links',
 	processing: 'client-side',
 	class: '',
@@ -3144,7 +3357,7 @@ var defaultSettings$5 = {
  *
  * @var \Core\Container
  */
-var Container$4 = void 0;
+var Container$5 = void 0;
 
 /**
  * Stores the products component.
@@ -3158,7 +3371,7 @@ var Products$2 = void 0;
  * 
  * @var \Core\EventManager
  */
-var EventManager$5 = void 0;
+var EventManager$6 = void 0;
 
 /**
  * @class Pagination
@@ -3166,8 +3379,8 @@ var EventManager$5 = void 0;
  * The Pagination component, handles the pagination.
  */
 
-var Pagination = function (_BaseComponent6) {
-	_inherits(Pagination, _BaseComponent6);
+var Pagination = function (_BaseComponent7) {
+	_inherits(Pagination, _BaseComponent7);
 
 	/**
   * - Initialize the container object.
@@ -3184,12 +3397,12 @@ var Pagination = function (_BaseComponent6) {
 
 		_classCallCheck(this, Pagination);
 
-		var _this11 = _possibleConstructorReturn(this, (Pagination.__proto__ || Object.getPrototypeOf(Pagination)).call(this));
+		var _this12 = _possibleConstructorReturn(this, (Pagination.__proto__ || Object.getPrototypeOf(Pagination)).call(this));
 
-		Container$4 = container;
+		Container$5 = container;
 		Products$2 = products;
-		EventManager$5 = events;
-		return _this11;
+		EventManager$6 = events;
+		return _this12;
 	}
 
 	/**
@@ -3207,7 +3420,7 @@ var Pagination = function (_BaseComponent6) {
 				throw new InvalidArgumentException$1();
 			}
 
-			this.settings = Common.extend(defaultSettings$5, settings);
+			this.settings = Common.extend(defaultSettings$6, settings);
 			this.setCurrent(1);
 
 			document.addEventListener('DOMContentLoaded', function () {
@@ -3589,10 +3802,10 @@ var ComponentNotRegisteredException = function (_ExceptionHandler6) {
 
 		message = message || defaultMessage$5;
 
-		var _this12 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
+		var _this13 = _possibleConstructorReturn(this, (ComponentNotRegisteredException.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException)).call(this, message));
 
-		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this12).call(_this12, _this12, message);
-		return _this12;
+		_get(ComponentNotRegisteredException.prototype.__proto__ || Object.getPrototypeOf(ComponentNotRegisteredException.prototype), 'stackTrace', _this13).call(_this13, _this13, message);
+		return _this13;
 	}
 
 	return ComponentNotRegisteredException;
@@ -3623,6 +3836,7 @@ var ComponentsProvider = function () {
 		this.components.Pagination = {};
 		this.components.Cart = {};
 		this.components.Checkout = {};
+		this.components.Details = {};
 	}
 
 	/**
@@ -3644,6 +3858,7 @@ var ComponentsProvider = function () {
 			this.components.Pagination.booted = false;
 			this.components.Cart.booted = false;
 			this.components.Checkout.booted = false;
+			this.components.Details.booted = false;
 
 			var instance = this;
 
@@ -3686,6 +3901,13 @@ var ComponentsProvider = function () {
 
 			this.container.bind('Checkout', function (container, component) {
 				instance.components[component] = new Checkout(container, container.Request, container.Events);
+				instance.components[component].booted = true;
+				instance.booted.push(instance.components[component]);
+				return instance.components[component];
+			}, 'components');
+
+			this.container.bind('Details', function (container, component) {
+				instance.components[component] = new Details(container, container.Request, container.Events);
 				instance.components[component].booted = true;
 				instance.booted.push(instance.components[component]);
 				return instance.components[component];
@@ -3738,10 +3960,10 @@ var InvalidBindingException = function (_ExceptionHandler7) {
 
 		message = message || defaultMessage$6;
 
-		var _this13 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
+		var _this14 = _possibleConstructorReturn(this, (InvalidBindingException.__proto__ || Object.getPrototypeOf(InvalidBindingException)).call(this, message));
 
-		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this13).call(_this13, _this13, message);
-		return _this13;
+		_get(InvalidBindingException.prototype.__proto__ || Object.getPrototypeOf(InvalidBindingException.prototype), 'stackTrace', _this14).call(_this14, _this14, message);
+		return _this14;
 	}
 
 	return InvalidBindingException;
@@ -3757,15 +3979,15 @@ var InvalidBindingException = function (_ExceptionHandler7) {
  * Handles/Controls the dependencies of ecommerce.
  */
 
-var Container$5 = function () {
+var Container$6 = function () {
 	/**
   * - Initialize instances member.
   * - Register bindings.
   *
   * @return void
   */
-	function Container$5() {
-		_classCallCheck(this, Container$5);
+	function Container$6() {
+		_classCallCheck(this, Container$6);
 
 		this.instances = [];
 		this.register();
@@ -3782,7 +4004,7 @@ var Container$5 = function () {
   */
 
 
-	_createClass(Container$5, [{
+	_createClass(Container$6, [{
 		key: 'bind',
 		value: function bind(key, concrete) {
 			var namespace = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -3954,7 +4176,7 @@ var Container$5 = function () {
 		}
 	}]);
 
-	return Container$5;
+	return Container$6;
 }();
 
 // Helpers
@@ -3967,7 +4189,7 @@ var Container$5 = function () {
  */
 
 
-var defaultSettings$6 = {
+var defaultSettings$7 = {
 	debug_level: 'error',
 	element: 'body',
 	inject_libraries: [],
@@ -4006,13 +4228,13 @@ var TurboEcommerce = function () {
 			throw new InvalidArgumentException$1();
 		}
 
-		this.settings = Common.extend(defaultSettings$6, settings);
+		this.settings = Common.extend(defaultSettings$7, settings);
 
 		ExceptionHandler.setDebugLevel = this.settings.debug_level;
 
 		this.loadExternalLibraries();
 
-		this.container = new Container$5();
+		this.container = new Container$6();
 
 		this.components = this.container.make('Components');
 		this.components.register(this.settings.components);
@@ -4020,7 +4242,7 @@ var TurboEcommerce = function () {
 		document.addEventListener('DOMContentLoaded', function () {
 			this.setElement(this.settings.element);
 
-			this.container.Router.register();
+			this.container.Router.hashNavigation(this.settings.hash_navigation).register();
 
 			if (this.settings.loading_animation) {
 				startLoading.call(this);

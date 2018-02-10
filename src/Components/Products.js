@@ -173,7 +173,7 @@ class Products extends BaseComponent
 	 * @param bool | append
 	 * @return void
 	 */
-	loadPageProductsOnce(pageNumber, append = false)
+	loadPageProductsOnce(pageNumber, undefined, append = false)
 	{
 		let request;
 

@@ -2,6 +2,7 @@
 // Components
 import Cart from '../Components/Cart.js';
 import Filter from '../Components/Filter.js';
+import Details from '../Components/Details.js';
 import Checkout from '../Components/Checkout.js';
 import Products from '../Components/Products.js';
 import Services from '../Components/Services.js';
@@ -33,6 +34,7 @@ class ComponentsProvider
 		this.components.Pagination = {};
 		this.components.Cart = {};
 		this.components.Checkout = {};
+		this.components.Details = {};
 	}
 
    /**
@@ -51,6 +53,7 @@ class ComponentsProvider
 		this.components.Pagination.booted = false;
 		this.components.Cart.booted = false;
 		this.components.Checkout.booted = false;
+		this.components.Details.booted = false;
 
 		let instance = this;
 
@@ -93,6 +96,13 @@ class ComponentsProvider
 
 		this.container.bind('Checkout', function(container, component) {
 			instance.components[component] = new Checkout(container, container.Request, container.Events);
+			instance.components[component].booted = true;
+			instance.booted.push(instance.components[component]);
+			return instance.components[component];
+		}, 'components');
+
+		this.container.bind('Details', function(container, component) {
+			instance.components[component] = new Details(container, container.Request, container.Events);
 			instance.components[component].booted = true;
 			instance.booted.push(instance.components[component]);
 			return instance.components[component];

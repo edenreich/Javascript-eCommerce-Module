@@ -1,5 +1,6 @@
 
 import Url from '../Helpers/Url.js';
+import DOM from '../Helpers/DOM.js';
 
 /**
  * @class Router
@@ -22,13 +23,14 @@ class Router
 	{
 		this.container = container;
 		this.routes = this.buildRoutes();
-		
+		this.hash = '##';
+
 		if (typeof history != 'undefined') {
-			history.replaceState('', '', window.location.pathname);
+			history.replaceState({"previous": '/'}, '', window.location.pathname);
 		}
 
-		window.addEventListener('popstate', this.register.bind(this));
 		window.addEventListener('hashchange', this.register.bind(this));
+		window.addEventListener('popstate', this.register.bind(this));
 		window.addEventListener('touchstart', this.register.bind(this));
 		window.addEventListener('click', this.register.bind(this));
 	}
@@ -45,6 +47,14 @@ class Router
 	{
 		let url = this.parseUrl();
 
+		if (this.hashNavigation) {
+			let modifiedUrl = this.hash + url + '?' + this.queryString;
+			
+			if (typeof event != 'undefined' && event.type == 'popstate') {
+				Url.change(modifiedUrl);
+			}
+		}
+
 		if (typeof event == 'undefined') {
 			this.parseHttpRequest(url);
 		} else {
@@ -52,17 +62,30 @@ class Router
 		}
 	}
 
+	/**
+	 * Parse the url.
+	 * separate query string from url.
+	 *
+	 * @return url 
+	 */
 	parseUrl()
 	{
 		let url = window.location.href;
 
 		if (Url.hasParameters(url)) {
-			this.queryString = url.split('?')[1];
-			url = window.location.pathname;
+			let parts = url.split('?');
+			this.queryString = parts[1];
+			url = parts[0].replace(window.location.protocol + '//' + window.location.host, '');
+			this.current = url;
+			
 		}
 
-		if (url.indexOf('##/') >= 0) {
-			url = url.replace('##/', '');
+		if (url.indexOf(this.hash) >= 0) {
+			url = window.location.pathname.replace(this.hash, '');
+		}
+
+		if (this.hashNavigation) {
+			Url.change(this.hash + url + '?' + this.queryString);
 		}
 
 		return url;
@@ -76,6 +99,7 @@ class Router
 	 */
 	parseHttpRequest(url)
 	{
+		this.current = url;
 		this.dispatch(url);
 	}
 
@@ -87,10 +111,6 @@ class Router
 	 */
 	parseEvent(event, url)
 	{
-		this.container.Events.subscribe('route.dispatched', function(url) {
-			Url.change(url);
-		}.bind(this));
-
 		switch(event.type)
 		{
 			case 'touchstart':
@@ -98,7 +118,9 @@ class Router
 				event.preventDefault();
 				
 				// basically exit, stop parsing, the user did not click a link
-				if (event.target.tagName.toLowerCase() != 'a') {
+				if (event.target.tagName.toLowerCase() != 'a' ||
+					DOM.hasClass(event.target, 'page-item') ||
+					DOM.hasClass(event.target, 'page-link')) {
 					return; 
 				}
 
@@ -109,12 +131,22 @@ class Router
 
 				break;
 			case 'popstate':
-				url = event.state.previous;
+				if (typeof event.state != 'undefined') {
+					url = event.state.previous;
+				}
 				break;
 			case 'hashchange':
-
+				url = window.location.pathname.replace(this.hash, '');
 				break;
 		}
+
+		this.container.Events.subscribe('route.dispatched', function(url) {
+			if (this.hashNavigation) {
+				url = this.hash + url; 
+			}
+
+			Url.change(url);
+		}.bind(this));
 
 		this.current = url;
 		this.dispatch(url);
@@ -150,7 +182,8 @@ class Router
 					break;
 				case '/info/:product':
 					console.log('single product info page');
-					// @todo build product info component
+					this.container.Details.hideAll();
+					this.container.Details.show();
 					break;
 				default:
 					console.log('default route');
@@ -161,6 +194,22 @@ class Router
 		}
 
 		this.container.Events.publish('route.dispatched', url);
+	}
+
+	/**
+	 * Based on developer's configuration.
+	 * attaches an hash for the navigation
+	 * to prevent webserver from not finding files
+	 * on page refresh.
+	 * 
+	 * @param bool | active
+	 * @return this
+	 */
+	hashNavigation(active = false)
+	{
+		this.hashNavigation = active;
+
+		return this;
 	}
 
 	/**

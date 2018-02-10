@@ -69,7 +69,7 @@ class TurboEcommerce
 		document.addEventListener('DOMContentLoaded', function() {
 			this.setElement(this.settings.element);
 
-			this.container.Router.register();
+			this.container.Router.hashNavigation(this.settings.hash_navigation).register();
 
 			if (this.settings.loading_animation) {
 				startLoading.call(this);

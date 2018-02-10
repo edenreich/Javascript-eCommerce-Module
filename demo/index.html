@@ -10,6 +10,7 @@
 <hr>
 
 <div class="turbo-ecommerce">
+	<div class="details"></div>
 	<div class="checkout"></div>
 	<div class="cart"></div>
 	<div class="filter"></div>
@@ -25,9 +26,14 @@
 			class: 'col-xs-12',
 			element: '.turbo-ecommerce',
 			inject_libraries: ['bootstrap'],
-			components: ['Products', 'Services', 'Filter', 'Cart', 'Pagination', 'Checkout'],
+			components: [
+				'Products', 'Services', 'Filter', 
+				'Cart', 'Pagination', 'Checkout', 
+				'Details'
+			],
 			loading_animation: true,
 			no_css: false,
+			hash_navigation: true,
 		});
 
 		shop.Products.setup({
@@ -53,7 +59,7 @@
 			processing: 'client-side',
 			separator: '#',
 			url_parameter: 'page',
-			scroll: true,
+			scroll: false,
 		});
 
 		shop.Events.subscribe('products.loading', function(product) {
@@ -76,6 +82,10 @@
 			placement: 'right-top',
 			hover_color: 'orange',
 			no_css: false,
+		});
+
+		shop.Details.setup({
+			element: '.details'
 		});
 
 		shop.Checkout.setup({
