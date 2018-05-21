@@ -27,7 +27,7 @@ import Request from '../src/Helpers/Request.js';
 
 describe('CartComponentTest', function() {
 
-	const host = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://localhost';
 
 	const productsEndPoint = 'server/products.php';
 

@@ -23,7 +23,7 @@ import DomEvents from './Helpers/DomEvents.js';
 
 describe('ProductsComponentTest', function() {
 
-	const host = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://localhost';
 	const testEndPoint = 'server/products.php';
 
 	beforeEach(function(done) {	
