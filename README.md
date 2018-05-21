@@ -173,6 +173,6 @@ Alternativly if you have docker cli installed on the commandline:
 ```sh
 docker build . -t turbo-ecommerce \
 	&& docker run -it -d --name turbo-ecommerce --hostname turbo-ecommerce -v $(pwd):/app turbo-ecommerce \
-	&& docker exec -it turbo-ecommerce npm install
+	&& docker exec -it turbo-ecommerce npm install \
 	&& docker exec -it turbo-ecommerce npm run test
 ```
