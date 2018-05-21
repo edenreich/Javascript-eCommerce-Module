@@ -1,4 +1,4 @@
-<p align="center"><img src="https://s21.postimg.org/6ak2pw1l3/laptop.png" width="220px" height="250px"></p>
+<p align="center"><img src="https://s21.postimg.cc/6ak2pw1l3/laptop.png" width="220px" height="250px"></p>
 
 # Javascript-eCommerce-Module
 A super fast Webshop built with Vanila-Javascript(everything is loaded with Ajax). This module is there for handling the common components that are needed for runing a Webshop(Products, Services, Filter, Cart, Checkout, Pagination etc..).
