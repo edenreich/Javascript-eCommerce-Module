@@ -44,11 +44,10 @@
     "index.js"
   ],
   "bin": {
-    "turbo-ecommerce": "cli.js"
+    "turbo-ecommerce": "bin/cli.js"
   },
   "scripts": {
     "build": "gulp",
-    "test": "mocha tests --require babel-register || true",
-    "cli": "node ./cli.js"
+    "test": "mocha tests --require babel-register || true"
   }
 }
