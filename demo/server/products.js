@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const rootDir = process.cwd() + '/demo';
-const publicDir = process.cwd() + '/demo/public';
+const publicDir = rootDir + '/public';
 const pages = ['/products'];
 
 // Create simple server for demo.
