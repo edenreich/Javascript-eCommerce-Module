@@ -1,4 +1,4 @@
-#!/usr/bin/env  node
+#!/usr/bin/env node
 
 const CommandRunner = require('./command-runner');
 let args = process.argv.slice(2); // ignore first 2 parameters (node cli.js)
