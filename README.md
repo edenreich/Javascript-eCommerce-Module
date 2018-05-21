@@ -3,7 +3,6 @@
 # Javascript-eCommerce-Module
 A super fast Webshop built with Vanila-Javascript(everything is loaded with Ajax). This module is there for handling the common components that are needed for runing a Webshop(Products, Services, Filter, Cart, Checkout, Pagination etc..).
 
-
 ### Install
 Copy the script in demo/client/js/bundle.min.js to your files project.
 
@@ -160,4 +159,14 @@ When product has been added to the cart your callback will be executed with the 
 shop.Events.subscribe('cart.products.added', function(attributes) {
 	// handle event
 };
+```
+
+### Build for further Development
+Install nodejs and npm and run ```npm install```.
+
+Alternativly using Docker on the commandline:
+```sh
+docker build . -t turbo-ecommerce \
+	&& docker run -it -d --name turbo-ecommerce --hostname turbo-ecommerce -v $(pwd):/app turbo-ecommerce \
+	&& docker exec -it turbo-ecommerce npm install
 ```
