@@ -137,7 +137,7 @@ shop.Filter.setup({
 ```
 
 
-## Events
+### Events
 You can also subscribe to events that will be published at certain point and time.
 
 When products are loading your callback will be executed with a product object:
@@ -162,11 +162,17 @@ shop.Events.subscribe('cart.products.added', function(attributes) {
 ```
 
 ### Build for further Development
-Install nodejs and npm and run ```npm install```.
+clone the repository:
+```sh
+git clone https://github.com/edenreich/Turbo-eCommerce.git && cd Turbo-eCommerce
+```
 
-Alternativly using Docker on the commandline:
+make sure you have nodejs and npm installed and run ```npm install```.
+
+Alternativly if you have docker cli installed on the commandline:
 ```sh
 docker build . -t turbo-ecommerce \
 	&& docker run -it -d --name turbo-ecommerce --hostname turbo-ecommerce -v $(pwd):/app turbo-ecommerce \
 	&& docker exec -it turbo-ecommerce npm install
+	&& docker exec -it turbo-ecommerce npm run test
 ```
