@@ -169,10 +169,10 @@ git clone https://github.com/edenreich/Turbo-eCommerce.git && cd Turbo-eCommerce
 #### Using Docker:
 ```sh
 docker build . -t turbo-ecommerce \
-	&& docker run -it -d 
-		--name turbo-ecommerce \ 
-		--hostname turbo-ecommerce \ 
-		-v $(pwd):/app \ 
+	&& docker run -it -d \
+		--name turbo-ecommerce \
+		--hostname turbo-ecommerce \
+		-v $(pwd):/app \
 		-p 80:3000 turbo-ecommerce \
 	&& docker exec -it turbo-ecommerce npm install \
 	&& docker exec -it turbo-ecommerce npm run test
