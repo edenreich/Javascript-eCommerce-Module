@@ -136,7 +136,6 @@ shop.Filter.setup({
 });
 ```
 
-
 ### Events
 You can also subscribe to events that will be published at certain point and time.
 
@@ -161,18 +160,29 @@ shop.Events.subscribe('cart.products.added', function(attributes) {
 };
 ```
 
-### Build for further Development
+### Build Project (for further Development)
 clone the repository:
 ```sh
 git clone https://github.com/edenreich/Turbo-eCommerce.git && cd Turbo-eCommerce
 ```
 
-make sure you have nodejs and npm installed and run ```npm install```.
-
-Alternativly if you have docker cli installed on the commandline:
+#### Using Docker:
 ```sh
 docker build . -t turbo-ecommerce \
-	&& docker run -it -d --name turbo-ecommerce --hostname turbo-ecommerce -v $(pwd):/app turbo-ecommerce \
+	&& docker run -it -d 
+		--name turbo-ecommerce \ 
+		--hostname turbo-ecommerce \ 
+		-v $(pwd):/app \ 
+		-p 80:3000 turbo-ecommerce \
 	&& docker exec -it turbo-ecommerce npm install \
 	&& docker exec -it turbo-ecommerce npm run test
 ```
+
+#### If you don't use Docker:
+make sure you have NodeJS and NPM installed.
+
+in the root directory run ```npm start```
+
+lastely open the browser on ```http://localhost/index.html```
+
+P.S. don't forget to run ```npm run gulp``` or ```docker exec -it turbo-ecommerce npm run gulp```
