@@ -69,6 +69,26 @@ class DOM
 	}
 
 	/**
+	 * Checks if an element has a class.
+	 *
+	 * @param HTMLElement | element
+	 * @param string | className
+	 * @return bool
+	 */
+	static hasClass(element, className)
+	{
+		if (element === null) {
+			throw new InvalidArgumentException('hasClass() expects the first argument to be an HTMLElement but null was passed.');
+		}
+
+		if (! className || className == '' || typeof className == 'undefined') {
+			return;
+		}
+
+		return element.className.indexOf(className) != -1;
+	}
+
+	/**
 	 * Removes class from a given element.
 	 * 
 	 * @param object | element
@@ -173,12 +193,16 @@ class DOM
 		}
 
 		for (let option in options) {
-			if(option == 'text') {
-				element.innerHTML = options[option];
-				continue;
+			switch(option)
+			{
+				case 'text':
+				case 'html':
+					element.innerHTML = options[option];
+					break;
+				default:
+					element.setAttribute(option, options[option]);
+					break;
 			}
-
-			element.setAttribute(option, options[option]);
 		}
 
 		return element;
@@ -216,6 +240,40 @@ class DOM
 	static find(selector, context = window.document) 
 	{
 		return queryElement(selector, context);
+	}
+
+	/**
+	 * Get the document height.
+	 *
+	 * @return number 
+	 */
+	static documentHeight()
+	{
+		return Math.max(
+	        document.body.scrollHeight, document.documentElement.scrollHeight,
+	       	document.body.offsetHeight, document.documentElement.offsetHeight,
+	        document.body.clientHeight, document.documentElement.clientHeight
+	    )
+	}
+
+	/**
+	 * Get the window height.
+	 *
+	 * @return number 
+	 */
+	static windowHeight()
+	{
+		return window.innerHeight || (document.documentElement || document.body).clientHeight;
+	}
+
+	/**
+	 * Get the scroll offset position.
+	 *
+	 * @return number
+	 */
+	static scrollYOffset()
+	{
+		return window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
 	}
 }
 

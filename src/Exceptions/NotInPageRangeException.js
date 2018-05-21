@@ -1,7 +1,7 @@
 
 import ExceptionHandler from './ExceptionHandler.js';
 
-let defaultMessage = 'sorry, no more pages.';
+let defaultMessage = 'Sorry, no more pages.';
 
 class NotInPageRangeException extends ExceptionHandler
 {

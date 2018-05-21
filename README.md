@@ -3,7 +3,6 @@
 # Javascript-eCommerce-Module
 A super fast Webshop built with Vanila-Javascript(everything is loaded with Ajax). This module is there for handling the common components that are needed for runing a Webshop(Products, Services, Filter, Cart, Checkout, Pagination etc..).
 
-
 ### Install
 Copy the script in demo/client/js/bundle.min.js to your files project.
 
@@ -60,12 +59,20 @@ shop.Products.setup({
 - class - the class name for each product element.
 - per_page - the amount of items you would like to display per page.
 - total_items - the total amount of items.
+- processing - processing on client or on the server(if on the server it will send page GET parameter on each request)
+- separator - the separator shows on the url
+- url_parameter - the url parameter name
+- scroll - scroll pagination
 ```javascript
 shop.Pagination.setup({
 	element: '.pagination-links',
-	class: 'col-xs-offset-4 col-xs-8',
-	per_page: 5,
-	total_items: 10
+	class: 'col-xs-offset-2 col-xs-10 col-md-offset-4 col-md-8',
+	per_page: 10,
+	total_items: 25,
+	processing: 'client-side',
+	separator: '#',
+	url_parameter: 'page',
+	scroll: true,
 });
 ```
 #### Configure the Filter:
@@ -130,7 +137,7 @@ shop.Filter.setup({
 ```
 
 
-## Events
+### Events
 You can also subscribe to events that will be published at certain point and time.
 
 When products are loading your callback will be executed with a product object:
@@ -152,4 +159,20 @@ When product has been added to the cart your callback will be executed with the 
 shop.Events.subscribe('cart.products.added', function(attributes) {
 	// handle event
 };
+```
+
+### Build for further Development
+clone the repository:
+```sh
+git clone https://github.com/edenreich/Turbo-eCommerce.git && cd Turbo-eCommerce
+```
+
+make sure you have nodejs and npm installed and run ```npm install```.
+
+Alternativly if you have docker cli installed on the commandline:
+```sh
+docker build . -t turbo-ecommerce \
+	&& docker run -it -d --name turbo-ecommerce --hostname turbo-ecommerce -v $(pwd):/app turbo-ecommerce \
+	&& docker exec -it turbo-ecommerce npm install \
+	&& docker exec -it turbo-ecommerce npm run test
 ```

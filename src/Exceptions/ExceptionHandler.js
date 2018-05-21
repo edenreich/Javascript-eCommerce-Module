@@ -16,6 +16,11 @@ class ExceptionHandler
 	 */
 	static set setDebugLevel(level)
 	{
+		// Suppress errors depends on the debug level.
+		if (level == 'warning' || level == 'info') {
+			window.onerror = function() { return true; };
+		}
+
 		debugLevel = level;
 	}
 

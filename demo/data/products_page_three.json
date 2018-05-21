@@ -1,38 +1,44 @@
 [
 	{
-		"image" :"images/10.jpg",
+		"id": "6",
+		"image": "images/10.jpg",
 		"name": "Example Product 10", 
 		"price": "100.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	},
 	{
-		"image" :"images/11.jpg",
+		"id": "7",
+		"image": "images/11.jpg",
 		"name": "Example Product 11", 
 		"price": "100.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	},
 	{
-		"image" :"images/12.jpg",
+		"id": "8",
+		"image": "images/12.jpg",
 		"name": "Example Product 12", 
 		"price": "124.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	},
 	{
-		"image" :"images/13.jpg",
+		"id": "9",
+		"image": "images/13.jpg",
 		"name": "Example Product 13", 
 		"price": "100.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	},
 	{
-		"image" :"images/14.jpg",
+		"id": "10",
+		"image": "images/14.jpg",
 		"name": "Example Product 14", 
 		"price": "100.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	},
 	{
-		"image" :"images/15.jpg",
+		"id": "11",
+		"image": "images/15.jpg",
 		"name": "Example Product 15", 
 		"price": "100.00", 
-		"deliveryTime":  "5 days"
+		"deliveryTime": "5 days"
 	}
 ]

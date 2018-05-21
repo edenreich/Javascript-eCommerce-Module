@@ -1,4 +1,5 @@
 
+// External Packages
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
@@ -12,7 +13,7 @@ import Request from '../src/Helpers/Request.js';
 
 describe('RequestHelperTest', function() {
 
-	const host = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://localhost';
 	const testEndPoint = 'server/products.php';
 
 	beforeEach(function(done) {	
@@ -21,7 +22,6 @@ describe('RequestHelperTest', function() {
 		global.XMLHttpRequest = XMLHttpRequest;
 	
 		this.container = new Container;
-		this.container.setInstance('Request', new Request);
 
 		done();
 	});
@@ -40,7 +40,7 @@ describe('RequestHelperTest', function() {
 		request.get({
 			url: host + '/' + testEndPoint,
 		}).then(function(response) {
-			assert.lengthOf(response, 15);
+			assert.lengthOf(response, 30);
 			done();
 		});
 

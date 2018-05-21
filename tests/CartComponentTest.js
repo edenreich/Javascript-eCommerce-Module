@@ -5,9 +5,11 @@ import {XMLHttpRequest} from 'xmlhttprequest';
 
 // Exceptions
 import ExceptionHandler from '../src/Exceptions/ExceptionHandler.js';
+import InvalidCartItemException from '../src/Exceptions/InvalidCartItemException.js';
 
 // Core
 import Container from '../src/Core/Container.js';
+import ComponentsProvider from '../src/Core/ComponentsProvider.js';
 import EventManager from '../src/Core/EventManager.js';
 
 // Components
@@ -15,6 +17,7 @@ import Cart from '../src/Components/Cart.js';
 import Products from '../src/Components/Products.js';
 
 // Helpers
+import Shop from './Helpers/Shop.js';
 import DomEvents from './Helpers/DomEvents.js';
 import Generator from './Helpers/Generator.js';
 import DOM from '../src/Helpers/DOM.js';
@@ -22,9 +25,9 @@ import Common from '../src/Helpers/Common.js';
 import Cookie from '../src/Helpers/Cookie.js';
 import Request from '../src/Helpers/Request.js';
 
-describe.only('CartComponentTest', function() {
+describe('CartComponentTest', function() {
 
-	const host = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://localhost';
 
 	const productsEndPoint = 'server/products.php';
 
@@ -39,18 +42,10 @@ describe.only('CartComponentTest', function() {
 
 		this.container = new Container;
 
-		this.container.setInstance('Events', new EventManager);
-		let request = this.container.make(new Request);
+		this.components = this.container.make('Components');
+		this.components.register(['Cart', 'Products']);
 
 		ExceptionHandler.setDebugLevel = 'error';
-
-		this.container.bind('Products', function(container) {
-			return new Products(container, request, container.Events);
-		});
-
-		this.container.bind('Cart', function(container) {
-			return new Cart(container, request, container.Events);
-		});
 	});
 
 	afterEach(function(done) {
@@ -59,14 +54,14 @@ describe.only('CartComponentTest', function() {
 		done();
 	});
 
-	it('should resolve cart object from the container', function() {
-		let cart = this.container.make('Cart');
+	it('resolves a cart components with components provider', function() {
+		let cart = this.components.provide('Cart');
 
 		assert.instanceOf(cart, Cart);
 	});
 
 	it('should open a window when clicking the cart icon', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			element: ".cart-icon",
@@ -82,7 +77,7 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('should insert an svg icon into as the cart icon', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			element: ".cart-icon",
@@ -95,7 +90,7 @@ describe.only('CartComponentTest', function() {
 	});
 
 	it('should have cart stored as a cookie', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -104,31 +99,30 @@ describe.only('CartComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		cart.addItem('something');
+		cart.addItem({"id": "1"});
 
 		assert.isNotNull(Cookie.get('cart'));
 	});
 
 	it('removes item from the cart', function() {
-		let cart = this.container.make('Cart');
+		let cart = this.components.provide('Cart');
 
 		cart.setup({
 			cookie_name: "cart",
 			element: ".cart-icon"
 		});
 
-		cart.addItem('something');
-		cart.addItem('somethingelse');
+		cart.addItem({"id": "1"});
+		cart.addItem({"id": "2"});
 
-		cart.removeItem('something');
+		cart.removeItem({"id": "1"});
 
-		assert.equal(-1, Cookie.get('cart').items.indexOf('something'));
-		assert.equal(0, Cookie.get('cart').items.indexOf('somethingelse'));
+		assert.lengthOf(Cookie.get('cart').items, 1);
 	});
 
 	it('adds a product to the cart when clicking on plus button', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products'); 
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products'); 
 
 		products.setup({
 			url: host + '/' + productsEndPoint,
@@ -146,10 +140,11 @@ describe.only('CartComponentTest', function() {
 		wait(2).then(function() { 
 			let domElements = DOM.find('.product'); 
 
-			let addToCart = DOM.find('#addToCart')[0];
+			let addToCart = DOM.find('.add-to-cart')[0];
+			let addToCart2 = DOM.find('.add-to-cart')[1];
 
 			addToCart.click();
-			addToCart.click();
+			addToCart2.click();
 		
 			let items = Cookie.get('cart').items;
 
@@ -161,8 +156,8 @@ describe.only('CartComponentTest', function() {
 	}).timeout(10000);
 
 	it('displays the items which were added in the basket', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products'); 
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products'); 
 
 		products.setup({
 			url: host + '/' + productsEndPoint,
@@ -178,17 +173,15 @@ describe.only('CartComponentTest', function() {
 
 		// wait 2 seconds for products to load.
 		wait(2).then(function() {
-			let product1 = DOM.find('#addToCart')[0];
-			let product2 = DOM.find('#addToCart')[4];
-			let product3 = DOM.find('#addToCart')[3];
+			let product1 = DOM.find('.add-to-cart')[0];
+			let product2 = DOM.find('.add-to-cart')[4];
+			let product3 = DOM.find('.add-to-cart')[3];
 			let cartIcon = DOM.find('.cart-icon');
 			let preview = DOM.find('#preview', cartIcon);
 
 			product1.click();
 			product2.click();
 			product3.click();
-
-			cartIcon.click();
 			
 			var items = DOM.find('.item', preview);
 			
@@ -197,9 +190,9 @@ describe.only('CartComponentTest', function() {
 		});
 	}).timeout(10000);
 
-	it.only('adds existing product to the cart again increments the quantity', function(done) {
-		let cart = this.container.make('Cart');
-		let products = this.container.make('Products');
+	it('adds existing product to the cart again increments the quantity', function(done) {
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
 
 		cart.setup({
 			cookie_name: "cart",
@@ -215,9 +208,9 @@ describe.only('CartComponentTest', function() {
 		DomEvents.dispatch('DOMContentLoaded');
 		
 		waitFor(1, function() {
-			let products = DOM.find('.product');
-			let addToCartFirstProduct = DOM.find('.add-to-cart', products[0]);
-			let addToCartSecondProduct = DOM.find('.add-to-cart', products[1]);
+			let productElements = DOM.find('.product');
+			let addToCartFirstProduct = DOM.find('.add-to-cart', productElements[0]);
+			let addToCartSecondProduct = DOM.find('.add-to-cart', productElements[1]);
 			
 			// clicking same product twice.
 			addToCartFirstProduct.click();
@@ -233,6 +226,125 @@ describe.only('CartComponentTest', function() {
 		});
 	}).timeout(10000);
 
+	it('favorites a product by clicking favorite button adds it to the cookie', function(done) {
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
+
+		cart.setup({
+			cookie_name: "cart",
+			element: ".cart-icon"
+		});
+
+		products.setup({
+			url: host + '/' + productsEndPoint,
+			element: ".products"
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		waitFor(1, function() {
+			let productElements = DOM.find('.product');
+			let favorite = DOM.find('.favorite', productElements[0]);
+
+			favorite.click();
+			favorite.click(); // Click it twice on purpose just to make sure we have only one record inserted.
+
+			let favorites = Cookie.get('cart').favorites;
+
+			assert.lengthOf(favorites, 1);
+			done();
+		});
+	});
+
+	it('give the possiblity to click checkout inside the cart preview', function(done) {
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
+
+		cart.setup({
+			cookie_name: "cart",
+			element: ".cart-icon"
+		});
+
+		products.setup({
+			url: host + '/' + productsEndPoint,
+			element: ".products"
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		waitFor(1, function() {
+			let productElements = DOM.find('.product');
+			let addToCartFirst = DOM.find('.add-to-cart', productElements[0]);
+			let addToCartSecond = DOM.find('.add-to-cart', productElements[1]);
+
+			addToCartFirst.click();
+			addToCartSecond.click();
+
+			waitFor(3, function() {
+				let previewTable = DOM.find('.preview-table');
+				let previewTableItems = DOM.find('tr', previewTable);
+				let lastItem = previewTableItems[previewTableItems.length-1];
+				
+				let tableCells = lastItem.children;
+			
+				assert.isAbove(tableCells.length, 1);
+
+				let td = tableCells[0];
+				
+				if (td.children.length) {
+					assert.equal(td.children[0].constructor.name, 'HTMLAnchorElement');
+					assert.equal(td.children[0].innerHTML, 'Checkout');
+				}
+
+				done();
+			});
+		});
+	}).timeout(10000);
+
+	it('should show to total sum on the cart preview', function(done) {
+		let cart = this.components.provide('Cart');
+		let products = this.components.provide('Products');
+
+		cart.setup({
+			element: ".cart-icon",
+			cookie_name: "cart",
+		});
+
+		products.setup({
+			element: ".products",
+			url: host + '/' + productsEndPoint,
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		waitFor(1, function() {
+			let productElements = DOM.find('.product');
+			let addToCartFirst = DOM.find('.add-to-cart', productElements[0]);
+			let addToCartSecond = DOM.find('.add-to-cart', productElements[1]);
+			let priceFirst = parseFloat(DOM.find('.product-amount', productElements[0]).innerHTML);
+			let priceSecond = parseFloat(DOM.find('.product-amount', productElements[1]).innerHTML);
+					
+			addToCartFirst.click();
+			addToCartSecond.click();
+
+			waitFor(3, function() {
+				let previewTable = DOM.find('.preview-table');
+				let previewTableItems = DOM.find('tr', previewTable);
+				let lastItem = previewTableItems[previewTableItems.length-1];
+
+				let tableCells = lastItem.children;
+				
+				assert.lengthOf(tableCells, 2);
+
+				let td = tableCells[1];
+
+				if (td.children) {
+					assert.equal(td.children[0].innerHTML, priceFirst + priceSecond);
+					done();
+				}
+			});
+		});
+	}).timeout(5000);
 
 	/**
 	 * Simple helper, for async operations.
@@ -250,8 +362,10 @@ describe.only('CartComponentTest', function() {
 
 	/**
 	 * Simple helper, for async operations.
+	 * synonym for wait function only with callback instead.
 	 *
 	 * @param number | time | in seconds
+	 * @param function | callback
 	 * @return void
 	 */
 	function waitFor(time, callback) {

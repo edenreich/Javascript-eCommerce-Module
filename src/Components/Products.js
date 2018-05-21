@@ -1,16 +1,14 @@
 
+// Helpers
 import DOM from '../Helpers/DOM.js';
-import Common from '../Helpers/Common.js';
 import Str from '../Helpers/Str.js';
+import Common from '../Helpers/Common.js';
+
+// Components
+import BaseComponent from './BaseComponent.js';
+
+// Exceptions
 import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
-
-/**
- * @file 
- * Products class.
- *
- * The Products component, handles the products tasks.
- */
-
 
 /**
  * The default settings of each product.
@@ -27,6 +25,8 @@ let defaultSettings = {
 	height: '250px',
 	attributes: ['name', 'price', 'deliveryTime', 'image'],
 	url: 'products.php',
+	no_css: false,
+	currency: '$',
 };
 
 /**
@@ -58,7 +58,13 @@ let Http;
  */
 let chunkedProducts;
 
-class Products 
+/**
+ * @class Products
+ *
+ * The Products component, handles the products tasks.
+ */
+
+class Products extends BaseComponent
 {
 	/**
 	 * Initalize the Container.
@@ -69,6 +75,8 @@ class Products
 	 */
 	constructor(container, http, eventManager) 
 	{
+		super();
+
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
@@ -94,7 +102,7 @@ class Products
 
 			this.setElement(this.settings.element);
 
-			this.addStyleTag();	
+			this.draw();	
 
 			this.loadProducts(1);
 		}.bind(this));
@@ -104,24 +112,28 @@ class Products
 	 * Loads the products for the page.
 	 * 
 	 * @param number | pageNumber
+	 * @param bool | append
 	 * @return void
 	 */
-	loadProducts(pageNumber = 1)
+	loadProducts(pageNumber = 1, append = false)
 	{
 		if (Container.Pagination && Container.Pagination.booted) {
-			switch(Container.Pagination.settings.proccessing) 
+			
+			let limit = Container.Pagination.settings.per_page;
+
+			switch(Container.Pagination.settings.processing) 
 			{
 				case 'client-side':
-					return this.loadPageProductsByClient(pageNumber);
+					return this.loadPageProductsOnce(pageNumber, limit, append);
 					break;
 				case 'server-side':
-					return this.loadPageProductsByServer(pageNumber);
+					return this.loadPageProducts(pageNumber, limit, append);
 					break;
 				default:
-					throw new InvalidArgumentException('for proccessing you can choose \'server-side\' or \'client-side\' options.');
+					throw new InvalidArgumentException('for processing you can choose \'server-side\' or \'client-side\' options.');
 			}
 		} else {
-			this.loadPageProductsByServer();
+			this.loadPageProducts();
 		}
 	}
 
@@ -130,26 +142,24 @@ class Products
 	 * replace them in the div container.
 	 *
 	 * @param number | pageNumber
+	 * @param number | limit
 	 * @return void
 	 */
-	loadPageProductsByServer(pageNumber = null)
+	loadPageProducts(pageNumber = null, limit = null)
 	{
 		let request = this.getProducts(pageNumber);
 
 		request.then(function(products) {
-
-			this.currentItems = products;
-
-			for (var i = 0; i < this.currentItems.length; i++) {
-				var product = this.currentItems[i];
-				EventManager.publish('products.loading', product);
+			if (limit) {
+				this.currentItems = products.slice(0, limit);
+			} else {
+				this.currentItems = products;
 			}
 
-			EventManager.publish('products.loaded', products);
-			this.replaceItems(products);
-			resolve();
+			this.replaceProducts(this.currentItems);
+			Promise.resolve(this.currentItems);
 		}.bind(this)).catch(function(error) {
-
+			// throw new Error('Could not load products! Reason: ' + error);
 		});
 
 		return request;
@@ -159,9 +169,11 @@ class Products
 	 * Loads the products and 
 	 * replace them in the div container.
 	 *
+	 * @param number | pageNumber
+	 * @param bool | append
 	 * @return void
 	 */
-	loadPageProductsByClient(pageNumber)
+	loadPageProductsOnce(pageNumber, undefined, append = false)
 	{
 		let request;
 
@@ -171,27 +183,25 @@ class Products
 			request = Promise.resolve(this.totalItems);
 		}
 
-		request.then(function(products) {
+		return request.then(function(products) {
 			this.totalItems = products;
-
 			let pages = this.calculateClientPages(products);
-
 			this.currentItems = pages[pageNumber-1];
 
-			for (var i = 0; i < this.currentItems.length; i++) {
-				var product = this.currentItems[i];
-				EventManager.publish('products.loading', product);
+			if (typeof this.currentItems == 'undefined') {
+				return null;
 			}
 
-			EventManager.publish('products.loaded', products);
-			this.replaceItems(this.currentItems);
-			Promise.resolve(this.currentItems);
+			if (append) {
+				this.appendProducts(this.currentItems);
+			} else {
+				this.replaceProducts(this.currentItems);
+			}
 
+			return this.currentItems;
 		}.bind(this)).catch(function(error) {
-
+			// throw new Error('Could not load products! Reason: ' + error);
 		});
-
-		return request;
 	}
 
 	/**
@@ -226,34 +236,62 @@ class Products
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 
-		if (this.wrapper) {
-			DOM.addClass(this.wrapper, this.settings.class);
+		if (this.element) {
+			DOM.addClass(this.element, this.settings.class);
 		}
 	}
 
 	/**
-	 * Replace items in 
+	 * Replace products in 
 	 * the products container.
 	 *
-	 * @param array | items
+	 * @param array | rawProducts
 	 * @return array
 	 */
-	replaceItems(items) 
+	replaceProducts(rawProducts) 
 	{
-		if (! Array.isArray(items) || (items.length <= 0 && typeof items[0] == 'string')) {
+		if (! Array.isArray(rawProducts) || (rawProducts.length <= 0 && typeof rawProducts[0] == 'string')) {
 			throw new InvalidArgumentException;
 		}
 
-		let products = this.buildProducts(items, this.settings.item_class, 'div');
+		let products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
 
-		this.wrapper.innerHTML = '';
+		this.element.innerHTML = '';
 		products.forEach(function(product) {
-			this.wrapper.appendChild(product);
+			EventManager.publish('products.loading', product);
+			this.element.appendChild(product);
 		}.bind(this));
 
-		return items;
+		EventManager.publish('products.loaded', products);
+
+		return products;
+	}
+
+	/**
+	 * Appends more products to the
+	 * div container.
+	 *
+	 * @param array | rawProducts
+	 * @return array
+	 */
+	appendProducts(rawProducts)
+	{
+		if (! Array.isArray(rawProducts) || (rawProducts.length <= 0 && typeof rawProducts[0] == 'string')) {
+			throw new InvalidArgumentException;
+		}
+
+		let products = this.buildProducts(rawProducts, this.settings.item_class, 'div');
+
+		products.forEach(function(product) {
+			EventManager.publish('products.loading', product);
+			this.element.appendChild(product);
+		}.bind(this));
+
+		EventManager.publish('products.loaded', products);
+
+		return products;
 	}
 
 	/**
@@ -288,6 +326,11 @@ class Products
 
 		let builtProducts = [];
 
+		// Enter default attribute.
+		if (this.settings.attributes.indexOf('currency') == -1) {
+			this.settings.attributes.push('currency');
+		}
+		
 		attributesCollection.forEach(function(attributes) {
 			let builtProduct = this.buildProduct(attributes, className, tagType);
 			builtProducts.push(builtProduct);
@@ -324,22 +367,53 @@ class Products
 
 		product.appendChild(overlay);
 
+		attributes = this.addDefaultAttributes(attributes);
+
+		if (attributes.hasOwnProperty('image')) {
+			let image = DOM.createElement('img', {
+				src: attributes['image']
+			});
+			
+			let tag = DOM.createElement(tagType, {
+				class: 'product-image',
+				html: image.outerHTML
+			});
+			
+			product.appendChild(tag);
+		}
+
+		if (attributes.hasOwnProperty('price')) {
+			let tag = DOM.createElement(tagType, {
+				class: 'product-price',
+			});
+
+			let span = DOM.createElement('span', {
+				class: 'product-amount',
+				html: attributes.price.amount
+			});
+
+			let span2 = DOM.createElement('span', {
+				class: 'product-currency',
+				html: attributes.price.currency
+			});
+
+			tag.appendChild(span);
+			tag.appendChild(span2);
+			overlay.appendChild(tag);
+		}
+
 		for (var attribute in attributes) {
 			if (! Common.in_array(attribute, this.settings.attributes)) {
 				continue;
 			}
 
-			let tag = DOM.createElement(tagType);
-
-			if (attribute == 'image') {
-				let image = DOM.createElement('img', {
-					src: attributes[attribute]
-				});
-				product.appendChild(image);
-			} else {
-				tag.innerHTML = attributes[attribute] || '';
+			if (attribute == 'price' || attribute == 'image') {
+				continue;
 			}
 
+			let tag = DOM.createElement(tagType);
+			tag.innerHTML = attributes[attribute] || '';
+			
 			DOM.addClass(tag, 'product-' + Str.kebabCase(attribute));
 			overlay.appendChild(tag);
 		}
@@ -373,7 +447,13 @@ class Products
 
 		addToCart.addEventListener('click', function(e) {
 			e.preventDefault();
-			EventManager.publish('cart.products.added', attributes);
+			EventManager.publish('cart.product.added', attributes);
+		});
+
+		favorite.addEventListener('click', function(e) {
+			e.preventDefault();
+			this.innerHTML = '&#x2713;';
+			EventManager.publish('cart.product.favorited', attributes);
 		});
 
 		overlay.appendChild(tag);
@@ -382,11 +462,34 @@ class Products
 	}
 
 	/**
+	 * Adds default attributes
+	 * to the supplied attributes.
+	 *
+	 * @param object | attributes
+	 * @return object
+	 */
+	addDefaultAttributes(attributes)
+	{
+		if (attributes.hasOwnProperty('price') && typeof attributes.price != 'object') {
+			attributes.price = {
+				"amount": attributes.price,
+				"currency": this.settings.currency
+			};
+		}
+
+		return attributes;
+	}
+
+	/**
 	 * Add the eCommerce style tags to the DOM.
 	 */
-	addStyleTag() 
+	draw() 
 	{
-		if(DOM.find('#Turbo-eCommerce-Products')) {
+		if (DOM.find('#Turbo-eCommerce-Products')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 
@@ -394,7 +497,6 @@ class Products
 		let height = this.settings.height || '200px';
 		let minWidth = this.settings.min_width || '200px';
 		let maxWidth = this.settings.max_width || '250px';
-	
 
 		let css = `
 			.product {
@@ -429,19 +531,12 @@ class Products
 				transition: 0.5s all;
 			}
 
-			.product > img {
+			.product > .product-image > img {
 				position: absolute;
 				left: 0;
 				top: 0;
 				width: 100%;
 				height: 100%;
-			}
-
-			.product > .product-image {
-				z-index: 0;
-				position: absolute;
-				top: 0;
-				left: 0;
 			}
 
 			.product > .product-overlay > .product-name, 
@@ -466,6 +561,20 @@ class Products
 		`;
 	    
 	    DOM.addStyle('Turbo-eCommerce-Products', css);
+	}
+
+	/**
+	 * Hides all irrelevant elements from the DOM.
+	 *
+	 * @return void 
+	 */
+	hideAll()
+	{	
+		Container.Components.booted.forEach(function(component) {
+			if (component.constructor.name != 'Products') {
+				component.hide();
+			}
+		});
 	}
 }
 

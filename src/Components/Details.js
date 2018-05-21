@@ -19,7 +19,7 @@ import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js'
  * @var object
  */
 let defaultSettings = {
-	element: '.checkout',
+	element: '.details',
 	no_css: false,
 };
 
@@ -51,7 +51,7 @@ let Http;
  * payments validation, cart validation etc..
  */
 
-class Checkout extends BaseComponent
+class Details extends BaseComponent
 {
 	/**
 	 * - Initialize the IoC container
@@ -127,7 +127,7 @@ class Checkout extends BaseComponent
 	 */
 	draw() 
 	{
-		if (DOM.find('#Turbo-eCommerce-Checkout')) {
+		if (DOM.find('#Turbo-eCommerce-Details')) {
 			return;
 		}
 
@@ -145,7 +145,7 @@ class Checkout extends BaseComponent
 			}
 		`;
 	    
-	    DOM.addStyle('Turbo-eCommerce-Checkout', css);
+	    DOM.addStyle('Turbo-eCommerce-Details', css);
 	}
 
 	/**
@@ -156,11 +156,11 @@ class Checkout extends BaseComponent
 	hideAll()
 	{	
 		Container.Components.booted.forEach(function(component) {
-			if (component.constructor.name != 'Checkout') {
+			if (component.constructor.name != 'Details') {
 				component.hide();
 			}
 		});
 	}
 }
 
-export default Checkout;
+export default Details;

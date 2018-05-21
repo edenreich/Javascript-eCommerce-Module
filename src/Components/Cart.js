@@ -1,17 +1,16 @@
 
+// Helpers
 import Str from '../Helpers/Str.js';
 import DOM from '../Helpers/DOM.js';
 import Cookie from '../Helpers/Cookie.js';
 import Common from '../Helpers/Common.js';
 
-import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
+// Components
+import BaseComponent from './BaseComponent.js';
 
-/**
- * @file 
- * Cart class.
- *
- * Handles adding, removing etc... of items.
- */
+// Exceptions
+import InvalidCartItemException from '../Exceptions/InvalidCartItemException.js';
+import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
  * The default settings of the cart.
@@ -28,7 +27,8 @@ let defaultSettings = {
 	height: '60px',
 	placement: 'right-top',
 	fixed: true,
-	hover_color: 'orange'
+	hover_color: 'orange',
+	no_css: false,
 };
 
 /**
@@ -66,7 +66,13 @@ let loadingOverlay;
  */
 let itemsDiv
 
-class Cart 
+/**
+ * @class Cart
+ *
+ * Handles adding, removing, calculations of items.
+ */
+
+class Cart extends BaseComponent
 {
 	/**
 	 * - Initialize the IoC container
@@ -81,12 +87,14 @@ class Cart
 	 */
 	constructor(container, http, eventManager) 
 	{
+		super();
+
 		Container = container;
 		Http = http;
 		EventManager = eventManager;
 		
 		this.previewElement = this.createPreviewElement();
-		this.svgIcon = createIcon.call(this);
+		this.icon = createIcon.call(this);
 	}
 
 	/**
@@ -97,7 +105,7 @@ class Cart
 	 */
 	setup(settings)
 	{
-		if(typeof settings != 'object') {
+		if (typeof settings != 'object') {
 			throw new InvalidArgumentException;
 		}
 
@@ -108,11 +116,12 @@ class Cart
 		DOM.addClass(this.previewElement, 'closed');
 		DOM.addClass(this.previewElement, this.settings.preview_class);
 		
+		this.draw();
 		this.bindEventListeners();
-		this.addStyleTag();
-
-		if(this.isEmpty(Cookie.get(this.settings.cookie_name))) {
+		
+		if (this.isEmpty(Cookie.get(this.settings.cookie_name))) {
 			this.setupCart();
+			
 		}
 	}
 
@@ -150,24 +159,68 @@ class Cart
 	 */
 	addItem(item)
 	{
+		if (typeof item != 'object') {
+			throw new InvalidArgumentException('addItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
+		}
+
 		this.cart = Cookie.get(this.settings.cookie_name);
 
 		if (!item.hasOwnProperty('quantity')) {
 			item.quantity = 1;
 		}
 
-		let wasAdded = false;
 		let i;
+		let incremented = false;
 
 		for (i = 0; i < this.cart.items.length; i++) {
-			if (this.cart.items[i].name == item.name) {
+			if (this.cart.items[i].id == item.id) {
 				this.cart.items[i].quantity++;
-				wasAdded = true;
+				incremented = true;
+				break;	
 			}
 		}
 
-		if (!wasAdded) {
+		if (! incremented) {
 			this.cart.items.push(item);
+		}
+
+		Cookie.set(this.settings.cookie_name, this.cart, 2);
+	}
+
+	/**
+	 * Adds an item to the favorites list.
+	 *
+	 * @param object | item
+	 * @return void
+	 */
+	favoriteItem(item)
+	{
+		if (typeof item != 'object') {
+			throw new InvalidArgumentException('favoriteItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
+		}
+
+		this.cart = Cookie.get(this.settings.cookie_name);
+
+		let i;
+		let alreadyFavorited = false;
+
+		for (i = 0; i < this.cart.favorites.length; i++) {
+			if (this.cart.favorites[i].id == item.id) {
+				alreadyFavorited = true;
+				break;
+			}
+		}
+
+		if (! alreadyFavorited) {
+			this.cart.favorites.push(item);
 		}
 
 		Cookie.set(this.settings.cookie_name, this.cart, 2);
@@ -181,9 +234,24 @@ class Cart
 	 */
 	removeItem(item)
 	{
+		if (typeof item != 'object') {
+			throw new InvalidArgumentException('removeItem() expect the first parameter to be an object, but ' + typeof item + ' was passed instead');
+		}
+
+		if (! item.hasOwnProperty('id')) {
+			throw new InvalidCartItemException;
+		}
+
  		this.cart = Cookie.get(this.settings.cookie_name);
 
- 		this.cart.items.splice(this.cart.items.indexOf(item), 1);
+ 		let i;
+
+ 		for (i = 0; i < this.cart.items.length; i++) {
+ 			if (this.cart.items[i].id == item.id) {
+ 				this.cart.items.splice(i, 1);
+ 				break;
+ 			}
+ 		}
 
  		Cookie.set(this.settings.cookie_name, this.cart, 2);
 	}
@@ -212,6 +280,7 @@ class Cart
 
 			// Quantity always at the start of an item.
 			let td = DOM.createElement('td');
+
 			td.innerHTML = attributes.quantity +'x';
 			tr.appendChild(td);
 			
@@ -228,8 +297,15 @@ class Cart
 
 						td.appendChild(image);
 						break;
-					case 'name':
 					case 'price':
+						td = DOM.createElement('td');
+						let span = DOM.createElement('span', {
+							html: '&nbsp' + attributes[attribute].currency
+						});
+						td.innerHTML = attributes[attribute].amount;
+						td.appendChild(span);
+						break;
+					case 'name':
 						td = DOM.createElement('td');
 						td.innerHTML = attributes[attribute];
 						break;
@@ -241,7 +317,58 @@ class Cart
 			table.appendChild(tr);
 		}
 
+		// create checkout button at the bottom of the preview
+		let tr = DOM.createElement('tr');
+		let td = DOM.createElement('td', {
+			colspan: '3',
+		});
+
+		let checkout = DOM.createElement('a', {
+			class: 'btn btn-primary',
+			text: 'Checkout',
+			href: '/checkout'
+		});
+
+
+		td.appendChild(checkout);
+		tr.appendChild(td);
+
+		// create total sum at the bottom of the preview
+		td = DOM.createElement('td', {
+			colspan: '1',
+		});
+
+		let total = DOM.createElement('div', {
+			class: 'cart-total',
+			text: this.total()
+		});
+
+		td.appendChild(total);
+		tr.appendChild(td);
+
+		table.appendChild(tr);
+
 		itemsDiv.appendChild(table);
+	}
+
+	/**
+	 * Calculates the total of the cart
+	 * and retrieve it.
+	 *
+	 * @return number 
+	 */
+	total()
+	{
+ 		this.cart = Cookie.get(this.settings.cookie_name);
+
+ 		var total = 0.00;
+ 		let i;
+
+ 		for (i = 0; i < this.cart.items.length; i++) {
+ 			total += parseFloat(this.cart.items[i].price.amount) * this.cart.items[i].quantity;
+ 		}
+
+ 		return total.toFixed(2);
 	}
 
 	/**
@@ -252,13 +379,13 @@ class Cart
 	 */
 	setElement(selector)
 	{
-		this.icon = DOM.find(selector);
+		this.element = DOM.find(selector);
 
-		if (this.icon) {
-			DOM.addClass(this.icon, this.settings.class);
-			DOM.addClass(this.icon, this.settings.placement);
-			this.icon.appendChild(this.svgIcon);
-			this.icon.appendChild(this.previewElement);
+		if (this.element) {
+			DOM.addClass(this.element, this.settings.class);
+			DOM.addClass(this.element, this.settings.placement);
+			this.element.appendChild(this.icon);
+			this.element.appendChild(this.previewElement);
 		}
 	}
 
@@ -287,9 +414,13 @@ class Cart
 	 *
 	 * @return void
 	 */
-	addStyleTag() 
+	draw() 
 	{
-		if(DOM.find('#eCommerce-Cart')) {
+		if (DOM.find('#Turbo-eCommerce-Cart')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 
@@ -303,13 +434,13 @@ class Cart
 				z-index: 998;
 			}
 
-			${this.settings.element} > svg {
+			${this.settings.element} svg {
 				width: ${this.settings.width};
 				height: ${this.settings.height};
 				transition: fill 0.3s;
 			}
 
-			${this.settings.element} > svg:hover {
+			${this.settings.element} svg:hover {
 				fill: ${this.settings.hover_color};
 				transition: fill 0.3s;
 			}
@@ -478,23 +609,49 @@ class Cart
 	 */
 	bindEventListeners()
 	{
-		if(this.svgIcon == null) {
-			return;
-		}
-
-		this.svgIcon.onclick = function(e) {
+		this.icon.onclick = function(e) {
 			e.preventDefault();
-			let opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
-			
-			if (opening) {
-				this.reloadCartPreview();	
-			}
+			this.toggleCartPreview();
 		}.bind(this);
-		
-		EventManager.subscribe('cart.products.added', function(attributes) {
+
+		EventManager.subscribe('cart.product.added', function(attributes) {
+			this.openCartPreview();
 			this.addItem(attributes);
 			this.reloadCartPreview();
 		}.bind(this));
+
+		EventManager.subscribe('cart.product.favorited', function(attributes) {
+			this.favoriteItem(attributes);
+		}.bind(this));
+	}
+
+	/**
+	 * Opens the cart preview.
+	 *
+	 * @return void 
+	 */
+	openCartPreview()
+	{
+		if (DOM.hasClass(this.previewElement, 'opened')) {
+			this.reloadCartPreview();
+		}
+
+		DOM.switchClasses(this.previewElement, 'closed', 'opened');
+		this.reloadCartPreview();
+	}
+
+	/**
+	 * Toggles the opening closing of the cart preview.
+	 *
+	 * @return void 
+	 */
+	toggleCartPreview()
+	{
+		let opening = DOM.toggleClass(this.previewElement, 'opened', 'closed');
+			
+		if (opening) {
+			this.reloadCartPreview();	
+		}
 	}
 
 	/**
@@ -535,8 +692,8 @@ function createIcon() {
 	svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 	svg.setAttribute('x', '0px');
 	svg.setAttribute('y', '0px');
-	svg.setAttribute('width', '446.843px');
-	svg.setAttribute('height', '446.843px');
+	svg.setAttribute('width', '40px');
+	svg.setAttribute('height', '40px');
 	svg.setAttribute('viewBox', '0 0 446.843 446.843');
 	svg.setAttribute('style', 'enable-background:new 0 0 446.843 446.843;');
 	svg.setAttribute('xml:space', 'preserve');
@@ -546,7 +703,13 @@ function createIcon() {
 	g.appendChild(path);
 	svg.appendChild(g);
 
-	return svg;
+	let  div = DOM.createElement('div', {
+		id: 'cartIcon',
+	});
+
+	div.appendChild(svg);
+
+	return div;
 }
 
 /**

@@ -1,7 +1,7 @@
 
 import ExceptionHandler from './ExceptionHandler.js';
 
-let defaultMessage = 'an invalid argument was passed.';
+let defaultMessage = 'An invalid argument was passed.';
 
 class InvalidArgumentException extends ExceptionHandler
 {

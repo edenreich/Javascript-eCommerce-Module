@@ -1,4 +1,5 @@
 
+// External Packages
 import Window from 'window';
 import {assert} from 'chai';
 import {XMLHttpRequest} from 'xmlhttprequest';
@@ -6,6 +7,7 @@ import {XMLHttpRequest} from 'xmlhttprequest';
 // Core
 import Container from '../src/Core/Container.js';
 import EventManager from '../src/Core/EventManager.js';
+import ComponentsProvider from '../src/Core/ComponentsProvider.js';
 
 // Components
 import Pagination from '../src/Components/Pagination.js';
@@ -21,7 +23,8 @@ import DomEvents from './Helpers/DomEvents.js';
 
 describe('ProductsComponentTest', function() {
 
-	const host = 'http://dev.turbo-ecommerce.com';
+	const host = 'http://localhost';
+	const testEndPoint = 'server/products.php';
 
 	beforeEach(function(done) {	
 		global.window = new Window;
@@ -32,24 +35,14 @@ describe('ProductsComponentTest', function() {
 									<div class="pagination-links"></div>`;
 
 		this.container = new Container;
-
-		this.container.setInstance('Events', new EventManager);
-
-		this.container.setInstance('Request', new Request);
-
-		this.container.bind('Pagination', function(container) {
-			return new Pagination(container, container.make('Products'), container.Events);
-		});
-
-		this.container.bind('Products', function(container) {
-			return new Products(container, container.Request, container.Events);
-		});
+		this.components = this.container.make('Components');
+		this.components.register(['Pagination', 'Products']);
 
 		done();
 	});
 
 	it('should set the given settings from the user', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({
 			element: '.products',
@@ -66,41 +59,41 @@ describe('ProductsComponentTest', function() {
 	});
 
 	it('should replace the items in the products container div', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 
-		let productNodeElements = DOM.find('.product');
+		let productElements = DOM.find('.product');
 
-		assert.lengthOf(productNodeElements, 3);
-		assert.equal('product-name', productNodeElements[0].childNodes[0].childNodes[0].getAttribute('class'));
+		assert.lengthOf(productElements, 3);
+		assert.isNotNull(DOM.find('.product-name', productElements[0]));
 		done();
 	});
 
-	it('should have for each product a button with id #favorite and button with id #addToCart', function(done) {
-		let products = this.container.make('Products');
+	it('checks that each product have .add-to-cart and .favorite classes', function(done) {
+		let products = this.components.provide('Products');
 
 		products.setup({});
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 		
 		let buttons = DOM.find('.action-buttons')[0];
-		let favoriteButton = DOM.find('#favorite', buttons);
-		let addToCartButton = DOM.find('#addToCart', buttons);
+		let favoriteButton = DOM.find('.favorite', buttons);
+		let addToCartButton = DOM.find('.add-to-cart', buttons);
 
 		assert.isNotNull(favoriteButton);
 		assert.isNotNull(addToCartButton);
 		done();
 	});
 
-	it('should let the developer override the default buttons classes', function(done) {
-		let products = this.container.make('Products');
+	it('should let the developer to add css class to the buttons', function(done) {
+		let products = this.components.provide('Products');
 
 		products.setup({
 			add_button_class: 'test-class',
@@ -109,20 +102,20 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		products.replaceItems(Generator.products(3));
+		products.replaceProducts(Generator.products(3));
 
 		let productElements = DOM.find('.product');
 		let buttons = DOM.find('.action-buttons', productElements[0]);
 		let addToCartButton = buttons.childNodes[0];
 		let favoriteButton = buttons.childNodes[1];
 
-		assert.equal(addToCartButton.className, 'test-class');
-		assert.equal(favoriteButton.className, 'second-test-class');
+		assert.isOk(DOM.hasClass(addToCartButton, 'test-class'));
+		assert.isOk(DOM.hasClass(favoriteButton, 'second-test-class'));
 		done();
 	});
 
 	it('should get products from the server side', function(done) {
-		let products = this.container.make('Products');
+		let products = this.components.provide('Products');
 
 		products.setup({
 			url: host + '/server/products.php'
@@ -130,13 +123,55 @@ describe('ProductsComponentTest', function() {
 
 		DomEvents.dispatch('DOMContentLoaded');
 
-		let request = products.loadPageProductsByServer(1);
+		let request = products.loadPageProducts(1);
 
 		request.then(function(items) {
 			assert.lengthOf(items, 5);
 			done();
 		}).catch(function(error) {
 			console.log(error);
+			done();
+		});
+	}).timeout(5000);
+
+	it('should create default currency attribute if the developer did not supply one', function(done) {
+		let products = this.components.provide('Products');
+
+		products.setup({
+			element: ".products",
+			url: host + '/' + testEndPoint,
+			currency: "€"
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		setTimeout(function() {
+			let product = DOM.find('.product')[0];
+			let productCurrencyElement = DOM.find('.product-currency', product);
+			assert.isNotNull(productCurrencyElement);
+			done();
+		}, 2000);
+
+	}).timeout(5000);
+
+	it('should display currency on the product', function(done) {
+		let products = this.components.provide('Products');
+
+		products.setup({
+			url: host + '/' + testEndPoint,
+			currency: '€'
+		});
+
+		DomEvents.dispatch('DOMContentLoaded');
+
+		let request = products.loadPageProducts(1);
+
+		request.then(function(products) {
+			let product = products[0];
+			let productElement = DOM.find('.product')[0];
+			let currency = DOM.find('.product-currency', productElement);
+
+			assert.equal(currency.innerHTML, '€')
 			done();
 		});
 	}).timeout(5000);

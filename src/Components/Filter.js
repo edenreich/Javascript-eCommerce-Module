@@ -1,15 +1,13 @@
 
+// Helpers
 import DOM from '../Helpers/DOM.js';
 import Common from '../Helpers/Common.js';
 
-import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
+// Components
+import BaseComponent from './BaseComponent.js';
 
-/**
- * @file 
- * Filter class.
- *
- * The Filter Object, handles the filter of the products/services.
- */
+// Exceptions
+import InvalidArgumentException from '../Exceptions/InvalidArgumentException.js';
 
 /**
  * The default settings of the filter.
@@ -19,6 +17,7 @@ let defaultSettings = {
 	class: '',
 	width: '',
 	height: '',
+	no_css: false,
 };
 
 /**
@@ -28,7 +27,13 @@ let defaultSettings = {
  */
 let Container;
 
-class Filter 
+/**
+ * @class Filter
+ *
+ * The Filter Object, handles the filter of the products/services.
+ */
+
+class Filter extends BaseComponent
 {
 	/**
 	 * - Initialize the IoC container.
@@ -38,6 +43,8 @@ class Filter
 	 */
 	constructor(container) 
 	{
+		super();
+
 		Container = container;
 	}
 
@@ -59,7 +66,7 @@ class Filter
 
 			this.setElement(this.settings.element);
 
-			this.addStyleTag();	
+			this.draw();	
 		}.bind(this));
 	}
 
@@ -71,17 +78,21 @@ class Filter
 	 */
 	setElement(selector)
 	{
-		this.wrapper = DOM.find(selector);
+		this.element = DOM.find(selector);
 		
-		DOM.addClass(this.wrapper, this.settings.class);
+		DOM.addClass(this.element, this.settings.class);
 	}
 
 	/**
 	 * Add the eCommerce style tags to the DOM.
 	 */
-	addStyleTag() 
+	draw() 
 	{
 		if (DOM.find('#Turbo-eCommerce-Filter')) {
+			return;
+		}
+
+		if (this.settings.no_css) {
 			return;
 		}
 
