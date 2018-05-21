@@ -47,7 +47,8 @@
     "turbo-ecommerce": "bin/cli.js"
   },
   "scripts": {
-    "build": "gulp",
+    "start": "./demo/server/products.js",
+    "gulp": "gulp",
     "test": "mocha tests --require babel-register || true"
   }
 }
