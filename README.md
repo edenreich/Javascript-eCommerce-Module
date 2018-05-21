@@ -183,6 +183,6 @@ make sure you have NodeJS and NPM installed.
 
 in the root directory run ```npm start```
 
-lastely open the browser on ```http://localhost/index.html```
+lastly open the browser on ```http://localhost/index.html```
 
 P.S. don't forget to run ```npm run gulp``` or ```docker exec -it turbo-ecommerce npm run gulp```
