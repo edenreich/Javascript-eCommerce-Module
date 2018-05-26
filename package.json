@@ -44,7 +44,7 @@
     "index.js"
   ],
   "bin": {
-    "turbo-ecommerce": "bin/cli.js"
+    "turbo-ecommerce": "bin/turbo-ecommerce.js"
   },
   "scripts": {
     "start": "./demo/server/products.js",
