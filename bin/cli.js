@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const CommandRunner = require('./command-runner');
+const CommandRunner = require('../utils/command-runner');
 let args = process.argv.slice(2); // ignore first 2 parameters (node cli.js)
 
 
@@ -15,7 +15,6 @@ if (args.length == 0) {
 args.forEach(function(argument, index) {
 
 	if (typeof(argument) == 'string' && argument.indexOf('--') >= 0) {
-
 		CommandRunner.input.option(argument);
 	} else {
 		CommandRunner.input.command(argument);
