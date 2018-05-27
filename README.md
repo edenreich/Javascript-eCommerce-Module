@@ -161,21 +161,14 @@ shop.Events.subscribe('cart.products.added', function(attributes) {
 ```
 
 ### Build Project (for further Development)
-clone the repository:
+clone the repository and cd into it:
 ```sh
 git clone https://github.com/edenreich/Turbo-eCommerce.git && cd Turbo-eCommerce
 ```
 
 #### Using Docker:
 ```sh
-docker build . -t turbo-ecommerce \
-	&& docker run -it -d \
-		--name turbo-ecommerce \
-		--hostname turbo-ecommerce \
-		-v $(pwd):/app \
-		-p 80:3000 turbo-ecommerce \
-	&& docker exec -it turbo-ecommerce npm install \
-	&& docker exec -it turbo-ecommerce npm run test
+docker-compose up -d
 ```
 
 #### If you don't use Docker:
