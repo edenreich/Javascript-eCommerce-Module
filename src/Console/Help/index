@@ -9,8 +9,8 @@ Turbo-eCommerce version: 2.0.3 date: [current_time]
 
 [options_title]
   --help                     Display this help message
+  --with-demo                Publish the bundle.js along with all the demo files.
   --destination              Choose path for your bundle.js
   
 [commands_title]
   publish                    Publish the bundle.js to your project
-  publish-demo               Publish the bundle.js along with all the demo files.
