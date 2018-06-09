@@ -1,27 +1,21 @@
 #!/usr/bin/env node
 
-const CommandRunner = require('../utils/command-runner');
-let args = process.argv.slice(2); // ignore first 2 parameters (node cli.js)
+const Commands = require('../src/Console/commands');
+const CommandlineParser = require('../src/Console/Utils/commandline-parser');
+const FeedbackGiver = require('../src/Console/Utils/feedback-giver');
+
+const args = process.argv;
 
 
-if (args.length == 0) {
-	CommandRunner.help();
+CommandlineParser.defineCommands(['publish','publish-demo']);
+CommandlineParser.defineOptions(['--destination']);
+
+let command = CommandlineParser.parse(args);
+
+if (command.inputs.help) {
+	return FeedbackGiver.showHelp();
 }
 
+command.run();
 
-/**
- * Loops through the users arguments.
- */
-args.forEach(function(argument, index) {
 
-	if (typeof(argument) == 'string' && argument.indexOf('--') >= 0) {
-		CommandRunner.input.option(argument);
-	} else {
-		CommandRunner.input.command(argument);
-	}
-
-	// If there are no more argument trigger the command.
-	if (args.length-1 == index) {
-		CommandRunner.run();
-	}
-});
