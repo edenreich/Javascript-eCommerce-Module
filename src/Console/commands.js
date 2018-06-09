@@ -2,8 +2,10 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const rootFolder = path.resolve(__dirname);
-const userRootFolder = path.resolve(__dirname, '../../');
+const FeedbackGiver = require('./Utils/feedback-giver');
+
+const rootDir = path.resolve(__dirname, '../../');
+const userRootFolder = path.resolve(__dirname, '../../../../');
 
 /**
  * Stores the commands functions.
@@ -38,30 +40,30 @@ class Commands
 		});
 
 		if (withDemo) {
-			source = rootFolder + '/demo';
+			source = rootDir + '/demo';
 			destination = destination || 'demo';
 			destination = (destination[0] == '/') ? destination.substr(1) : destination;
 
 			fs.copy(source, userRootFolder + '/' + destination, (err) => {
 				if (err) {
-					showError(err);
+					FeedbackGiver.showError(err);
 					return;
 				}
 
-				showSuccess('demo folder was copied to ' + userRootFolder + '/' + destination);
+				FeedbackGiver.showSuccess('demo folder was copied to ' + userRootFolder + '/' + destination);
 			});
 		} else {
-			source = rootFolder + '/demo/js/bundle.min.js';
+			source = rootDir + '/demo/public/js/bundle.min.js';
 			destination = destination || 'bundle.js';
 			destination = (destination[0] == '/') ? destination.substr(1) : destination;
 		
 			fs.copyFile(source, userRootFolder + '/' + destination, (err) => {
 				if (err) {
-					showError(err);
+					FeedbackGiver.showError(err);
 					return;
 				}
 
-				showSuccess('bundle.js was copied to ' + userRootFolder + '/' + destination);
+				FeedbackGiver.showSuccess('bundle.js was copied to ' + userRootFolder + '/' + destination);
 			});
 		}
 	}
