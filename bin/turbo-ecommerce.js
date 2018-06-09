@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-const Commands = require('../src/Console/commands');
 const CommandlineParser = require('../src/Console/Utils/commandline-parser');
 const FeedbackGiver = require('../src/Console/Utils/feedback-giver');
 
 const args = process.argv;
-
 
 CommandlineParser.defineCommands(['publish','publish-demo']);
 CommandlineParser.defineOptions(['--destination']);
