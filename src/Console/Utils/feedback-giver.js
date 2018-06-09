@@ -1,6 +1,9 @@
 #!bin/usr/env node
 
 const date = new Date;
+const path = require('path');
+const fs = require('fs-extra');
+const rootFolder = path.resolve(__dirname);
 
 /**
  * Gives feedback to the user.
@@ -15,7 +18,8 @@ class FeedbackGiver
 	 * @param string
 	 * @return void
 	 */
-	static showError(string) {
+	static showError(string) 
+	{
 		console.log('\x1b[41m%s\x1b[0m', string);
 	}
 
@@ -25,7 +29,8 @@ class FeedbackGiver
 	 * @param string
 	 * @return void
 	 */
-	static showSuccess(string) {
+	static showSuccess(string) 
+	{
 		console.log('\x1b[32m%s\x1b[0m', string);
 	}
 
@@ -35,7 +40,8 @@ class FeedbackGiver
 	 * @param string
 	 * @return void
 	 */
-	static showInfo(string) {
+	static showInfo(string) 
+	{
 		console.log('\x1b[46m%s\x1b[0m', string);	
 	}
 
@@ -44,28 +50,30 @@ class FeedbackGiver
 	 *
 	 * @return void 
 	 */
-	static showHelp() {
-	let template =`\x1b[36m
-#################################################
-#\t\tTurbo-eCommerce Help\t\t#
-#################################################
-\x1b[0m
-Turbo-eCommerce version: 2.0.3 date: ${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}
+	static showHelp() 
+	{
+		let template = fs.readFile(rootFolder + '/../Help/index', 'utf8', function(err, content) {
+			if (err) {
+				throw err;
+			}
 
-\x1b[32mUsage:\x1b[0m
-  turbo-ecommerce [options] [command]
+			let hr = '\u001b[36m#################################################\x1b[0m';
+			let header = '\u001b[36m#\t\tTurbo-eCommerce Help\t\t#\x1b[0m';
 
-\x1b[36mOptions:\x1b[0m
-  --help                     Display this help message
-  --destination              Choose path for your bundle.js
-  
-\x1b[33mCommands:\x1b[0m
-  publish                    Publish the bundle.js to your project
-  publish-demo               Publish the bundle.js along with all the demo files.
+			let currentTime = date.getDate()+'-'+date.getMonth()+'-'+date.getFullYear();
+			let usageTitle = '\x1b[32mUsage\x1b[0m';
+			let optionsTitle = '\x1b[36mOptions\x1b[0m';
+			let commandsTitle = '\x1b[33mCommands\x1b[0m';
 
-`;
+			content = content.replace(/\[hr\]/g, hr);
+			content = content.replace(/\[header\]/g, header);
+			content = content.replace(/\[current_time\]/g, currentTime);
+			content = content.replace(/\[usage_title\]/g, usageTitle);
+			content = content.replace(/\[options_title\]/g, optionsTitle);
+			content = content.replace(/\[commands_title\]/g, commandsTitle);
 
-		console.log(template);
+			console.log(content);
+		})
 	}
 }
 

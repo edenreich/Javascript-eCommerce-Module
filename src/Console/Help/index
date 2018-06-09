@@ -1,16 +1,16 @@
-#################################################
-#\t\tTurbo-eCommerce Help\t\t#
-#################################################
-\x1b[0m
-Turbo-eCommerce version: 2.0.3 date: ${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}
+[hr]
+[header]
+[hr]
 
-\x1b[32mUsage:\x1b[0m
+Turbo-eCommerce version: 2.0.3 date: [current_time]
+
+[usage_title]
   turbo-ecommerce [options] [command]
 
-\x1b[36mOptions:\x1b[0m
+[options_title]
   --help                     Display this help message
   --destination              Choose path for your bundle.js
   
-\x1b[33mCommands:\x1b[0m
+[commands_title]
   publish                    Publish the bundle.js to your project
   publish-demo               Publish the bundle.js along with all the demo files.
