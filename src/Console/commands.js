@@ -20,16 +20,23 @@ class Commands
 	 */
 	static publish(options)
 	{
+		let destination;
 		let withDemo = false;
 		let source = '';
 
 		options.forEach(function(option) {
-			if (option.name == '--with-demo') {
-				withDemo = true;
+			switch (option.name)
+			{
+				case '--with-demo':
+					withDemo = true;
+				break;
+				case '--destination':
+					destination = option.value;
+				break;
 			}
+
 		});
 
-		console.log(withDemo); return;
 		if (withDemo) {
 			source = rootFolder + '/demo';
 			destination = destination || 'demo';
