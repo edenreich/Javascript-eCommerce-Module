@@ -1,19 +1,38 @@
-#!/usr/bin/env node
+#!bin/usr/env node
 
-const CommandlineParser = require('../src/Console/Utils/commandline-parser');
-const FeedbackGiver = require('../src/Console/Utils/feedback-giver');
-
+const CommandlineParser = require('edenreich-commandline-parser');
 const args = process.argv;
 
-CommandlineParser.defineCommands(['publish','publish-demo']);
-CommandlineParser.defineOptions(['--destination']);
+// Configure the Application.
+const config = {
+  handler: 'src/Console/commands',
+  labels: {
+    application_name: "Turbo-eCommerce Help",
+    application_filename: "turbo-ecommerce",
+    application_version: "1.0.0"
+  },
+  commands: [{
+    name: "publish",
+    description: "publish the minified files",
+    options: [{
+      name: "--destination",
+      description: "to specifc destination"
+    },
+    {
+      name: "--with-demo",
+      description: "with demo files"
+    }]
+  }]
+};
 
-let command = CommandlineParser.parse(args);
+let cliParser = new CommandlineParser(config);
 
-if (command.inputs.help) {
-	return FeedbackGiver.showHelp();
+// Parse the arguments.
+let command = cliParser.parse(args);
+
+// Execute the command.
+if (command.requestedForHelp()) {
+  cliParser.showHelp('index');
+} else {
+  command.execute();
 }
-
-command.run();
-
-

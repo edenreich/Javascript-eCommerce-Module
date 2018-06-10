@@ -1,12 +1,5 @@
 #!bin/usr/env node
 
-const path = require('path');
-const fs = require('fs-extra');
-const FeedbackGiver = require('./Utils/feedback-giver');
-
-const rootDir = path.resolve(__dirname, '../../');
-const userRootFolder = path.resolve(__dirname, '../../../../');
-
 /**
  * Stores the commands functions.
  * 
